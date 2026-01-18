@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TawkToChat } from "@/components/shared/TawkToChat";
 import { PostHogProvider } from "@/components/shared/PostHogProvider";
-import { SmoothScrollProvider } from "@/components/shared/SmoothScroll";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -49,9 +48,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} font-sans antialiased`}>
         <PostHogProvider>
-          <SmoothScrollProvider>
-            {children}
-          </SmoothScrollProvider>
+          {children}
           <Toaster position="top-right" richColors />
           <TawkToChat />
         </PostHogProvider>

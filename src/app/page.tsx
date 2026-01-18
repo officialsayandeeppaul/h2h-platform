@@ -173,25 +173,25 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Use requestIdleCallback for non-critical animations
+    // Initialize animations immediately for snappy feel
     const initAnimations = () => {
       const ctx = gsap.context(() => {
-        // 120fps optimized settings - use transform and opacity only (GPU accelerated)
+        // Fast, snappy settings
         gsap.defaults({ 
-          ease: "power3.out", 
-          duration: 0.6,
-          force3D: true,  // Force GPU acceleration
+          ease: "power2.out", 
+          duration: 0.35,
+          force3D: true,
         });
 
-        // Hero entrance - optimized with shorter durations
+        // Hero entrance - FAST animations
         const heroTl = gsap.timeline({ defaults: { force3D: true } });
         heroTl
-          .fromTo('.hero-tag', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 })
-          .fromTo('.hero-title-line', { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.5 }, '-=0.2')
-          .fromTo('.hero-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, '-=0.3')
-          .fromTo('.hero-cta', { y: 15, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.05, duration: 0.3 }, '-=0.2')
-          .fromTo('.hero-proof', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3 }, '-=0.1')
-          .fromTo('.hero-visual', { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6 }, '-=0.4');
+          .fromTo('.hero-tag', { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25 })
+          .fromTo('.hero-title-line', { y: 25, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.05, duration: 0.3 }, '-=0.15')
+          .fromTo('.hero-desc', { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25 }, '-=0.2')
+          .fromTo('.hero-cta', { y: 10, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.03, duration: 0.2 }, '-=0.15')
+          .fromTo('.hero-proof', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2 }, '-=0.1')
+          .fromTo('.hero-visual', { scale: 0.97, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4 }, '-=0.3');
 
         // Simplified orb animations - CSS will handle most of it
         gsap.to('.orb-1', { y: -20, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
@@ -224,13 +224,8 @@ export default function Home() {
       return ctx;
     };
 
-    // Defer non-critical animations
-    let ctx: gsap.Context | null = null;
-    if ('requestIdleCallback' in window) {
-      (window as Window).requestIdleCallback(() => { ctx = initAnimations(); }, { timeout: 100 });
-    } else {
-      ctx = initAnimations();
-    }
+    // Run animations immediately - no defer for snappy feel
+    const ctx = initAnimations();
 
     return () => ctx?.revert();
   }, []);
