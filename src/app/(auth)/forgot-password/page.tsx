@@ -35,8 +35,9 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient();
       
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+        redirectTo: `${baseUrl}/auth/callback?type=recovery`,
       });
 
       if (error) {
@@ -61,8 +62,9 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient();
       
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(sentEmail, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+        redirectTo: `${baseUrl}/auth/callback?type=recovery`,
       });
 
       if (error) {

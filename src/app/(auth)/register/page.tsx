@@ -54,7 +54,7 @@ export default function RegisterPage() {
           data: {
             full_name: data.fullName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
         },
       });
 
@@ -80,10 +80,11 @@ export default function RegisterPage() {
     setIsGoogleLoading(true);
     try {
       const supabase = createClient();
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${baseUrl}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

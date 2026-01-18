@@ -92,10 +92,12 @@ function LoginContent() {
     try {
       const supabase = createClient();
       const redirect = searchParams.get('redirect');
+      // Use NEXT_PUBLIC_APP_URL for production, fallback to window.location.origin for local dev
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback${redirect ? `?next=${encodeURIComponent(redirect)}` : ''}`,
+          redirectTo: `${baseUrl}/auth/callback${redirect ? `?next=${encodeURIComponent(redirect)}` : ''}`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
