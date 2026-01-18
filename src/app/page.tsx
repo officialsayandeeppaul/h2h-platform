@@ -1,7 +1,8 @@
 'use client';
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from 'react';
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState, Suspense, memo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Header, Footer } from "@/components/layout";
@@ -33,11 +34,8 @@ import {
 import { SERVICE_CATEGORIES } from "@/constants/services";
 import { APP_CONFIG } from "@/constants/config";
 import {
-  FlickeringGrid,
   RetroGrid,
   DotPattern,
-  Ripple,
-  GridPattern,
   AnimatedGridPattern,
   InteractiveGlow,
 } from "@/components/ui/backgrounds";
@@ -45,42 +43,35 @@ import {
   Marquee,
   OrbitingCircles,
   AnimatedListItem,
-  Globe,
-  NumberTicker,
-  ShineBorder,
 } from "@/components/ui/magic-components";
-import { TextAnimate } from "@/components/ui/text-animate";
 import { Highlighter } from "@/components/ui/highlighter";
-import {
-  ShimmerButton,
-  BorderBeam,
-  Meteors,
-  Particles,
-  WordRotate,
-  MagicCard,
-  NeonGradientCard,
-} from "@/components/ui/magic-components";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
-import { AnimatedLineChart } from "@/components/ui/charts";
 import { AnimatedList } from "@/components/ui/animated-list";
 import { Typewriter } from "@/components/ui/typing-animation";
-import { Terminal, TypingAnimation as TerminalTyping, AnimatedSpan, SuccessMessage, InfoMessage } from "@/components/ui/terminal";
-import CardSwap, { Card } from "@/components/ui/card-swap";
-import Iridescence from "@/components/ui/iridescence";
-import TextPressure from "@/components/ui/text-pressure";
-import Masonry from "@/components/ui/masonry";
-import Stepper, { Step } from "@/components/ui/stepper";
-import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
-import { DottedMap } from "@/components/ui/dotted-map";
 import { Dock, DockIcon } from "@/components/ui/dock";
-import MagnetLines from "@/components/ui/magnet-lines";
-import ScrollStack, { ScrollStackItem } from "@/components/ui/scroll-stack";
-import GridDistortion from "@/components/ui/grid-distortion";
-import GridMotion from "@/components/ui/grid-motion";
-import { TrustedByThousandsSection } from "@/components/ui/trusted-charts";
-import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
-import { ClientCalendar } from "@/components/ui/client-calendar";
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
+
+// Dynamic imports for heavy components - load only when needed
+const CardSwap = dynamic(() => import("@/components/ui/card-swap").then(mod => ({ default: mod.default })), { ssr: false });
+const Card = dynamic(() => import("@/components/ui/card-swap").then(mod => ({ default: mod.Card })), { ssr: false });
+const Terminal = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.Terminal })), { ssr: false });
+const AnimatedSpan = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.AnimatedSpan })), { ssr: false });
+const SuccessMessage = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.SuccessMessage })), { ssr: false });
+const InfoMessage = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.InfoMessage })), { ssr: false });
+const TerminalTyping = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.TypingAnimation })), { ssr: false });
+const Masonry = dynamic(() => import("@/components/ui/masonry"), { ssr: false });
+const MagnetLines = dynamic(() => import("@/components/ui/magnet-lines"), { ssr: false });
+const GridMotion = dynamic(() => import("@/components/ui/grid-motion"), { ssr: false });
+const TextPressure = dynamic(() => import("@/components/ui/text-pressure"), { ssr: false });
+const HeroVideoDialog = dynamic(() => import("@/components/ui/hero-video-dialog").then(mod => ({ default: mod.HeroVideoDialog })), { ssr: false });
+const DottedMap = dynamic(() => import("@/components/ui/dotted-map").then(mod => ({ default: mod.DottedMap })), { ssr: false });
+const TrustedByThousandsSection = dynamic(() => import("@/components/ui/trusted-charts").then(mod => ({ default: mod.TrustedByThousandsSection })), { ssr: false });
+const AnimatedTestimonials = dynamic(() => import("@/components/ui/animated-testimonials").then(mod => ({ default: mod.AnimatedTestimonials })), { ssr: false });
+const ShimmerButton = dynamic(() => import("@/components/ui/magic-components").then(mod => ({ default: mod.ShimmerButton })), { ssr: false });
+const Meteors = dynamic(() => import("@/components/ui/magic-components").then(mod => ({ default: mod.Meteors })), { ssr: false });
+const Particles = dynamic(() => import("@/components/ui/magic-components").then(mod => ({ default: mod.Particles })), { ssr: false });
+const Globe = dynamic(() => import("@/components/ui/magic-components").then(mod => ({ default: mod.Globe })), { ssr: false });
+const ClientCalendar = dynamic(() => import("@/components/ui/client-calendar").then(mod => ({ default: mod.ClientCalendar })), { ssr: false });
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -182,82 +173,66 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const ctx = gsap.context(() => {
-      // Smooth 120fps animations with will-change optimization
-      gsap.defaults({ ease: "power4.out", duration: 1 });
+    // Use requestIdleCallback for non-critical animations
+    const initAnimations = () => {
+      const ctx = gsap.context(() => {
+        // 120fps optimized settings - use transform and opacity only (GPU accelerated)
+        gsap.defaults({ 
+          ease: "power3.out", 
+          duration: 0.6,
+          force3D: true,  // Force GPU acceleration
+        });
 
-      // Hero entrance - staggered reveal
-      const heroTl = gsap.timeline();
-      heroTl
-        .fromTo('.hero-tag', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 })
-        .fromTo('.hero-title-line', { y: 80, opacity: 0, skewY: 3 }, { y: 0, opacity: 1, skewY: 0, stagger: 0.15, duration: 1 }, '-=0.5')
-        .fromTo('.hero-desc', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, '-=0.6')
-        .fromTo('.hero-cta', { y: 30, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, stagger: 0.1, duration: 0.6 }, '-=0.5')
-        .fromTo('.hero-proof', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, '-=0.3')
-        .fromTo('.hero-visual', { scale: 0.8, opacity: 0, rotateY: -15 }, { scale: 1, opacity: 1, rotateY: 0, duration: 1.2 }, '-=1');
+        // Hero entrance - optimized with shorter durations
+        const heroTl = gsap.timeline({ defaults: { force3D: true } });
+        heroTl
+          .fromTo('.hero-tag', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 })
+          .fromTo('.hero-title-line', { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.5 }, '-=0.2')
+          .fromTo('.hero-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, '-=0.3')
+          .fromTo('.hero-cta', { y: 15, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.05, duration: 0.3 }, '-=0.2')
+          .fromTo('.hero-proof', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3 }, '-=0.1')
+          .fromTo('.hero-visual', { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6 }, '-=0.4');
 
-      // Floating orbs animation
-      gsap.to('.orb-1', { y: -30, x: 20, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to('.orb-2', { y: 25, x: -15, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to('.orb-3', { y: -20, x: -25, duration: 3.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        // Simplified orb animations - CSS will handle most of it
+        gsap.to('.orb-1', { y: -20, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to('.orb-2', { y: 15, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" });
 
-      // Stats counter animation
-      gsap.fromTo('.stat-card',
-        { y: 60, opacity: 0 },
-        {
-          y: 0, opacity: 1, stagger: 0.1, duration: 0.8, ease: "power3.out",
-          scrollTrigger: { trigger: '.stats-section', start: 'top 80%' }
-        }
-      );
+        // Optimized scroll triggers with lazy: true for better performance
+        ScrollTrigger.batch('.stat-card', {
+          onEnter: (elements) => gsap.fromTo(elements, { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.05, duration: 0.4 }),
+          start: 'top 85%',
+          once: true
+        });
 
-      // Services cards with 3D effect
-      gsap.fromTo('.service-card',
-        { y: 100, opacity: 0, rotateX: -15 },
-        {
-          y: 0, opacity: 1, rotateX: 0, stagger: 0.12, duration: 0.9,
-          scrollTrigger: { trigger: '.services-section', start: 'top 75%' }
-        }
-      );
+        ScrollTrigger.batch('.service-card', {
+          onEnter: (elements) => gsap.fromTo(elements, { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.06, duration: 0.4 }),
+          start: 'top 85%',
+          once: true
+        });
 
-      // Features reveal
-      gsap.fromTo('.feature-row',
-        { x: -80, opacity: 0 },
-        {
-          x: 0, opacity: 1, stagger: 0.15, duration: 0.8,
-          scrollTrigger: { trigger: '.features-section', start: 'top 70%' }
-        }
-      );
+        // Final CTA - simple fade
+        gsap.fromTo('.final-cta > *',
+          { y: 20, opacity: 0 },
+          {
+            y: 0, opacity: 1, stagger: 0.08, duration: 0.4,
+            scrollTrigger: { trigger: '.final-cta', start: 'top 85%', once: true }
+          }
+        );
 
-      // CTA panel slide up
-      gsap.fromTo('.cta-panel',
-        { y: 80, opacity: 0, scale: 0.95 },
-        {
-          y: 0, opacity: 1, scale: 1, duration: 1,
-          scrollTrigger: { trigger: '.features-section', start: 'top 50%' }
-        }
-      );
+      }, mainRef);
 
-      // Testimonials stagger
-      gsap.fromTo('.review-card',
-        { y: 60, opacity: 0 },
-        {
-          y: 0, opacity: 1, stagger: 0.2, duration: 0.8,
-          scrollTrigger: { trigger: '.reviews-section', start: 'top 75%' }
-        }
-      );
+      return ctx;
+    };
 
-      // Final CTA
-      gsap.fromTo('.final-cta > *',
-        { y: 50, opacity: 0 },
-        {
-          y: 0, opacity: 1, stagger: 0.15, duration: 0.8,
-          scrollTrigger: { trigger: '.final-cta', start: 'top 80%' }
-        }
-      );
+    // Defer non-critical animations
+    let ctx: gsap.Context | null = null;
+    if ('requestIdleCallback' in window) {
+      (window as Window).requestIdleCallback(() => { ctx = initAnimations(); }, { timeout: 100 });
+    } else {
+      ctx = initAnimations();
+    }
 
-    }, mainRef);
-
-    return () => ctx.revert();
+    return () => ctx?.revert();
   }, []);
 
   return (
@@ -266,7 +241,7 @@ export default function Home() {
 
       <main>
         {/* HERO - With Animated Grid Background */}
-        <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+        <section className="relative min-h-[90vh] flex items-center overflow-hidden max-w-full">
           {/* Light gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/50" />
 
@@ -281,11 +256,11 @@ export default function Home() {
           {/* Interactive Glow Effect */}
           <InteractiveGlow />
 
-          {/* Subtle decorative orbs */}
-          <div className="orb-1 absolute top-20 right-[10%] w-[400px] h-[400px] bg-gradient-to-r from-blue-200/40 to-cyan-200/40 rounded-full blur-[80px] animate-glow-pulse" />
-          <div className="orb-2 absolute bottom-20 left-[10%] w-[300px] h-[300px] bg-gradient-to-r from-teal-200/30 to-emerald-200/30 rounded-full blur-[60px] animate-glow-pulse" style={{ animationDelay: '2s' }} />
+          {/* Subtle decorative orbs - responsive sizes */}
+          <div className="orb-1 absolute top-20 right-[5%] md:right-[10%] w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-gradient-to-r from-blue-200/40 to-cyan-200/40 rounded-full blur-[80px] animate-glow-pulse" />
+          <div className="orb-2 absolute bottom-20 left-[5%] md:left-[10%] w-[150px] md:w-[300px] h-[150px] md:h-[300px] bg-gradient-to-r from-teal-200/30 to-emerald-200/30 rounded-full blur-[60px] animate-glow-pulse" style={{ animationDelay: '2s' }} />
 
-          <div className="w-full max-w-[1200px] mx-auto px-6 lg:px-12 relative z-10 py-32">
+          <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10 py-16 md:py-32">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               {/* Left Content */}
               <div className="space-y-8">
@@ -295,10 +270,10 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-2">
-                  <h1 className="hero-title-line text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight font-[family-name:var(--font-poppins)]">
+                  <h1 className="hero-title-line text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight font-[family-name:var(--font-poppins)]">
                     Elevate Your
                   </h1>
-                  <h1 className="hero-title-line text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight font-[family-name:var(--font-poppins)]">
+                  <h1 className="hero-title-line text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight font-[family-name:var(--font-poppins)]">
                     <Typewriter
                       words={['Performance', 'Wellness', 'Health']}
                       className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent"
@@ -307,12 +282,12 @@ export default function Home() {
                       delayBetweenWords={2500}
                     />
                   </h1>
-                  <h1 className="hero-title-line text-3xl sm:text-4xl lg:text-5xl font-semibold text-gray-600 leading-[1.15] font-[family-name:var(--font-poppins)]">
+                  <h1 className="hero-title-line text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-600 leading-[1.15] font-[family-name:var(--font-poppins)]">
                     & <Highlighter action="underline" color="#3b82f6" strokeWidth={3} animationDuration={800} isView>Recovery</Highlighter>
                   </h1>
                 </div>
 
-                <p className="hero-desc text-lg text-gray-600 max-w-lg leading-relaxed font-[family-name:var(--font-poppins)]">
+                <p className="hero-desc text-base md:text-lg text-gray-600 max-w-lg leading-relaxed font-[family-name:var(--font-poppins)]">
                   World-class{' '}
                   <Highlighter action="highlight" color="#dbeafe" animationDuration={600} isView>
                     <span className="text-blue-600 font-medium">Sports Rehabilitation</span>
@@ -321,7 +296,7 @@ export default function Home() {
                   Trusted by <span className="text-gray-900 font-medium">10,000+ athletes</span> across India.
                 </p>
 
-                <div className="hero-cta flex flex-col sm:flex-row gap-4 pt-2">
+                <div className="hero-cta flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                   <Button size="lg" className="h-14 px-8 text-sm font-semibold bg-blue-600 hover:bg-blue-700 border-0 shadow-lg shadow-blue-600/25 transition-all duration-300 font-[family-name:var(--font-poppins)]" asChild>
                     <Link href="/booking">
                       Book Appointment
@@ -577,8 +552,8 @@ export default function Home() {
         </section>
 
         {/* SERVICES SECTION - Professional Clean Design */}
-        <section className="relative py-28 bg-white overflow-hidden">
-          <div className="max-w-[1200px] mx-auto px-6 lg:px-12 relative z-10">
+        <section className="relative py-16 md:py-28 bg-white overflow-hidden">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
             <div className="text-center mb-16">
               {/* <p className="text-[13px] text-cyan-600 font-medium mb-3">Our Services</p> */}
               <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-4 leading-tight tracking-tight">
@@ -593,7 +568,7 @@ export default function Home() {
             </div>
 
             {/* Services Grid - Clean Professional Layout */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Sports Rehabilitation */}
               <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
                 <div className="grid md:grid-cols-2">
@@ -716,7 +691,7 @@ export default function Home() {
 
         {/* FEATURES & BENEFITS - Dark Theme with CardSwap */}
         <section
-          className="features-section relative py-24 overflow-visible"
+          className="features-section relative py-24 overflow-hidden"
           style={{
             background: `linear-gradient(to right, rgba(15, 23, 42, 0.97) 0%, rgba(15, 23, 42, 0.85) 50%, rgba(15, 23, 42, 0.7) 100%), url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=2070&q=80')`,
             backgroundSize: 'cover',
@@ -724,15 +699,15 @@ export default function Home() {
           }}
         >
           {/* Subtle gradient blobs */}
-          <div className="absolute top-20 left-20 w-[400px] h-[400px] bg-gradient-to-br from-cyan-500/10 to-teal-500/5 rounded-full blur-[100px]" />
-          <div className="absolute bottom-20 right-20 w-[350px] h-[350px] bg-gradient-to-br from-blue-500/10 to-cyan-500/5 rounded-full blur-[100px]" />
+          <div className="absolute top-20 left-10 md:left-20 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-gradient-to-br from-cyan-500/10 to-teal-500/5 rounded-full blur-[100px]" />
+          <div className="absolute bottom-20 right-10 md:right-20 w-[175px] md:w-[350px] h-[175px] md:h-[350px] bg-gradient-to-br from-blue-500/10 to-cyan-500/5 rounded-full blur-[100px]" />
 
-          {/* CardSwap Container - positioned at bottom right */}
-          <div className="absolute inset-0 overflow-visible pointer-events-none hidden lg:block">
+          {/* CardSwap Container - positioned at bottom right - hidden on mobile/tablet */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none hidden xl:block">
             <div className="relative w-full h-full pointer-events-auto">
               <CardSwap
-                width={720}
-                height={480}
+                width={600}
+                height={400}
                 cardDistance={65}
                 verticalDistance={75}
                 delay={5000}
@@ -1509,8 +1484,8 @@ export default function Home() {
         </section>
 
         {/* BLOG SECTION - Bento Grid Layout */}
-        <section className="relative py-24 bg-white overflow-hidden">
-          <div className="max-w-[1200px] mx-auto px-6 lg:px-12">
+        <section className="relative py-16 md:py-24 bg-white overflow-hidden">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-16">
               {/* <p className="text-[13px] text-cyan-500 mb-3">Our Blogs</p> */}
               <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-4 leading-tight tracking-tight">
@@ -1523,9 +1498,9 @@ export default function Home() {
             </div>
 
             {/* Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {/* Large Card - Left */}
-              <Link href="/blog/physiotherapy-benefits" className="md:col-span-2 group">
+              <Link href="/blog/physiotherapy-benefits" className="sm:col-span-2 group">
                 <div className="relative h-[320px] rounded-2xl overflow-hidden bg-cyan-50 p-6 flex flex-col justify-between transition-all hover:shadow-lg">
                   <div>
                     <h3 className="text-[22px] font-medium text-gray-900 mb-3 leading-tight max-w-md">
@@ -1737,8 +1712,8 @@ export default function Home() {
         </section>
 
         {/* CONTACT FORM SECTION - shadcn/studio style */}
-        <section className="relative py-24 bg-white overflow-hidden">
-          <div className="max-w-[1200px] mx-auto px-6 lg:px-12 relative z-10">
+        <section className="relative py-16 md:py-24 bg-white overflow-hidden">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
             <div className="text-center mb-12">
               {/* <p className="text-[13px] text-cyan-500 mb-3">Contact Us</p> */}
               <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-4 leading-tight tracking-tight">
@@ -1824,7 +1799,7 @@ export default function Home() {
                   />
                 </div>
                 {/* Floating stats card */}
-                <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-5 shadow-xl border border-gray-100">
+                <div className="absolute -bottom-6 left-0 md:-left-6 bg-white rounded-2xl p-4 md:p-5 shadow-xl border border-gray-100">
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
                       <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=Doc1&backgroundColor=b6e3f4" alt="" className="w-9 h-9 rounded-full border-2 border-white" />

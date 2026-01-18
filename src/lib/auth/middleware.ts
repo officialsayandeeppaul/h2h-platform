@@ -75,8 +75,19 @@ export async function authMiddleware(request: NextRequest) {
     }
   );
 
-  // Get current user
-  const { data: { user }, error } = await supabase.auth.getUser();
+  // Get current user - wrapped in try-catch to handle network failures gracefully
+  let user = null;
+  let error = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+    error = result.error;
+  } catch (e) {
+    // Network error (fetch failed) - treat as unauthenticated
+    // This commonly happens in Edge Runtime when Supabase is unreachable
+    console.warn('Middleware: Failed to fetch user session:', e);
+    error = e;
+  }
 
   // Check if route is public
   const isPublicRoute = PUBLIC_ROUTES.some(route => 

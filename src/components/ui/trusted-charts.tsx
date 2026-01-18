@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { 
   AreaChart, 
   Area, 
@@ -44,6 +45,12 @@ const recoveryTimeData = [
 ];
 
 export function TrustedByThousandsSection() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <section className="relative py-20 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
       <DotPattern className="opacity-20" color="#94a3b8" cr={1} />
@@ -78,46 +85,48 @@ export function TrustedByThousandsSection() {
             </div>
             {/* Recharts Area Chart */}
             <div className="h-48 w-full min-w-0">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                <AreaChart data={patientGrowthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="patientGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                  <XAxis 
-                    dataKey="month" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
-                    tickFormatter={(value) => `${value / 1000}K`}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1f2937', 
-                      border: 'none', 
-                      borderRadius: '12px',
-                      color: '#fff',
-                      fontSize: '12px'
-                    }}
-                    formatter={(value) => [`${Number(value).toLocaleString()} patients`, 'Total']}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="patients" 
-                    stroke="#06b6d4" 
-                    strokeWidth={3}
-                    fill="url(#patientGradient)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  <AreaChart data={patientGrowthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="patientGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                    <XAxis 
+                      dataKey="month" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
+                      tickFormatter={(value) => `${value / 1000}K`}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1f2937', 
+                        border: 'none', 
+                        borderRadius: '12px',
+                        color: '#fff',
+                        fontSize: '12px'
+                      }}
+                      formatter={(value) => [`${Number(value).toLocaleString()} patients`, 'Total']}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="patients" 
+                      stroke="#06b6d4" 
+                      strokeWidth={3}
+                      fill="url(#patientGradient)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
           
@@ -137,47 +146,49 @@ export function TrustedByThousandsSection() {
             </div>
             {/* Recharts Line Chart - Decreasing */}
             <div className="h-48 w-full min-w-0">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                <AreaChart data={recoveryTimeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="recoveryGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                  <XAxis 
-                    dataKey="week" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
-                    tickFormatter={(value) => `${value}%`}
-                    domain={[50, 100]}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1f2937', 
-                      border: 'none', 
-                      borderRadius: '12px',
-                      color: '#fff',
-                      fontSize: '12px'
-                    }}
-                    formatter={(value) => [`${Number(value)}% of average time`, 'Recovery']}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="time" 
-                    stroke="#14b8a6" 
-                    strokeWidth={3}
-                    fill="url(#recoveryGradient)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  <AreaChart data={recoveryTimeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="recoveryGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                    <XAxis 
+                      dataKey="week" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
+                      tickFormatter={(value) => `${value}%`}
+                      domain={[50, 100]}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1f2937', 
+                        border: 'none', 
+                        borderRadius: '12px',
+                        color: '#fff',
+                        fontSize: '12px'
+                      }}
+                      formatter={(value) => [`${Number(value)}% of average time`, 'Recovery']}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="time" 
+                      stroke="#14b8a6" 
+                      strokeWidth={3}
+                      fill="url(#recoveryGradient)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         </div>

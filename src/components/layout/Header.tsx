@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { Menu, X, Phone, ChevronDown, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,10 +31,17 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -72,7 +79,7 @@ export function Header() {
         </Marquee>
       </div>
 
-      <header className={`fixed top-[30px] left-0 right-0 z-50 transition-all duration-300 ${
+      <header className={`fixed top-[30px] left-0 right-0 z-50 transition-[background-color,box-shadow] duration-200 ease-out will-change-[background-color] ${
         scrolled 
           ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100' 
           : 'bg-white/80 backdrop-blur-sm'
@@ -164,8 +171,7 @@ export function Header() {
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200">
+        <div className={`lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 transition-all duration-200 ease-out transform-gpu ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
             <nav className="flex flex-col p-4 gap-1 max-w-[1200px] mx-auto">
               {navigation.map((item) => (
                 <Link
@@ -197,7 +203,6 @@ export function Header() {
               </div>
             </nav>
           </div>
-        )}
       </div>
     </header>
     </>
