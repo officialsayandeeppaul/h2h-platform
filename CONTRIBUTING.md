@@ -125,6 +125,21 @@ git push origin feature/<team>/<feature-name>
 
 ---
 
+## Vercel Deployments
+
+Each branch automatically deploys to Vercel with preview URLs:
+
+| Branch | Environment | URL Pattern |
+|--------|-------------|-------------|
+| `main` | **Production** | `https://h2h-platform.vercel.app` |
+| `develop` | Staging | `https://h2h-platform-git-develop-*.vercel.app` |
+| `dev/backend` | Backend Preview | `https://h2h-platform-git-dev-backend-*.vercel.app` |
+| `dev/frontend` | Frontend Preview | `https://h2h-platform-git-dev-frontend-*.vercel.app` |
+
+**Every push triggers automatic deployment** - check the Vercel dashboard or GitHub PR for preview links.
+
+---
+
 ## Questions?
 
 Contact the team lead before making any changes to `main` or `develop` branches.
