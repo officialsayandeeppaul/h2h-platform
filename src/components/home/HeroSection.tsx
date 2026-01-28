@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -14,12 +15,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { avatarUrls } from './data';
 
+// Animated words for cycling
+const animatedWords = ['Performance', 'Wellness', 'Strength', 'Health', 'Vitality'];
+
 // Lazy load heavy visual components
 const AnimatedGridPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.AnimatedGridPattern })), { ssr: false });
 const OrbitingCircles = dynamic(() => import("@/components/ui/magic-components").then(m => ({ default: m.OrbitingCircles })), { ssr: false });
 const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
 
 export function HeroSection() {
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentWordIndex((prev) => (prev + 1) % animatedWords.length);
+        setIsAnimating(false);
+      }, 300);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden max-w-full">
       {/* Light gradient background - CSS only, no JS */}
@@ -46,15 +64,24 @@ export function HeroSection() {
               <span className="text-sm text-blue-700 font-medium">#1 Healthcare Platform in India</span>
             </div>
 
-            <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight">
+            <div className="space-y-1 sm:space-y-2">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.05] tracking-tight">
                 Elevate Your
               </h1>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
-                <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">Performance</span>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight overflow-hidden">
+                <span 
+                  className={`inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent transition-all duration-300 ease-out ${
+                    isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
+                  }`}
+                >
+                  {animatedWords[currentWordIndex]}
+                </span>
               </h1>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-600 leading-[1.15]">
-                & <span className="underline decoration-blue-500 decoration-2 underline-offset-4">Recovery</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-600 leading-[1.1]">
+                & <span className="relative inline-block">
+                  <span className="relative z-10">Recovery</span>
+                  <span className="absolute bottom-1 left-0 w-full h-3 bg-gradient-to-r from-blue-200 to-cyan-200 -z-0 rounded-sm" />
+                </span>
               </h1>
             </div>
 
