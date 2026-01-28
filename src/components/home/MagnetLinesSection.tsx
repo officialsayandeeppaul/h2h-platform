@@ -1,8 +1,6 @@
 'use client';
 
-import dynamic from "next/dynamic";
-
-const MagnetLines = dynamic(() => import("@/components/ui/magnet-lines"), { ssr: false });
+import MagnetLines from "@/components/ui/magnet-lines";
 
 export function MagnetLinesSection() {
   return (

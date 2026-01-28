@@ -1,13 +1,10 @@
 'use client';
 
-import dynamic from "next/dynamic";
 import { CheckCircle2, Play, Sparkles, Users, Award } from "lucide-react";
 import { loreleiAvatars } from './data';
-
-// Lazy load heavy components
-const DotPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.DotPattern })), { ssr: false });
-const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
-const HeroVideoDialog = dynamic(() => import("@/components/ui/hero-video-dialog").then(mod => ({ default: mod.HeroVideoDialog })), { ssr: false });
+import { DotPattern } from "@/components/ui/backgrounds";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
+import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
 
 export function VideoSection() {
   return (
@@ -25,7 +22,7 @@ export function VideoSection() {
             <Play className="w-3.5 h-3.5 text-blue-600" />
             <span className="text-xs font-medium text-blue-700">Watch Our Story</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">
+          <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-3 leading-tight">
             Transforming Lives Through{' '}
             <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Expert Care</span>
           </h2>

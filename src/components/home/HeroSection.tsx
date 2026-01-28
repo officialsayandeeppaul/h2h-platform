@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
   Activity,
   Heart,
@@ -14,14 +13,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { avatarUrls } from './data';
+import { AnimatedGridPattern } from "@/components/ui/backgrounds";
+import { OrbitingCircles } from "@/components/ui/magic-components";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
 
 // Animated words for cycling
 const animatedWords = ['Performance', 'Wellness', 'Strength', 'Health', 'Vitality'];
-
-// Lazy load heavy visual components
-const AnimatedGridPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.AnimatedGridPattern })), { ssr: false });
-const OrbitingCircles = dynamic(() => import("@/components/ui/magic-components").then(m => ({ default: m.OrbitingCircles })), { ssr: false });
-const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
 
 export function HeroSection() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -70,7 +67,7 @@ export function HeroSection() {
   }, [currentWordIndex, isTyping, isMounted]);
 
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden max-w-full pt-16 lg:pt-12">
+    <section className="relative min-h-[75vh] flex items-center overflow-hidden max-w-full pt-16 lg:pt-0">
       {/* Light gradient background - CSS only, no JS */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/50" />
 

@@ -1,13 +1,10 @@
 'use client';
 
-import dynamic from "next/dynamic";
 import { Activity, Heart, MapPin } from "lucide-react";
 import { Highlighter } from "@/components/ui/highlighter";
 import { AnimatedList } from "@/components/ui/animated-list";
 import { features } from './data';
-
-const CardSwap = dynamic(() => import("@/components/ui/card-swap").then(mod => ({ default: mod.default })), { ssr: false });
-const Card = dynamic(() => import("@/components/ui/card-swap").then(mod => ({ default: mod.Card })), { ssr: false });
+import CardSwap, { Card } from "@/components/ui/card-swap";
 
 export function FeaturesSection() {
   const borderColors = ['border-l-cyan-500', 'border-l-teal-500', 'border-l-blue-500', 'border-l-emerald-500'];
