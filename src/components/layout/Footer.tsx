@@ -20,11 +20,10 @@ export function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2 mb-5">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/h2hwebsitelogo.png"
                 alt="H2H Healthcare"
-                width={140}
-                height={40}
                 className="h-10 w-auto object-contain brightness-0 invert"
               />
             </Link>

@@ -95,20 +95,20 @@ export function HeroSection() {
               <span className="text-sm text-blue-700 font-medium">#1 Healthcare Platform in India</span>
             </div>
 
-            <div className="space-y-1 sm:space-y-2">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.05] tracking-tight">
+            <div className="space-y-0">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
                 Elevate Your
               </h1>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight overflow-hidden min-h-[1.2em]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight min-h-[1.3em]">
                 <span className="inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
                   {isMounted ? displayText : animatedWords[0]}
-                  <span className="animate-pulse">|</span>
+                  <span className="text-blue-500 animate-pulse font-light">|</span>
                 </span>
               </h1>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-600 leading-[1.1]">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-600 leading-tight">
                 & <span className="relative inline-block">
                   <span className="relative z-10">Recovery</span>
-                  <span className="absolute bottom-1 left-0 w-full h-3 bg-gradient-to-r from-blue-200 to-cyan-200 -z-0 rounded-sm" />
+                  <span className="absolute bottom-0.5 left-0 w-full h-2 sm:h-3 bg-gradient-to-r from-blue-200 to-cyan-200 -z-0 rounded-sm" />
                 </span>
               </h1>
             </div>

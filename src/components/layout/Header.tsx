@@ -89,14 +89,11 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/h2hwebsitelogo.png"
               alt="H2H Healthcare"
-              width={160}
-              height={45}
               className="h-9 sm:h-10 w-auto object-contain"
-              priority
-              unoptimized
             />
           </Link>
 
