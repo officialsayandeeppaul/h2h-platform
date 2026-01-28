@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from "next/dynamic";
 import { Header, Footer } from "@/components/layout";
 
@@ -15,13 +15,6 @@ import {
   FeaturesSection,
   WhyH2HSection,
 } from "@/components/home";
-
-// Preload function - starts loading in background
-const preloadSection = (importFn: () => Promise<unknown>) => {
-  if (typeof window !== 'undefined') {
-    importFn();
-  }
-};
 
 // DEFERRED: These load after first paint, preloaded in background
 const CaseStudiesSection = dynamic(() => import("@/components/home/CaseStudiesSection").then(m => ({ default: m.CaseStudiesSection })), { ssr: false });
