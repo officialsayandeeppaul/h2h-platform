@@ -2,7 +2,7 @@
 
 export function BottomFeaturesSection() {
   return (
-    <section className="relative py-16 bg-gray-950 overflow-hidden border-t border-gray-800/30">
+    <section className="relative py-16 bg-gray-950 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(20,184,166,0.05),transparent_50%)]" />
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 relative z-10">
         <div className="grid md:grid-cols-4 gap-6">
