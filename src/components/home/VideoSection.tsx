@@ -47,7 +47,7 @@ export function VideoSection() {
               Experience world-class physiotherapy and rehabilitation services designed to help you achieve your health goals faster.
             </p>
 
-            <div className="flex items-center gap-4 mb-8 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4 mb-8">
               <AvatarCircles
                 numPeople={1000}
                 avatarUrls={loreleiAvatars}
@@ -59,15 +59,15 @@ export function VideoSection() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200/50 shadow-sm">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50">
                 <CheckCircle2 className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-semibold text-blue-700">Expert Care</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-50 to-cyan-100/50 border border-cyan-200/50 shadow-sm">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-cyan-50">
                 <Users className="w-4 h-4 text-cyan-600" />
                 <span className="text-sm font-semibold text-cyan-700">Home Visits</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200/50 shadow-sm">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-50">
                 <Award className="w-4 h-4 text-emerald-600" />
                 <span className="text-sm font-semibold text-emerald-700">Certified</span>
               </div>

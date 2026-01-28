@@ -6,14 +6,14 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Header, Footer } from "@/components/layout";
 
-// Critical sections - load immediately (first 6 sections for good initial view)
+// Critical sections - load immediately
 import {
   HeroSection,
   TrustedBySection,
   StatsSection,
   ServicesSection,
-  LazySection,
 } from "@/components/home";
+
 
 // Lazy load remaining sections
 const VideoSection = dynamic(() => import("@/components/home/VideoSection").then(m => ({ default: m.VideoSection })), { ssr: false, loading: () => <SectionSkeleton /> });
@@ -106,75 +106,24 @@ export default function Home() {
         <FeaturesSection />
         <WhyH2HSection />
 
-        {/* Remaining sections - lazy loaded on scroll */}
-
-        <LazySection>
-          <CaseStudiesSection />
-        </LazySection>
-
-        <LazySection>
-          <BottomFeaturesSection />
-        </LazySection>
-
-        <LazySection>
-          <HowItWorksSection />
-        </LazySection>
-
-        <LazySection>
-          <TrustedByThousandsSection />
-        </LazySection>
-
-        <LazySection>
-          <AnimatedTestimonials />
-        </LazySection>
-
-        <LazySection>
-          <FounderSection />
-        </LazySection>
-
-        <LazySection>
-          <TreatmentProcessSection />
-        </LazySection>
-
-        <LazySection>
-          <LocationsSection />
-        </LazySection>
-
-        <LazySection>
-          <TextPressureSection />
-        </LazySection>
-
-        <LazySection>
-          <BlogSection />
-        </LazySection>
-
-        <LazySection>
-          <GallerySection />
-        </LazySection>
-
-        <LazySection>
-          <GlobalReachSection />
-        </LazySection>
-
-        <LazySection>
-          <ContactSection />
-        </LazySection>
-
-        <LazySection>
-          <GridMotionSection />
-        </LazySection>
-
-        <LazySection>
-          <FinalCTASection />
-        </LazySection>
-
-        <LazySection>
-          <DownloadAppSection />
-        </LazySection>
-
-        <LazySection>
-          <HealToHealthSection />
-        </LazySection>
+        {/* All sections load immediately for smooth experience */}
+        <CaseStudiesSection />
+        <BottomFeaturesSection />
+        <HowItWorksSection />
+        <TrustedByThousandsSection />
+        <AnimatedTestimonials />
+        <FounderSection />
+        <TreatmentProcessSection />
+        <LocationsSection />
+        <TextPressureSection />
+        <BlogSection />
+        <GallerySection />
+        <GlobalReachSection />
+        <ContactSection />
+        <GridMotionSection />
+        <FinalCTASection />
+        <DownloadAppSection />
+        <HealToHealthSection />
       </main>
 
       <Footer />
