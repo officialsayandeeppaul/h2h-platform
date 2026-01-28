@@ -70,7 +70,7 @@ export function HeroSection() {
   }, [currentWordIndex, isTyping, isMounted]);
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden max-w-full pt-20">
+    <section className="relative min-h-[85vh] flex items-center overflow-hidden max-w-full pt-16 lg:pt-12">
       {/* Light gradient background - CSS only, no JS */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/50" />
 
