@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -15,45 +15,54 @@ import {
 import { Button } from "@/components/ui/button";
 import { avatarUrls } from './data';
 
-// These components use browser APIs - must be client-only
-const AnimatedGridPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.AnimatedGridPattern })), { ssr: false });
+// PERFORMANCE: Load heavy components only after initial render
 const OrbitingCircles = dynamic(() => import("@/components/ui/magic-components").then(m => ({ default: m.OrbitingCircles })), { ssr: false });
-const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
 
-// Animated words for cycling
+// Animated words for cycling - faster typing
 const animatedWords = ['Performance', 'Wellness', 'Strength', 'Health', 'Vitality'];
 
-export function HeroSection() {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [displayText, setDisplayText] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
+// Memoized avatar component for performance
+const AvatarStack = memo(function AvatarStack() {
+  return (
+    <div className="flex -space-x-2">
+      {avatarUrls.slice(0, 4).map((avatar, i) => (
+        <img key={i} src={avatar.imageUrl} alt="" className="w-8 h-8 rounded-full border-2 border-white object-cover" loading="eager" />
+      ))}
+      <div className="w-8 h-8 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-xs text-white font-medium">
+        +1k
+      </div>
+    </div>
+  );
+});
 
+function HeroSectionComponent() {
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [displayText, setDisplayText] = useState(animatedWords[0]);
+  const [isTyping, setIsTyping] = useState(true);
+  const [showOrbits, setShowOrbits] = useState(false);
+
+  // Show orbiting circles after 500ms for faster initial render
   useEffect(() => {
-    setIsMounted(true);
+    const timer = setTimeout(() => setShowOrbits(true), 500);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
-    
     const currentWord = animatedWords[currentWordIndex];
     let charIndex = 0;
     
     if (isTyping) {
-      // Typing effect
       const typeInterval = setInterval(() => {
         if (charIndex <= currentWord.length) {
           setDisplayText(currentWord.slice(0, charIndex));
           charIndex++;
         } else {
           clearInterval(typeInterval);
-          // Wait before erasing
-          setTimeout(() => setIsTyping(false), 1500);
+          setTimeout(() => setIsTyping(false), 1200);
         }
-      }, 80);
+      }, 60); // Faster typing
       return () => clearInterval(typeInterval);
     } else {
-      // Erasing effect
       let eraseIndex = currentWord.length;
       const eraseInterval = setInterval(() => {
         if (eraseIndex >= 0) {
@@ -64,23 +73,18 @@ export function HeroSection() {
           setCurrentWordIndex((prev) => (prev + 1) % animatedWords.length);
           setIsTyping(true);
         }
-      }, 50);
+      }, 40); // Faster erasing
       return () => clearInterval(eraseInterval);
     }
-  }, [currentWordIndex, isTyping, isMounted]);
+  }, [currentWordIndex, isTyping]);
 
   return (
     <section className="relative min-h-[75vh] flex items-center overflow-hidden max-w-full pt-16 lg:pt-0">
       {/* Light gradient background - CSS only, no JS */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/50" />
 
-      {/* Animated Grid Pattern - lazy loaded */}
-      <AnimatedGridPattern
-        className="opacity-30 [mask-image:radial-gradient(500px_circle_at_center,white,transparent)]"
-        numSquares={20}
-        maxOpacity={0.2}
-        color="#3b82f6"
-      />
+      {/* Simple CSS grid pattern - no JS */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #3b82f6 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
       {/* CSS-only decorative orbs - no JS animation */}
       <div className="absolute top-20 right-[10%] w-[300px] h-[300px] bg-gradient-to-r from-blue-200/30 to-cyan-200/30 rounded-full blur-[80px]" />
@@ -101,7 +105,7 @@ export function HeroSection() {
               </h1>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight min-h-[1.3em]">
                 <span className="inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
-                  {isMounted ? displayText : animatedWords[0]}
+                  {displayText}
                   <span className="text-blue-500 animate-pulse font-light">|</span>
                 </span>
               </h1>
@@ -133,10 +137,7 @@ export function HeroSection() {
             </div>
 
             <div className="flex items-center gap-6 pt-4">
-              <AvatarCircles
-                numPeople={1000}
-                avatarUrls={avatarUrls}
-              />
+              <AvatarStack />
               <div>
                 <div className="flex items-center gap-1 mb-0.5">
                   {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-cyan-400 text-cyan-400" />)}
@@ -159,20 +160,23 @@ export function HeroSection() {
                 <p className="text-sm text-gray-500">Complete Care</p>
               </div>
 
-              {/* Orbiting Circles - lazy loaded */}
-              <OrbitingCircles radius={140} duration={30} delay={0} className="h-12 w-12 border-none bg-gradient-to-br from-blue-500 to-cyan-500 shadow-xl">
-                <Heart className="w-6 h-6 text-white" />
-              </OrbitingCircles>
-              <OrbitingCircles radius={140} duration={30} delay={15} className="h-12 w-12 border-none bg-gradient-to-br from-emerald-500 to-teal-500 shadow-xl">
-                <Leaf className="w-6 h-6 text-white" />
-              </OrbitingCircles>
-
-              <OrbitingCircles radius={200} duration={40} delay={0} reverse className="h-14 w-14 border-none bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl">
-                <Dumbbell className="w-7 h-7 text-white" />
-              </OrbitingCircles>
-              <OrbitingCircles radius={200} duration={40} delay={20} reverse className="h-14 w-14 border-none bg-gradient-to-br from-teal-500 to-emerald-500 shadow-xl">
-                <Trophy className="w-7 h-7 text-white" />
-              </OrbitingCircles>
+              {/* Orbiting Circles - deferred load for faster initial render */}
+              {showOrbits && (
+                <>
+                  <OrbitingCircles radius={140} duration={30} delay={0} className="h-12 w-12 border-none bg-gradient-to-br from-blue-500 to-cyan-500 shadow-xl">
+                    <Heart className="w-6 h-6 text-white" />
+                  </OrbitingCircles>
+                  <OrbitingCircles radius={140} duration={30} delay={15} className="h-12 w-12 border-none bg-gradient-to-br from-emerald-500 to-teal-500 shadow-xl">
+                    <Leaf className="w-6 h-6 text-white" />
+                  </OrbitingCircles>
+                  <OrbitingCircles radius={200} duration={40} delay={0} reverse className="h-14 w-14 border-none bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl">
+                    <Dumbbell className="w-7 h-7 text-white" />
+                  </OrbitingCircles>
+                  <OrbitingCircles radius={200} duration={40} delay={20} reverse className="h-14 w-14 border-none bg-gradient-to-br from-teal-500 to-emerald-500 shadow-xl">
+                    <Trophy className="w-7 h-7 text-white" />
+                  </OrbitingCircles>
+                </>
+              )}
 
               {/* Static Stats Cards - no animation */}
               <div className="absolute top-4 right-0 bg-white rounded-xl shadow-lg p-3 border border-gray-100">
@@ -190,3 +194,6 @@ export function HeroSection() {
     </section>
   );
 }
+
+// Export memoized version for better performance
+export const HeroSection = memo(HeroSectionComponent);
