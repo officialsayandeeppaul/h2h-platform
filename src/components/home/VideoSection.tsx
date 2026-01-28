@@ -77,17 +77,14 @@ export function VideoSection() {
           {/* Right - Video */}
           <div className="order-1 lg:order-2">
             <div className="relative">
-              {/* Decorative frame */}
-              <div className="absolute -inset-3 sm:-inset-4 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-teal-500/20 rounded-3xl blur-xl opacity-60" />
-              <div className="relative bg-white p-2 sm:p-3 rounded-2xl sm:rounded-3xl shadow-2xl shadow-blue-500/10 border border-gray-100">
-                <HeroVideoDialog
-                  animationStyle="from-center"
-                  videoSrc="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                  thumbnailSrc="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=450&fit=crop"
-                  thumbnailAlt="H2H Healthcare Video"
-                  className="rounded-xl sm:rounded-2xl overflow-hidden"
-                />
-              </div>
+              {/* Clean video container - no box styling */}
+              <HeroVideoDialog
+                animationStyle="from-center"
+                videoSrc="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                thumbnailSrc="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=450&fit=crop"
+                thumbnailAlt="H2H Healthcare Video"
+                className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg"
+              />
               
               {/* Floating stats - visible on all screens */}
               <div className="absolute -bottom-4 -left-2 sm:-bottom-6 sm:-left-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10">

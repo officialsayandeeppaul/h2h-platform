@@ -201,8 +201,11 @@ export function AnimatedTestimonials() {
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-950 to-transparent z-10 pointer-events-none" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-full">
-            <MarqueeColumn testimonials={col1} duration={22} />
-            <MarqueeColumn testimonials={col2} duration={26} reverse />
+            {/* Mobile: all columns scroll UP, Desktop: alternating */}
+            <MarqueeColumn testimonials={col1} duration={22} className="md:hidden" />
+            <MarqueeColumn testimonials={col1} duration={22} className="hidden md:flex" />
+            <MarqueeColumn testimonials={col2} duration={26} className="hidden md:flex lg:hidden" />
+            <MarqueeColumn testimonials={col2} duration={26} reverse className="hidden lg:flex" />
             <MarqueeColumn testimonials={col3} duration={20} className="hidden md:flex" />
             <MarqueeColumn testimonials={col4} duration={24} reverse className="hidden lg:flex" />
           </div>
