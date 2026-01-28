@@ -49,10 +49,10 @@ export function LazySection({
   }
 
   return (
-    <Suspense fallback={<div style={{ minHeight }} />}>
-      <div ref={ref} className={`${className} animate-fade-in`}>
+    <div ref={ref} className={`${className} animate-fade-in`}>
+      <Suspense fallback={<div style={{ minHeight }} />}>
         {children}
-      </div>
-    </Suspense>
+      </Suspense>
+    </div>
   );
 }

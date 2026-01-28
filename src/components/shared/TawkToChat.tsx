@@ -43,6 +43,10 @@ export function TawkToChat({
       script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
       script.charset = 'UTF-8';
       script.setAttribute('crossorigin', '*');
+      
+      script.onerror = () => {
+        console.warn('Tawk.to: Failed to load script');
+      };
 
       const firstScript = document.getElementsByTagName('script')[0];
       firstScript.parentNode?.insertBefore(script, firstScript);

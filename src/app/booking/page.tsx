@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Header, Footer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Confetti, ConfettiRef } from '@/components/ui/confetti';
+
+// Lazy load heavy components
+const Confetti = dynamic(() => import('@/components/ui/confetti').then(m => ({ default: m.Confetti })), { ssr: false });
+// Import the type inline
+type ConfettiRef = import('@/components/ui/confetti').ConfettiRef;
 import { 
   MapPin, 
   Clock, 

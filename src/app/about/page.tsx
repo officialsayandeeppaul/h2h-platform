@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Header, Footer } from '@/components/layout';
 import { Highlighter } from '@/components/ui/highlighter';
-import { StripedPattern } from '@/components/ui/striped-pattern';
 import { ArrowRight, ArrowUpRight, Play, CheckCircle2, ChevronsRight } from 'lucide-react';
+
+// Lazy load heavy components
+const StripedPattern = dynamic(() => import('@/components/ui/striped-pattern').then(m => ({ default: m.StripedPattern })), { ssr: false });
 
 const teamMembers = [
   {

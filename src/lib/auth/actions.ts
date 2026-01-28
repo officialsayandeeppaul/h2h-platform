@@ -47,7 +47,7 @@ export async function registerUser(
           phone: phone || null,
           role: 'patient' as UserRole,
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://beta.healtohealth.in'}/auth/callback?type=signup`,
       },
     });
 
@@ -209,7 +209,7 @@ export async function sendPasswordResetEmail(
     const { error } = await supabase.auth.resetPasswordForEmail(
       email.toLowerCase(),
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://beta.healtohealth.in'}/auth/callback?type=recovery`,
       }
     );
 
@@ -348,7 +348,7 @@ export async function resendVerificationEmail(
       type: 'signup',
       email: email.toLowerCase(),
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://beta.healtohealth.in'}/auth/callback?type=signup`,
       },
     });
 
@@ -382,10 +382,11 @@ export async function signInWithOAuth(
   try {
     const supabase = await createClient();
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://beta.healtohealth.in';
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`,
+        redirectTo: `${appUrl}/auth/callback${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
