@@ -101,21 +101,22 @@ export function HeroVideoDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsVideoOpen(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-md"
+            style={{ zIndex: 99999 }}
           >
             <motion.div
               {...selectedAnimation}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="relative w-full max-w-5xl aspect-video mx-4"
+              className="relative w-full max-w-5xl aspect-video mx-2 sm:mx-4 px-2 sm:px-0"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setIsVideoOpen(false)}
-                className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+                className="absolute -top-10 sm:-top-12 right-2 sm:right-0 text-white hover:text-gray-300 transition-colors z-10"
               >
-                <X className="w-8 h-8" />
+                <X className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
-              <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-black">
+              <div className="w-full h-full rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl bg-black">
                 <iframe
                   src={videoSrc}
                   className="w-full h-full"
