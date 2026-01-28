@@ -24,7 +24,7 @@ export function Footer() {
               <img
                 src="/h2hwebsitelogo.png"
                 alt="H2H Healthcare"
-                className="h-10 w-auto object-contain brightness-0 invert"
+                className="h-16 sm:h-20 w-auto object-contain brightness-0 invert"
               />
             </Link>
             <p className="text-[13px] text-gray-400 mb-6 leading-relaxed">

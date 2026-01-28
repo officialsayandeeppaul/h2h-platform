@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // Enable View Transitions for smooth page navigation
   experimental: {
     viewTransition: true,
+    optimizeCss: true,
   },
   // Optimize images with aggressive caching
   images: {
@@ -12,6 +13,12 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
+  // Enable compression
+  compress: true,
+  // Power by header removal for smaller response
+  poweredByHeader: false,
+  // Optimize production builds
+  productionBrowserSourceMaps: false,
   // Headers for caching static assets
   async headers() {
     return [

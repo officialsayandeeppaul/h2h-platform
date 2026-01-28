@@ -93,7 +93,7 @@ export function Header() {
             <img
               src="/h2hwebsitelogo.png"
               alt="H2H Healthcare"
-              className="h-12 sm:h-14 w-auto object-contain"
+              className="h-20 sm:h-32 w-auto object-contain"
             />
           </Link>
 
