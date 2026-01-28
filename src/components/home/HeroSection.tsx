@@ -25,18 +25,49 @@ const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").the
 
 export function HeroSection() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setCurrentWordIndex((prev) => (prev + 1) % animatedWords.length);
-        setIsAnimating(false);
-      }, 300);
-    }, 3000);
-    return () => clearInterval(interval);
+    setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    const currentWord = animatedWords[currentWordIndex];
+    let charIndex = 0;
+    
+    if (isTyping) {
+      // Typing effect
+      const typeInterval = setInterval(() => {
+        if (charIndex <= currentWord.length) {
+          setDisplayText(currentWord.slice(0, charIndex));
+          charIndex++;
+        } else {
+          clearInterval(typeInterval);
+          // Wait before erasing
+          setTimeout(() => setIsTyping(false), 1500);
+        }
+      }, 80);
+      return () => clearInterval(typeInterval);
+    } else {
+      // Erasing effect
+      let eraseIndex = currentWord.length;
+      const eraseInterval = setInterval(() => {
+        if (eraseIndex >= 0) {
+          setDisplayText(currentWord.slice(0, eraseIndex));
+          eraseIndex--;
+        } else {
+          clearInterval(eraseInterval);
+          setCurrentWordIndex((prev) => (prev + 1) % animatedWords.length);
+          setIsTyping(true);
+        }
+      }, 50);
+      return () => clearInterval(eraseInterval);
+    }
+  }, [currentWordIndex, isTyping, isMounted]);
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden max-w-full">
@@ -68,13 +99,10 @@ export function HeroSection() {
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.05] tracking-tight">
                 Elevate Your
               </h1>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight overflow-hidden">
-                <span 
-                  className={`inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent transition-all duration-300 ease-out ${
-                    isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
-                  }`}
-                >
-                  {animatedWords[currentWordIndex]}
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight overflow-hidden min-h-[1.2em]">
+                <span className="inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
+                  {isMounted ? displayText : animatedWords[0]}
+                  <span className="animate-pulse">|</span>
                 </span>
               </h1>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-gray-600 leading-[1.1]">
