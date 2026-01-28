@@ -26,8 +26,10 @@ const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").the
 export function HeroSection() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const interval = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
