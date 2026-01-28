@@ -1,94 +1,81 @@
 'use client';
 
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import dynamic from "next/dynamic";
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Header, Footer } from "@/components/layout";
 
-// Critical sections - load immediately
+// CRITICAL: First 8 sections - load immediately for instant render
 import {
   HeroSection,
   TrustedBySection,
   StatsSection,
   ServicesSection,
+  VideoSection,
+  MagnetLinesSection,
+  FeaturesSection,
+  WhyH2HSection,
 } from "@/components/home";
 
+// Preload function - starts loading in background
+const preloadSection = (importFn: () => Promise<unknown>) => {
+  if (typeof window !== 'undefined') {
+    importFn();
+  }
+};
 
-// Lazy load remaining sections
-const VideoSection = dynamic(() => import("@/components/home/VideoSection").then(m => ({ default: m.VideoSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const MagnetLinesSection = dynamic(() => import("@/components/home/MagnetLinesSection").then(m => ({ default: m.MagnetLinesSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const FeaturesSection = dynamic(() => import("@/components/home/FeaturesSection").then(m => ({ default: m.FeaturesSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const WhyH2HSection = dynamic(() => import("@/components/home/WhyH2HSection").then(m => ({ default: m.WhyH2HSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const CaseStudiesSection = dynamic(() => import("@/components/home/CaseStudiesSection").then(m => ({ default: m.CaseStudiesSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const BottomFeaturesSection = dynamic(() => import("@/components/home/BottomFeaturesSection").then(m => ({ default: m.BottomFeaturesSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const HowItWorksSection = dynamic(() => import("@/components/home/HowItWorksSection").then(m => ({ default: m.HowItWorksSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const FounderSection = dynamic(() => import("@/components/home/FounderSection").then(m => ({ default: m.FounderSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const TreatmentProcessSection = dynamic(() => import("@/components/home/TreatmentProcessSection").then(m => ({ default: m.TreatmentProcessSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const LocationsSection = dynamic(() => import("@/components/home/LocationsSection").then(m => ({ default: m.LocationsSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const TextPressureSection = dynamic(() => import("@/components/home/TextPressureSection").then(m => ({ default: m.TextPressureSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const BlogSection = dynamic(() => import("@/components/home/BlogSection").then(m => ({ default: m.BlogSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const GallerySection = dynamic(() => import("@/components/home/GallerySection").then(m => ({ default: m.GallerySection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const GlobalReachSection = dynamic(() => import("@/components/home/GlobalReachSection").then(m => ({ default: m.GlobalReachSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const ContactSection = dynamic(() => import("@/components/home/ContactSection").then(m => ({ default: m.ContactSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const GridMotionSection = dynamic(() => import("@/components/home/GridMotionSection").then(m => ({ default: m.GridMotionSection })), { ssr: false, loading: () => <SectionSkeleton dark /> });
-const FinalCTASection = dynamic(() => import("@/components/home/FinalCTASection").then(m => ({ default: m.FinalCTASection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const DownloadAppSection = dynamic(() => import("@/components/home/DownloadAppSection").then(m => ({ default: m.DownloadAppSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-const HealToHealthSection = dynamic(() => import("@/components/home/HealToHealthSection").then(m => ({ default: m.HealToHealthSection })), { ssr: false, loading: () => <SectionSkeleton /> });
-
-// Simple skeleton for loading states
-function SectionSkeleton({ dark = false }: { dark?: boolean }) {
-  return (
-    <div className={`py-24 ${dark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-      <div className="max-w-[1200px] mx-auto px-6">
-        <div className={`h-8 w-48 rounded ${dark ? 'bg-gray-800' : 'bg-gray-200'} mb-4 animate-pulse`} />
-        <div className={`h-4 w-96 rounded ${dark ? 'bg-gray-800' : 'bg-gray-200'} animate-pulse`} />
-      </div>
-    </div>
-  );
-}
-
-// Heavy chart/testimonial components
+// DEFERRED: These load after first paint, preloaded in background
+const CaseStudiesSection = dynamic(() => import("@/components/home/CaseStudiesSection").then(m => ({ default: m.CaseStudiesSection })), { ssr: false });
+const BottomFeaturesSection = dynamic(() => import("@/components/home/BottomFeaturesSection").then(m => ({ default: m.BottomFeaturesSection })), { ssr: false });
+const HowItWorksSection = dynamic(() => import("@/components/home/HowItWorksSection").then(m => ({ default: m.HowItWorksSection })), { ssr: false });
+const FounderSection = dynamic(() => import("@/components/home/FounderSection").then(m => ({ default: m.FounderSection })), { ssr: false });
+const TreatmentProcessSection = dynamic(() => import("@/components/home/TreatmentProcessSection").then(m => ({ default: m.TreatmentProcessSection })), { ssr: false });
+const LocationsSection = dynamic(() => import("@/components/home/LocationsSection").then(m => ({ default: m.LocationsSection })), { ssr: false });
+const TextPressureSection = dynamic(() => import("@/components/home/TextPressureSection").then(m => ({ default: m.TextPressureSection })), { ssr: false });
+const BlogSection = dynamic(() => import("@/components/home/BlogSection").then(m => ({ default: m.BlogSection })), { ssr: false });
+const GallerySection = dynamic(() => import("@/components/home/GallerySection").then(m => ({ default: m.GallerySection })), { ssr: false });
+const GlobalReachSection = dynamic(() => import("@/components/home/GlobalReachSection").then(m => ({ default: m.GlobalReachSection })), { ssr: false });
+const ContactSection = dynamic(() => import("@/components/home/ContactSection").then(m => ({ default: m.ContactSection })), { ssr: false });
+const GridMotionSection = dynamic(() => import("@/components/home/GridMotionSection").then(m => ({ default: m.GridMotionSection })), { ssr: false });
+const FinalCTASection = dynamic(() => import("@/components/home/FinalCTASection").then(m => ({ default: m.FinalCTASection })), { ssr: false });
+const DownloadAppSection = dynamic(() => import("@/components/home/DownloadAppSection").then(m => ({ default: m.DownloadAppSection })), { ssr: false });
+const HealToHealthSection = dynamic(() => import("@/components/home/HealToHealthSection").then(m => ({ default: m.HealToHealthSection })), { ssr: false });
 const TrustedByThousandsSection = dynamic(() => import("@/components/ui/trusted-charts").then(mod => ({ default: mod.TrustedByThousandsSection })), { ssr: false });
 const AnimatedTestimonials = dynamic(() => import("@/components/ui/animated-testimonials").then(mod => ({ default: mod.AnimatedTestimonials })), { ssr: false });
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
 export default function Home() {
   const mainRef = useRef<HTMLDivElement>(null);
+  const [showDeferred, setShowDeferred] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Use requestIdleCallback for non-critical animations
-    const initAnimations = () => {
-      const ctx = gsap.context(() => {
-        // Ultra-fast settings - minimal duration
-        gsap.defaults({ 
-          ease: "power1.out", 
-          duration: 0.2,
-          force3D: true,
-          overwrite: 'auto',
-        });
+    // LIGHTNING FAST: Show deferred sections after 100ms (after first paint)
+    const timer = setTimeout(() => {
+      setShowDeferred(true);
+    }, 100);
 
-        // Hero entrance - INSTANT feel
-        gsap.set(['.hero-tag', '.hero-title-line', '.hero-desc', '.hero-cta', '.hero-proof', '.hero-visual'], { opacity: 1, y: 0, scale: 1 });
-        
-        // Subtle orb float - use CSS animation instead for better perf
-        // gsap.to('.orb-1', { y: -15, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" });
-        // gsap.to('.orb-2', { y: 10, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut" });
+    // Preload all deferred sections in background immediately
+    requestIdleCallback(() => {
+      import("@/components/home/CaseStudiesSection");
+      import("@/components/home/BottomFeaturesSection");
+      import("@/components/home/HowItWorksSection");
+      import("@/components/home/FounderSection");
+      import("@/components/home/TreatmentProcessSection");
+      import("@/components/home/LocationsSection");
+      import("@/components/home/TextPressureSection");
+      import("@/components/home/BlogSection");
+      import("@/components/home/GallerySection");
+      import("@/components/home/GlobalReachSection");
+      import("@/components/home/ContactSection");
+      import("@/components/home/GridMotionSection");
+      import("@/components/home/FinalCTASection");
+      import("@/components/home/DownloadAppSection");
+      import("@/components/home/HealToHealthSection");
+      import("@/components/ui/trusted-charts");
+      import("@/components/ui/animated-testimonials");
+    });
 
-      }, mainRef);
-
-      return ctx;
-    };
-
-    // Run immediately
-    const ctx = initAnimations();
-
-    return () => ctx?.revert();
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -106,24 +93,28 @@ export default function Home() {
         <FeaturesSection />
         <WhyH2HSection />
 
-        {/* All sections load immediately for smooth experience */}
-        <CaseStudiesSection />
-        <BottomFeaturesSection />
-        <HowItWorksSection />
-        <TrustedByThousandsSection />
-        <AnimatedTestimonials />
-        <FounderSection />
-        <TreatmentProcessSection />
-        <LocationsSection />
-        <TextPressureSection />
-        <BlogSection />
-        <GallerySection />
-        <GlobalReachSection />
-        <ContactSection />
-        <GridMotionSection />
-        <FinalCTASection />
-        <DownloadAppSection />
-        <HealToHealthSection />
+        {/* DEFERRED: Load after first paint for lightning fast initial render */}
+        {showDeferred && (
+          <>
+            <CaseStudiesSection />
+            <BottomFeaturesSection />
+            <HowItWorksSection />
+            <TrustedByThousandsSection />
+            <AnimatedTestimonials />
+            <FounderSection />
+            <TreatmentProcessSection />
+            <LocationsSection />
+            <TextPressureSection />
+            <BlogSection />
+            <GallerySection />
+            <GlobalReachSection />
+            <ContactSection />
+            <GridMotionSection />
+            <FinalCTASection />
+            <DownloadAppSection />
+            <HealToHealthSection />
+          </>
+        )}
       </main>
 
       <Footer />
