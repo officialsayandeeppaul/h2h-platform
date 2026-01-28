@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient();
       
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const baseUrl = window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${baseUrl}/auth/callback?type=recovery`,
       });
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient();
       
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const baseUrl = window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(sentEmail, {
         redirectTo: `${baseUrl}/auth/callback?type=recovery`,
       });
@@ -87,12 +87,12 @@ export default function ForgotPasswordPage() {
         <div className="mx-auto w-full max-w-[420px]">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-10">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500">
-              <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-            </div>
-            <span className="font-semibold text-lg">H2H Healthcare</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/h2hwebsitelogo.png"
+              alt="H2H Healthcare"
+              className="h-16 w-auto object-contain"
+            />
           </Link>
 
           {!isEmailSent ? (
