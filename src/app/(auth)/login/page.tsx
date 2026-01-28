@@ -126,7 +126,7 @@ function LoginContent() {
             <img
               src="/h2hwebsitelogo.png"
               alt="H2H Healthcare"
-              className="h-16 w-auto object-contain"
+              className="h-24 w-auto object-contain"
             />
           </Link>
 
