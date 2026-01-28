@@ -96,22 +96,17 @@ export default function Home() {
       <Header />
 
       <main>
-        {/* CRITICAL: First 5 sections load immediately */}
+        {/* CRITICAL: First 8 sections load immediately */}
         <HeroSection />
         <VideoSection />
         <MagnetLinesSection />
         <TrustedBySection />
         <StatsSection />
         <ServicesSection />
+        <FeaturesSection />
+        <WhyH2HSection />
 
         {/* Remaining sections - lazy loaded on scroll */}
-        <LazySection>
-          <FeaturesSection />
-        </LazySection>
-
-        <LazySection>
-          <WhyH2HSection />
-        </LazySection>
 
         <LazySection>
           <CaseStudiesSection />
