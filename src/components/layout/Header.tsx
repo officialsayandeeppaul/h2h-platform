@@ -88,14 +88,15 @@ export function Header() {
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
             <Image
               src="/h2hwebsitelogo.png"
               alt="H2H Healthcare"
-              width={140}
-              height={40}
-              className="h-8 sm:h-10 w-auto object-contain"
+              width={160}
+              height={45}
+              className="h-9 sm:h-10 w-auto object-contain"
               priority
+              unoptimized
             />
           </Link>
 
@@ -139,10 +140,10 @@ export function Header() {
           <div className="flex items-center gap-3">
             <a
               href={`tel:${APP_CONFIG.phone}`}
-              className="hidden md:flex items-center gap-2 px-3 py-2 text-[13px] text-gray-500 hover:text-gray-700 rounded-lg transition-all"
+              className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] sm:text-[13px] text-gray-600 hover:text-blue-600 rounded-lg transition-all"
             >
-              <Phone className="h-4 w-4" />
-              <span className="hidden xl:inline">{APP_CONFIG.phone}</span>
+              <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">{APP_CONFIG.phone}</span>
             </a>
 
             <div className="hidden sm:flex items-center gap-2">
