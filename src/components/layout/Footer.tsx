@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail, Phone, MapPin, Activity } from 'lucide-react';
 import { APP_CONFIG } from '@/constants/config';
 import { SERVICE_CATEGORIES } from '@/constants/services';
@@ -18,11 +19,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-2.5 mb-5">
-              <div className="flex items-baseline gap-1">
-                <span className="text-[16px] font-medium text-white tracking-tight">H2H</span>
-                <span className="text-[14px] text-gray-400">Healthcare</span>
-              </div>
+            <Link href="/" className="flex items-center gap-2 mb-5">
+              <Image
+                src="/h2hwebsitelogo.png"
+                alt="H2H Healthcare"
+                width={140}
+                height={40}
+                className="h-10 w-auto object-contain brightness-0 invert"
+              />
             </Link>
             <p className="text-[13px] text-gray-400 mb-6 leading-relaxed">
               {APP_CONFIG.tagline}

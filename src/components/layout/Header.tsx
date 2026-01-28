@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect, useCallback, memo } from 'react';
 import { Menu, X, Phone, ChevronDown, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -87,11 +88,15 @@ export function Header() {
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="hidden sm:flex items-baseline gap-1">
-              <span className="text-[16px] font-medium text-gray-900 tracking-tight">H2H</span>
-              <span className="text-[14px] text-gray-500">Healthcare</span>
-            </div>
+          <Link href="/" className="flex items-center gap-2 group">
+            <Image
+              src="/h2hwebsitelogo.png"
+              alt="H2H Healthcare"
+              width={140}
+              height={40}
+              className="h-8 sm:h-10 w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
