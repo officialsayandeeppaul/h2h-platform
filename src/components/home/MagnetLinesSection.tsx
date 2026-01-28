@@ -1,6 +1,9 @@
 'use client';
 
-import MagnetLines from "@/components/ui/magnet-lines";
+import dynamic from "next/dynamic";
+
+// This component uses browser APIs - must be client-only
+const MagnetLines = dynamic(() => import("@/components/ui/magnet-lines"), { ssr: false });
 
 export function MagnetLinesSection() {
   return (

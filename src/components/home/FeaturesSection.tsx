@@ -1,10 +1,14 @@
 'use client';
 
+import dynamic from "next/dynamic";
 import { Activity, Heart, MapPin } from "lucide-react";
 import { Highlighter } from "@/components/ui/highlighter";
 import { AnimatedList } from "@/components/ui/animated-list";
 import { features } from './data';
-import CardSwap, { Card } from "@/components/ui/card-swap";
+
+// These components use browser APIs - must be client-only
+const CardSwap = dynamic(() => import("@/components/ui/card-swap").then(mod => ({ default: mod.default })), { ssr: false });
+const Card = dynamic(() => import("@/components/ui/card-swap").then(mod => ({ default: mod.Card })), { ssr: false });
 
 export function FeaturesSection() {
   const borderColors = ['border-l-cyan-500', 'border-l-teal-500', 'border-l-blue-500', 'border-l-emerald-500'];

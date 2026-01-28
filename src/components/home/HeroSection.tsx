@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   Activity,
   Heart,
@@ -13,9 +14,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { avatarUrls } from './data';
-import { AnimatedGridPattern } from "@/components/ui/backgrounds";
-import { OrbitingCircles } from "@/components/ui/magic-components";
-import { AvatarCircles } from "@/components/ui/avatar-circles";
+
+// These components use browser APIs - must be client-only
+const AnimatedGridPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.AnimatedGridPattern })), { ssr: false });
+const OrbitingCircles = dynamic(() => import("@/components/ui/magic-components").then(m => ({ default: m.OrbitingCircles })), { ssr: false });
+const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
 
 // Animated words for cycling
 const animatedWords = ['Performance', 'Wellness', 'Strength', 'Health', 'Vitality'];

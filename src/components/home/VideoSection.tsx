@@ -1,10 +1,13 @@
 'use client';
 
+import dynamic from "next/dynamic";
 import { CheckCircle2, Play, Sparkles, Users, Award } from "lucide-react";
 import { loreleiAvatars } from './data';
-import { DotPattern } from "@/components/ui/backgrounds";
-import { AvatarCircles } from "@/components/ui/avatar-circles";
-import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
+
+// These components use browser APIs - must be client-only
+const DotPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.DotPattern })), { ssr: false });
+const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
+const HeroVideoDialog = dynamic(() => import("@/components/ui/hero-video-dialog").then(mod => ({ default: mod.HeroVideoDialog })), { ssr: false });
 
 export function VideoSection() {
   return (

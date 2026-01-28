@@ -90,7 +90,7 @@ export default function Home() {
         {showDeferred && (
           <>
             <CaseStudiesSection />
-            <BottomFeaturesSection />
+            {/* <BottomFeaturesSection /> */}
             <HowItWorksSection />
             <TrustedByThousandsSection />
             <AnimatedTestimonials />
