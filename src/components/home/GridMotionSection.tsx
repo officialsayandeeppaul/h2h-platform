@@ -18,8 +18,9 @@ const GridMotion = dynamic(() => import("@/components/ui/grid-motion"), { ssr: f
 
 export function GridMotionSection() {
   return (
-    <section className="relative h-screen bg-gray-950 overflow-hidden">
-      <div className="absolute inset-0 z-0">
+    <section className="relative h-[60vh] md:h-screen bg-gray-950 overflow-hidden">
+      {/* Mobile: Simple gradient background, Desktop: GridMotion */}
+      <div className="absolute inset-0 z-0 hidden md:block">
         <GridMotion
           items={[
             <div key="1" className="flex flex-col items-center justify-center h-full">
@@ -51,40 +52,24 @@ export function GridMotionSection() {
               <Zap className="w-10 h-10 text-orange-400 mb-2" />
               <span className="text-sm font-medium">Fast Recovery</span>
             </div>,
-            'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop',
-            <div key="7" className="flex flex-col items-center justify-center h-full">
-              <HomeIcon className="w-10 h-10 text-green-400 mb-2" />
-              <span className="text-sm font-medium">Home Visits</span>
-            </div>,
-            'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=300&fit=crop',
-            <div key="8" className="flex flex-col items-center justify-center h-full">
-              <Calendar className="w-10 h-10 text-purple-400 mb-2" />
-              <span className="text-sm font-medium">Easy Booking</span>
-            </div>,
-            'https://images.unsplash.com/photo-1551076805-e1869033e561?w=400&h=300&fit=crop',
-            <div key="9" className="flex flex-col items-center justify-center h-full">
-              <Trophy className="w-10 h-10 text-amber-400 mb-2" />
-              <span className="text-sm font-medium">Best Results</span>
-            </div>,
-            'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop',
-            <div key="10" className="flex flex-col items-center justify-center h-full">
-              <Star className="w-10 h-10 text-pink-400 mb-2" />
-              <span className="text-sm font-medium">5-Star Rated</span>
-            </div>,
-            'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=300&fit=crop',
           ]}
           gradientColor="rgba(6, 182, 212, 0.15)"
         />
       </div>
 
+      {/* Mobile: Simple gradient background */}
+      <div className="absolute inset-0 z-0 md:hidden bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15),transparent_70%)]" />
+      </div>
+
       {/* Overlay content */}
-      <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none px-4">
         <div className="text-center">
-          <h2 className="text-[48px] md:text-[64px] font-medium text-white mb-6 tracking-tight drop-shadow-2xl">
+          <h2 className="text-[32px] sm:text-[48px] md:text-[64px] font-medium text-white mb-4 md:mb-6 tracking-tight drop-shadow-2xl">
             Experience{' '}
             <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Excellence</span>
           </h2>
-          <p className="text-[18px] text-white/80 max-w-2xl mx-auto drop-shadow-lg">
+          <p className="text-[14px] sm:text-[16px] md:text-[18px] text-white/80 max-w-2xl mx-auto drop-shadow-lg">
             World-class healthcare services delivered with care and precision
           </p>
         </div>

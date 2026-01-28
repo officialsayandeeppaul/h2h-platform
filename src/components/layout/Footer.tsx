@@ -24,9 +24,10 @@ export function Footer() {
               <img
                 src="/h2hwebsitelogo.png"
                 alt="H2H Healthcare"
-                className="h-16 sm:h-20 w-auto object-contain brightness-0 invert"
+                className="h-20 sm:h-32 w-auto object-contain"
               />
             </Link>
+
             <p className="text-[13px] text-gray-400 mb-6 leading-relaxed">
               {APP_CONFIG.tagline}
             </p>
