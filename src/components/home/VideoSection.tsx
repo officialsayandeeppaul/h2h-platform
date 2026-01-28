@@ -39,11 +39,11 @@ export function VideoSection() {
               <span className="text-sm font-medium text-blue-700">Watch Our Story</span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-[42px] font-bold text-gray-900 mb-6 leading-[1.15] tracking-tight">
+            <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-6 leading-[1.15] tracking-tight">
               Discover how H2H Healthcare is{' '}
               <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">transforming lives</span>
             </h2>
-            <p className="text-base text-gray-600 mb-8 leading-relaxed max-w-md">
+            <p className="text-base text-[15px] text-gray-600 mb-8 leading-relaxed max-w-md">
               Experience world-class physiotherapy and rehabilitation services designed to help you achieve your health goals faster.
             </p>
 
@@ -53,7 +53,7 @@ export function VideoSection() {
                 avatarUrls={loreleiAvatars}
               />
               <div>
-                <p className="text-sm font-bold text-gray-900">10,000+ Happy Patients</p>
+                <p className="text-sm font-medium text-gray-900">10,000+ Happy Patients</p>
                 <p className="text-xs text-gray-500">Join our growing family</p>
               </div>
             </div>
@@ -61,15 +61,15 @@ export function VideoSection() {
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50">
                 <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-semibold text-blue-700">Expert Care</span>
+                <span className="text-sm font-medium text-blue-700">Expert Care</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-cyan-50">
                 <Users className="w-4 h-4 text-cyan-600" />
-                <span className="text-sm font-semibold text-cyan-700">Home Visits</span>
+                <span className="text-sm font-medium text-cyan-700">Home Visits</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-50">
                 <Award className="w-4 h-4 text-emerald-600" />
-                <span className="text-sm font-semibold text-emerald-700">Certified</span>
+                <span className="text-sm font-medium text-emerald-700">Certified</span>
               </div>
             </div>
           </div>

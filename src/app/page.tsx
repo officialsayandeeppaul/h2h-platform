@@ -47,8 +47,8 @@ export default function Home() {
       setShowDeferred(true);
     }, 100);
 
-    // Preload all deferred sections in background immediately
-    requestIdleCallback(() => {
+    // Preload all deferred sections in background - use setTimeout as fallback for Safari/iOS
+    const preloadSections = () => {
       import("@/components/home/CaseStudiesSection");
       import("@/components/home/BottomFeaturesSection");
       import("@/components/home/HowItWorksSection");
@@ -66,7 +66,14 @@ export default function Home() {
       import("@/components/home/HealToHealthSection");
       import("@/components/ui/trusted-charts");
       import("@/components/ui/animated-testimonials");
-    });
+    };
+
+    // Use requestIdleCallback if available (Chrome/Firefox), setTimeout for Safari/iOS
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(preloadSections);
+    } else {
+      setTimeout(preloadSections, 50);
+    }
 
     return () => clearTimeout(timer);
   }, []);
