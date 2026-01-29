@@ -1,13 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-
-// Register plugin only on client side
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 interface AnimatedSectionProps {
   children: React.ReactNode;
@@ -30,34 +23,51 @@ export function AnimatedSection({
     const element = ref.current;
     if (!element) return;
 
-    const animations: Record<string, gsap.TweenVars> = {
-      fadeUp: { y: 60, opacity: 0 },
-      fadeIn: { opacity: 0 },
-      slideLeft: { x: -100, opacity: 0 },
-      slideRight: { x: 100, opacity: 0 },
-      scale: { scale: 0.8, opacity: 0 },
-      stagger: { y: 40, opacity: 0 },
+    let gsapInstance: typeof import('gsap').gsap;
+    let ScrollTriggerPlugin: typeof import('gsap/ScrollTrigger').ScrollTrigger;
+
+    const initAnimation = async () => {
+      const gsapModule = await import('gsap');
+      const scrollTriggerModule = await import('gsap/ScrollTrigger');
+      
+      gsapInstance = gsapModule.gsap;
+      ScrollTriggerPlugin = scrollTriggerModule.ScrollTrigger;
+      
+      gsapInstance.registerPlugin(ScrollTriggerPlugin);
+
+      const animations: Record<string, gsap.TweenVars> = {
+        fadeUp: { y: 60, opacity: 0 },
+        fadeIn: { opacity: 0 },
+        slideLeft: { x: -100, opacity: 0 },
+        slideRight: { x: 100, opacity: 0 },
+        scale: { scale: 0.8, opacity: 0 },
+        stagger: { y: 40, opacity: 0 },
+      };
+
+      gsapInstance.set(element, animations[animation]);
+
+      gsapInstance.to(element, {
+        y: 0,
+        x: 0,
+        scale: 1,
+        opacity: 1,
+        duration,
+        delay,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: element,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse',
+        },
+      });
     };
 
-    gsap.set(element, animations[animation]);
-
-    gsap.to(element, {
-      y: 0,
-      x: 0,
-      scale: 1,
-      opacity: 1,
-      duration,
-      delay,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: element,
-        start: 'top 85%',
-        toggleActions: 'play none none reverse',
-      },
-    });
+    initAnimation();
 
     return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      if (ScrollTriggerPlugin) {
+        ScrollTriggerPlugin.getAll().forEach((trigger) => trigger.kill());
+      }
     };
   }, [animation, delay, duration]);
 
@@ -83,20 +93,30 @@ export function AnimatedText({
     const element = ref.current;
     if (!element) return;
 
-    gsap.fromTo(
-      element,
-      { y: 30, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: element,
-          start: 'top 90%',
-        },
-      }
-    );
+    const initAnimation = async () => {
+      const gsapModule = await import('gsap');
+      const scrollTriggerModule = await import('gsap/ScrollTrigger');
+      
+      const gsapInstance = gsapModule.gsap;
+      gsapInstance.registerPlugin(scrollTriggerModule.ScrollTrigger);
+
+      gsapInstance.fromTo(
+        element,
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: element,
+            start: 'top 90%',
+          },
+        }
+      );
+    };
+
+    initAnimation();
   }, []);
 
   return (
@@ -123,21 +143,31 @@ export function StaggerChildren({
 
     const childElements = element.children;
 
-    gsap.fromTo(
-      childElements,
-      { y: 40, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: staggerDelay,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: element,
-          start: 'top 80%',
-        },
-      }
-    );
+    const initAnimation = async () => {
+      const gsapModule = await import('gsap');
+      const scrollTriggerModule = await import('gsap/ScrollTrigger');
+      
+      const gsapInstance = gsapModule.gsap;
+      gsapInstance.registerPlugin(scrollTriggerModule.ScrollTrigger);
+
+      gsapInstance.fromTo(
+        childElements,
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          stagger: staggerDelay,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: element,
+            start: 'top 80%',
+          },
+        }
+      );
+    };
+
+    initAnimation();
   }, [staggerDelay]);
 
   return (
