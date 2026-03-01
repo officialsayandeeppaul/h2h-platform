@@ -17,7 +17,7 @@ import {
   CheckCircle2, IndianRupee, Sparkles, Loader2, Star, AlertCircle, CalendarDays,
   Globe, Users, Phone, Stethoscope
 } from 'lucide-react';
-import { format, addDays, isBefore, startOfToday } from 'date-fns';
+import { format, addDays, isBefore, isSameDay, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 type BookingStep = 'location' | 'service' | 'doctor' | 'datetime' | 'confirm';
@@ -630,6 +630,16 @@ function BookingPageContent() {
     try {
       if (!selectedLocation || !selectedService || !selectedDoctor || !selectedDate || !selectedTime) {
         throw new Error('Please complete all booking details');
+      }
+
+      // Block booking if slot has passed (today, client timezone)
+      if (isSameDay(selectedDate, new Date())) {
+        const [h, m] = selectedTime.split(':').map(Number);
+        const slotDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), h, m, 0);
+        if (slotDate <= new Date()) {
+          setSelectedTime(null);
+          throw new Error('This time slot has passed. Please select another slot.');
+        }
       }
 
       // Validate patient details
@@ -1763,10 +1773,10 @@ function BookingPageContent() {
                       <button
                         onClick={() => setSelectedServiceCategory(null)}
                         className={cn(
-                          'px-4 py-2 text-sm font-medium transition-all',
+                          'px-4 py-2.5 text-sm font-medium transition-all rounded-lg border',
                           selectedServiceCategory === null
-                            ? 'bg-cyan-500 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-cyan-500 text-white border-cyan-500 shadow-sm'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-cyan-200 hover:bg-cyan-50/50'
                         )}
                       >
                         All
@@ -1776,10 +1786,10 @@ function BookingPageContent() {
                           key={cat}
                           onClick={() => setSelectedServiceCategory(cat)}
                           className={cn(
-                            'px-4 py-2 text-sm font-medium transition-all',
+                            'px-4 py-2.5 text-sm font-medium transition-all rounded-lg border',
                             selectedServiceCategory === cat
-                              ? 'bg-cyan-500 text-white'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              ? 'bg-cyan-500 text-white border-cyan-500 shadow-sm'
+                              : 'bg-white text-gray-600 border-gray-200 hover:border-cyan-200 hover:bg-cyan-50/50'
                           )}
                         >
                           {CATEGORY_LABELS[cat] || cat}
@@ -2092,32 +2102,49 @@ function BookingPageContent() {
                       </div>
                     ) : (
                       <>
-                        {timeSlots.filter(s => s.available).length === 0 && (
+                        {timeSlots.filter((s) => {
+                          if (!s.available) return false;
+                          const isToday = selectedDate && isSameDay(selectedDate, new Date());
+                          if (!isToday || !selectedDate) return true;
+                          const [h, m] = s.time.split(':').map(Number);
+                          const slotDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), h, m, 0);
+                          return slotDate > new Date();
+                        }).length === 0 && (
                           <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
-                            <p className="text-xs text-amber-600">All slots for this date are booked. Try another date.</p>
+                            <p className="text-xs text-amber-600">All slots for this date are booked or have passed. Try another date.</p>
                           </div>
                         )}
                         <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 max-h-[280px] overflow-y-auto p-1">
-                          {timeSlots.map((slot) => (
-                            <button
-                              key={slot.time}
-                              disabled={!slot.available}
-                              className={cn(
-                                "py-2 px-1 rounded-lg text-sm font-medium transition-all flex flex-col items-center justify-center min-h-[48px]",
-                                !slot.available 
-                                  ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                                  : selectedTime === slot.time 
-                                    ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md ring-2 ring-cyan-300 ring-offset-1' 
-                                    : 'bg-gray-50 text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 border border-gray-100'
-                              )}
-                              onClick={() => slot.available && setSelectedTime(slot.time)}
-                            >
-                              <span>{slot.time}</span>
-                              {!slot.available && (
-                                <span className="text-[9px] text-gray-400 font-normal">Booked</span>
-                              )}
-                            </button>
-                          ))}
+                          {timeSlots.map((slot) => {
+                            const isTodaySelected = selectedDate && isSameDay(selectedDate, new Date());
+                            const [h, m] = slot.time.split(':').map(Number);
+                            const slotDate = selectedDate ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), h, m, 0) : null;
+                            const isExpired = isTodaySelected && slotDate && slotDate <= new Date();
+                            const isDisabled = !slot.available || isExpired;
+                            return (
+                              <button
+                                key={slot.time}
+                                disabled={isDisabled}
+                                className={cn(
+                                  "py-2 px-1 rounded-lg text-sm font-medium transition-all flex flex-col items-center justify-center min-h-[48px]",
+                                  isDisabled
+                                    ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                                    : selectedTime === slot.time
+                                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md ring-2 ring-cyan-300 ring-offset-1'
+                                      : 'bg-gray-50 text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 border border-gray-100'
+                                )}
+                                onClick={() => !isDisabled && setSelectedTime(slot.time)}
+                              >
+                                <span>{slot.time}</span>
+                                {isExpired && (
+                                  <span className="text-[9px] text-gray-400 font-normal">Expired</span>
+                                )}
+                                {!slot.available && !isExpired && (
+                                  <span className="text-[9px] text-gray-400 font-normal">Booked</span>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       </>
                     )}
