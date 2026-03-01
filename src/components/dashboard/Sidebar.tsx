@@ -263,11 +263,11 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       {/* Desktop Sidebar - Fixed h-screen */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col h-screen sticky top-0 bg-[#1a2e35] transition-all duration-300 relative rounded-r-2xl shadow-xl overflow-visible',
+          'hidden lg:flex flex-col h-screen sticky top-0 bg-[#1a2e35] transition-all duration-300 relative shadow-xl overflow-visible',
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
-        <div className="flex flex-col h-full overflow-hidden rounded-r-2xl">
+        <div className="flex flex-col h-full overflow-hidden">
           <SidebarContent 
             navItems={navItems} 
             pathname={pathname} 

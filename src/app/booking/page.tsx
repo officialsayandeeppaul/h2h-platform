@@ -141,6 +141,7 @@ function BookingPageContent() {
   const [isLocationFlow, setIsLocationFlow] = useState(false); // When coming from location page
   const [preSelectedServiceName, setPreSelectedServiceName] = useState<string | null>(null); // Name of pre-selected service
   const [preSelectedCategory, setPreSelectedCategory] = useState<string | null>(null); // Category slug from URL
+  const [selectedServiceCategory, setSelectedServiceCategory] = useState<string | null>(null); // Filter services by category
   const [doctorServices, setDoctorServices] = useState<Service[]>([]); // Services offered by pre-selected doctor
   const [doctorClinicCenters, setDoctorClinicCenters] = useState<any[]>([]); // Clinic centers where doctor is available
   const [doctorCities, setDoctorCities] = useState<string[]>([]); // Cities where doctor has clinics
@@ -1741,7 +1742,7 @@ function BookingPageContent() {
             {/* Step 2: Service */}
             {currentStep === 'service' && (
               <div>
-                <div className="text-center mb-10">
+                <div className="text-center mb-6">
                   <h1 className="text-[32px] md:text-[40px] font-medium text-gray-900 tracking-tight mb-3">Select a Service</h1>
                   <p className="text-[15px] text-gray-500">
                     {isDoctorFlow && selectedDoctor 
@@ -1751,9 +1752,49 @@ function BookingPageContent() {
                   </p>
                 </div>
 
+                {/* Category filter tabs - only when not doctor flow and multiple categories exist */}
+                {(() => {
+                  const baseServices = isDoctorFlow && doctorServices.length > 0 ? doctorServices : services;
+                  const categories = [...new Set(baseServices.map((s) => s.category).filter(Boolean))];
+                  const hasMultipleCategories = categories.length > 1 && !isDoctorFlow;
+                  if (!hasMultipleCategories) return null;
+                  return (
+                    <div className="flex flex-wrap justify-center gap-2 mb-6">
+                      <button
+                        onClick={() => setSelectedServiceCategory(null)}
+                        className={cn(
+                          'px-4 py-2 text-sm font-medium transition-all',
+                          selectedServiceCategory === null
+                            ? 'bg-cyan-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        )}
+                      >
+                        All
+                      </button>
+                      {categories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedServiceCategory(cat)}
+                          className={cn(
+                            'px-4 py-2 text-sm font-medium transition-all',
+                            selectedServiceCategory === cat
+                              ? 'bg-cyan-500 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          )}
+                        >
+                          {CATEGORY_LABELS[cat] || cat}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
                 {/* Use doctor's services when in doctor flow, otherwise use location-based services */}
                 {(() => {
-                  const displayServices = isDoctorFlow && doctorServices.length > 0 ? doctorServices : services;
+                  const baseServices = isDoctorFlow && doctorServices.length > 0 ? doctorServices : services;
+                  const displayServices = selectedServiceCategory
+                    ? baseServices.filter((s) => s.category === selectedServiceCategory)
+                    : baseServices;
                   const isLoading = isDoctorFlow ? false : loadingServices;
                   
                   if (isLoading) {
