@@ -23,65 +23,13 @@ export function ServicesSection() {
 
         {/* Services Grid - Clean Professional Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {/* Sports Rehabilitation */}
-          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-[200px] md:h-full">
-                <img
-                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop"
-                  alt="Sports Rehabilitation"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-transparent" />
-              </div>
-              <div className="p-6 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-1 h-6 bg-cyan-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Sports Rehabilitation</h3>
-                </div>
-                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Get back to peak performance with specialized sports injury treatment and prevention programs.
-                </p>
-                <Link href="/services/sports-rehabilitation" className="text-[14px] font-medium text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Pain Management */}
+          {/* Pain Relief & Physiotherapy Care */}
           <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
             <div className="grid md:grid-cols-2">
               <div className="relative h-[200px] md:h-full">
                 <img
                   src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=500&h=400&fit=crop"
-                  alt="Pain Management"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-600/20 to-transparent" />
-              </div>
-              <div className="p-6 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-1 h-6 bg-teal-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Pain Management</h3>
-                </div>
-                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Comprehensive pain relief and mobilization therapy for chronic and acute conditions.
-                </p>
-                <Link href="/services/pain-management" className="text-[14px] font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Physiotherapy */}
-          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-[200px] md:h-full">
-                <img
-                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=500&h=400&fit=crop"
-                  alt="Physiotherapy"
+                  alt="Pain Relief & Physiotherapy Care"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-transparent" />
@@ -89,25 +37,25 @@ export function ServicesSection() {
               <div className="p-6 flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-1 h-6 bg-cyan-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Physiotherapy</h3>
+                  <h3 className="text-[18px] font-medium text-gray-900">Pain Relief & Physiotherapy</h3>
                 </div>
                 <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Physical therapy for improved mobility, strength, and overall functional wellness.
+                  Comprehensive pain relief and mobilization therapy for chronic and acute conditions.
                 </p>
-                <Link href="/services/physiotherapy" className="text-[14px] font-medium text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                <Link href="/services/pain_relief_physiotherapy" className="text-[14px] font-medium text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                   Learn more <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* Home Visits */}
+          {/* Advanced Rehabilitation & Recovery */}
           <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
             <div className="grid md:grid-cols-2">
               <div className="relative h-[200px] md:h-full">
                 <img
-                  src="https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=500&h=400&fit=crop"
-                  alt="Home Visits"
+                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=500&h=400&fit=crop"
+                  alt="Advanced Rehabilitation & Recovery"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-600/20 to-transparent" />
@@ -115,12 +63,64 @@ export function ServicesSection() {
               <div className="p-6 flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-1 h-6 bg-teal-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Home Visits</h3>
+                  <h3 className="text-[18px] font-medium text-gray-900">Advanced Rehabilitation</h3>
                 </div>
                 <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Professional physiotherapy services delivered to your doorstep for maximum comfort.
+                  Ortho, Neuro & Post-surgical rehabilitation for complete recovery.
                 </p>
-                <Link href="/services/home-visits" className="text-[14px] font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                <Link href="/services/advanced_rehabilitation" className="text-[14px] font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Learn more <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Sports Performance & Athlete Development */}
+          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
+            <div className="grid md:grid-cols-2">
+              <div className="relative h-[200px] md:h-full">
+                <img
+                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop"
+                  alt="Sports Performance & Athlete Development"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-transparent" />
+              </div>
+              <div className="p-6 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-1 h-6 bg-cyan-500 rounded-full" />
+                  <h3 className="text-[18px] font-medium text-gray-900">Sports Performance</h3>
+                </div>
+                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
+                  Integrated sports performance analysis, injury prevention, and athletic training.
+                </p>
+                <Link href="/services/sports_performance" className="text-[14px] font-medium text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Learn more <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Therapeutic Yoga & Wellness */}
+          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
+            <div className="grid md:grid-cols-2">
+              <div className="relative h-[200px] md:h-full">
+                <img
+                  src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop"
+                  alt="Therapeutic Yoga & Wellness"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-600/20 to-transparent" />
+              </div>
+              <div className="p-6 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-1 h-6 bg-teal-500 rounded-full" />
+                  <h3 className="text-[18px] font-medium text-gray-900">Therapeutic Yoga</h3>
+                </div>
+                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
+                  Yoga sessions designed for healing, rehabilitation, and mind-body wellness.
+                </p>
+                <Link href="/services/therapeutic_yoga" className="text-[14px] font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                   Learn more <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>

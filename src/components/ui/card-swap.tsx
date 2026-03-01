@@ -83,20 +83,20 @@ const CardSwap: React.FC<CardSwapProps> = ({
   const config =
     easing === 'elastic'
       ? {
-          ease: 'elastic.out(0.6,0.9)',
-          durDrop: 2,
-          durMove: 2,
-          durReturn: 2,
-          promoteOverlap: 0.9,
-          returnDelay: 0.05
+          ease: 'power2.out',
+          durDrop: 0.5,
+          durMove: 0.5,
+          durReturn: 0.5,
+          promoteOverlap: 0.7,
+          returnDelay: 0.1
         }
       : {
           ease: 'power1.inOut',
-          durDrop: 0.8,
-          durMove: 0.8,
-          durReturn: 0.8,
-          promoteOverlap: 0.45,
-          returnDelay: 0.2
+          durDrop: 0.5,
+          durMove: 0.5,
+          durReturn: 0.5,
+          promoteOverlap: 0.6,
+          returnDelay: 0.15
         };
 
   const childArr = useMemo(() => Children.toArray(children) as ReactElement<CardProps>[], [children]);
@@ -218,7 +218,7 @@ const CardSwap: React.FC<CardSwapProps> = ({
   return (
     <div
       ref={container}
-      className="absolute bottom-0 right-0 transform translate-x-[5%] translate-y-[20%] origin-bottom-right perspective-[900px] overflow-visible max-[768px]:translate-x-[25%] max-[768px]:translate-y-[25%] max-[768px]:scale-[0.75] max-[480px]:translate-x-[25%] max-[480px]:translate-y-[25%] max-[480px]:scale-[0.55]"
+      className="absolute -bottom-24 right-0 origin-center perspective-[900px] overflow-visible"
       style={{ width, height }}
     >
       {rendered}

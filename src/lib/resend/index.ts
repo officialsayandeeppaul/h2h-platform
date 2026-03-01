@@ -1,6 +1,18 @@
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Nodemailer transporter for development (using Gmail or any SMTP)
+const devTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 interface SendEmailParams {
   to: string;
@@ -9,20 +21,50 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const fromEmail = process.env.EMAIL_FROM || 'H2H Healthcare <noreply@beta.healtohealth.in>';
+
+  console.log('Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
+  console.log('Sending email from:', fromEmail);
+  console.log('Sending email to:', to);
+  console.log('Subject:', subject);
+
   try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'H2H Healthcare <noreply@healtohealth.in>',
-      to,
-      subject,
-      html,
-    });
+    if (isProduction) {
+      // Use Resend in production
+      const { data, error } = await resend.emails.send({
+        from: fromEmail,
+        to,
+        subject,
+        html,
+      });
 
-    if (error) {
-      console.error('Email send error:', error);
-      return { success: false, error };
+      if (error) {
+        console.error('Resend email error:', error);
+        return { success: false, error };
+      }
+
+      console.log('✓ Email sent via Resend, ID:', data?.id);
+      return { success: true, id: data?.id };
+    } else {
+      // Use Nodemailer in development
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.log('⚠️ SMTP credentials not configured. Email would be sent to:', to);
+        console.log('To enable dev emails, add SMTP_USER and SMTP_PASS to .env');
+        // Return success anyway so the flow continues
+        return { success: true, id: 'dev-mode-no-smtp' };
+      }
+
+      const info = await devTransporter.sendMail({
+        from: fromEmail,
+        to,
+        subject,
+        html,
+      });
+
+      console.log('✓ Email sent via Nodemailer, ID:', info.messageId);
+      return { success: true, id: info.messageId };
     }
-
-    return { success: true, id: data?.id };
   } catch (error) {
     console.error('Email send error:', error);
     return { success: false, error };
@@ -101,8 +143,8 @@ export const emailTemplates = {
   <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
     <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} H2H Healthcare. All rights reserved.</p>
     <p style="margin: 10px 0 0; color: #999; font-size: 12px;">
-      <a href="https://healtohealth.in" style="color: #0066cc;">Website</a> | 
-      <a href="mailto:support@healtohealth.in" style="color: #0066cc;">Support</a>
+      <a href="https://beta.healtohealth.in" style="color: #0066cc;">Website</a> | 
+      <a href="mailto:support@beta.healtohealth.in" style="color: #0066cc;">Support</a>
     </p>
   </div>
 </body>

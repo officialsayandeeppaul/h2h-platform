@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from 'react';
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import {
   Activity,
@@ -26,7 +27,7 @@ const AvatarStack = memo(function AvatarStack() {
   return (
     <div className="flex -space-x-2">
       {avatarUrls.slice(0, 4).map((avatar, i) => (
-        <img key={i} src={avatar.imageUrl} alt="" className="w-8 h-8 rounded-full border-2 border-white object-cover" loading="eager" />
+        <Image key={i} src={avatar.imageUrl} alt={`Patient review ${i + 1}`} width={32} height={32} className="w-8 h-8 rounded-full border-2 border-white object-cover" loading="lazy" />
       ))}
       <div className="w-8 h-8 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-xs text-white font-medium">
         +1k
@@ -41,7 +42,7 @@ function HeroSectionComponent() {
   const [isTyping, setIsTyping] = useState(true);
   const [showOrbits, setShowOrbits] = useState(false);
 
-  // Show orbiting circles after 500ms for faster initial render
+  // Show orbiting circles quickly for snappy feel
   useEffect(() => {
     const timer = setTimeout(() => setShowOrbits(true), 500);
     return () => clearTimeout(timer);
@@ -103,18 +104,18 @@ function HeroSectionComponent() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
                 Elevate Your
               </h1>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight min-h-[1.3em]">
+              <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight min-h-[1.3em]" aria-label={`Elevate Your ${animatedWords[currentWordIndex]}`}>
                 <span className="inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
                   {displayText}
-                  <span className="text-blue-500 animate-pulse font-light">|</span>
+                  <span className="text-blue-500 animate-pulse font-light" aria-hidden="true">|</span>
                 </span>
-              </h1>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-600 leading-tight">
+              </p>
+              <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-600 leading-tight">
                 & <span className="relative inline-block">
                   <span className="relative z-10">Recovery</span>
                   <span className="absolute bottom-0.5 left-0 w-full h-2 sm:h-3 bg-gradient-to-r from-blue-200 to-cyan-200 -z-0 rounded-sm" />
                 </span>
-              </h1>
+              </p>
             </div>
 
             <p className="text-base md:text-lg text-gray-600 max-w-lg leading-relaxed">
@@ -139,8 +140,8 @@ function HeroSectionComponent() {
             <div className="flex items-center gap-6 pt-4">
               <AvatarStack />
               <div>
-                <div className="flex items-center gap-1 mb-0.5">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-cyan-400 text-cyan-400" />)}
+                <div className="flex items-center gap-1 mb-0.5" role="img" aria-label="4.9 out of 5 stars rating">
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-cyan-400 text-cyan-400" aria-hidden="true" />)}
                   <span className="text-gray-900 font-semibold ml-1.5 text-sm">4.9</span>
                 </div>
                 <p className="text-gray-500 text-xs">from 2,500+ reviews</p>

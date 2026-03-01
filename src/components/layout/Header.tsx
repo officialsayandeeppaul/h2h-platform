@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useCallback, memo } from 'react';
-import { Menu, X, Phone, ChevronDown, Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, Phone, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -65,7 +65,7 @@ export function Header() {
   return (
     <>
       {/* Beta Mode Banner */}
-      <div className="fixed top-0 left-0 right-0 z-[60] h-[30px]  bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 overflow-hidden">
+      <div role="banner" aria-label="Beta announcement" className="fixed top-0 left-0 right-0 z-[60] h-[30px] bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 overflow-hidden">
         <Marquee className="py-1.5" pauseOnHover={false}>
           <div className="flex items-center gap-8 text-[12px] text-white font-medium">
             <span>We&apos;re currently in Beta Mode</span>
@@ -80,7 +80,7 @@ export function Header() {
         </Marquee>
       </div>
 
-      <header className={`fixed top-[30px] left-0 right-0 z-50 transition-[background-color,box-shadow] duration-200 ease-out will-change-[background-color] ${
+      <header className={`fixed top-[30px] left-0 right-0 z-50 transition-[background-color,box-shadow] duration-200 ease-out ${
         scrolled 
           ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100' 
           : 'bg-white/80 backdrop-blur-sm'
@@ -89,11 +89,13 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="/h2hwebsitelogo.png"
               alt="H2H Healthcare"
-              className="h-20 sm:h-32 w-auto object-contain"
+              width={160}
+              height={64}
+              className="h-16 sm:h-20 w-auto object-contain"
+              priority
             />
           </Link>
 
@@ -137,6 +139,7 @@ export function Header() {
           <div className="flex items-center gap-3">
             <a
               href={`tel:${APP_CONFIG.phone}`}
+              aria-label={`Call us at ${APP_CONFIG.phone}`}
               className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] sm:text-[13px] text-gray-600 hover:text-blue-600 rounded-lg transition-all"
             >
               <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -165,6 +168,8 @@ export function Header() {
             {/* Mobile Menu Button */}
             <button
               type="button"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -174,7 +179,7 @@ export function Header() {
         </div>
 
         {/* Mobile Menu */}
-        <div className={`lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 transition-all duration-200 ease-out transform-gpu ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+        <div role="dialog" aria-label="Mobile navigation" className={`lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 transition-all duration-200 ease-out transform-gpu ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
             <nav className="flex flex-col p-4 gap-1 max-w-[1200px] mx-auto">
               {navigation.map((item) => (
                 <Link

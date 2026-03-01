@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '10');
 
-    let query = supabase
+    const adminClient = createAdminClient();
+
+    let query = adminClient
       .from('appointments')
       .select(`
         *,
@@ -63,13 +65,50 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Static service pricing for demo mode
+const STATIC_SERVICE_PRICING: Record<string, { tier1_price: number; tier2_price: number; duration_minutes: number }> = {
+  'svc-sports-injury': { tier1_price: 1500, tier2_price: 1000, duration_minutes: 60 },
+  'svc-back-pain': { tier1_price: 1200, tier2_price: 800, duration_minutes: 45 },
+  'svc-neck-pain': { tier1_price: 1200, tier2_price: 800, duration_minutes: 45 },
+  'svc-post-surgery': { tier1_price: 1800, tier2_price: 1200, duration_minutes: 60 },
+  'svc-therapeutic-yoga': { tier1_price: 800, tier2_price: 500, duration_minutes: 60 },
+  'svc-posture-correction': { tier1_price: 1200, tier2_price: 800, duration_minutes: 45 },
+};
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    console.log('[Appointments API] User:', user?.id, user?.email);
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const adminClient = createAdminClient();
+
+    // Ensure user exists in users table (auto-create if not)
+    const { data: existingUser } = await adminClient
+      .from('users')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+
+    if (!existingUser) {
+      const { error: userError } = await (adminClient
+        .from('users') as any)
+        .insert({
+          id: user.id,
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+          role: 'patient',
+        });
+      
+      if (userError) {
+        console.error('Error creating user record:', userError);
+        return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+      }
     }
 
     const body = await request.json();
@@ -88,32 +127,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { data: service } = await supabase
-      .from('services')
-      .select('tier1_price, tier2_price, duration_minutes')
-      .eq('id', serviceId)
-      .single() as { data: { tier1_price: number; tier2_price: number; duration_minutes: number } | null };
+    // Check if using static/demo data (non-UUID IDs are static)
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    const isStaticService = !isUUID(serviceId);
+    const isStaticDoctor = !isUUID(doctorId);
+    const isStaticLocation = !isUUID(locationId);
 
-    const { data: location } = await supabase
-      .from('locations')
-      .select('tier')
-      .eq('id', locationId)
-      .single() as { data: { tier: number } | null };
+    let amount = 1200; // Default amount
+    let durationMinutes = 45; // Default duration
 
-    if (!service || !location) {
-      return NextResponse.json({ error: 'Invalid service or location' }, { status: 400 });
+    if (isStaticService) {
+      // Use static pricing for demo services
+      const staticService = STATIC_SERVICE_PRICING[serviceId];
+      if (staticService) {
+        amount = staticService.tier1_price; // Use tier 1 pricing for demo
+        durationMinutes = staticService.duration_minutes;
+      }
+    } else {
+      // Fetch from database
+      const { data: service } = await adminClient
+        .from('services')
+        .select('tier1_price, tier2_price, duration_minutes')
+        .eq('id', serviceId)
+        .single() as { data: { tier1_price: number; tier2_price: number; duration_minutes: number } | null };
+
+      if (!isStaticLocation) {
+        const { data: location } = await adminClient
+          .from('locations')
+          .select('tier')
+          .eq('id', locationId)
+          .single() as { data: { tier: number } | null };
+
+        if (service && location) {
+          amount = location.tier === 1 ? service.tier1_price : service.tier2_price;
+          durationMinutes = service.duration_minutes;
+        }
+      } else if (service) {
+        amount = service.tier1_price;
+        durationMinutes = service.duration_minutes;
+      }
     }
 
-    const amount = location.tier === 1 ? service.tier1_price : service.tier2_price;
-    const calculatedEndTime = endTime || calculateEndTime(startTime, service.duration_minutes);
+    const calculatedEndTime = endTime || calculateEndTime(startTime, durationMinutes);
 
-    const { data: appointment, error } = await supabase
-      .from('appointments')
+    const { data: appointment, error } = await (adminClient
+      .from('appointments') as any)
       .insert({
         patient_id: user.id,
-        doctor_id: doctorId,
-        service_id: serviceId,
-        location_id: locationId,
+        doctor_id: isStaticDoctor ? null : doctorId, // Store null for static doctors
+        service_id: isStaticService ? null : serviceId, // Store null for static services
+        location_id: isStaticLocation ? null : locationId,
         appointment_date: appointmentDate,
         start_time: startTime,
         end_time: calculatedEndTime,
@@ -122,15 +185,22 @@ export async function POST(request: NextRequest) {
         notes,
         status: 'pending',
         payment_status: 'pending',
-      } as any)
+        // Store static IDs in metadata for reference
+        metadata: {
+          static_doctor_id: isStaticDoctor ? doctorId : null,
+          static_service_id: isStaticService ? serviceId : null,
+          static_location_id: isStaticLocation ? locationId : null,
+        },
+      })
       .select()
       .single();
 
     if (error) {
+      console.error('Appointment creation error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data: appointment }, { status: 201 });
+    return NextResponse.json({ success: true, data: appointment }, { status: 201 });
   } catch (error) {
     console.error('Error creating appointment:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

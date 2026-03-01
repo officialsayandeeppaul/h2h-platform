@@ -112,77 +112,22 @@ export default function UsersManagementPage() {
   async function fetchUsers() {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-      
-      // Fetch users from auth.users via admin API or a custom function
-      // For now, we'll use a mock data approach since direct auth.users access requires service role
-      // In production, you'd create a Supabase Edge Function or use the admin API
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // Mock data for demonstration - replace with actual API call
-      const mockUsers: User[] = [
-        {
-          id: '1',
-          email: 'superadmin@h2h.com',
-          full_name: 'Super Admin',
-          role: ROLES.SUPER_ADMIN,
-          created_at: '2024-01-01T00:00:00Z',
-          last_sign_in_at: '2024-01-15T10:30:00Z',
-          email_confirmed_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          email: 'admin@h2h.com',
-          full_name: 'Platform Admin',
-          role: ROLES.ADMIN,
-          created_at: '2024-01-05T00:00:00Z',
-          last_sign_in_at: '2024-01-14T14:20:00Z',
-          email_confirmed_at: '2024-01-05T00:00:00Z',
-        },
-        {
-          id: '3',
-          email: 'mumbai.admin@h2h.com',
-          full_name: 'Mumbai Location Admin',
-          role: ROLES.LOCATION_ADMIN,
-          created_at: '2024-01-10T00:00:00Z',
-          last_sign_in_at: '2024-01-15T09:00:00Z',
-          email_confirmed_at: '2024-01-10T00:00:00Z',
-        },
-        {
-          id: '4',
-          email: 'dr.sharma@h2h.com',
-          full_name: 'Dr. Priya Sharma',
-          role: ROLES.DOCTOR,
-          created_at: '2024-01-12T00:00:00Z',
-          last_sign_in_at: '2024-01-15T08:45:00Z',
-          email_confirmed_at: '2024-01-12T00:00:00Z',
-        },
-        {
-          id: '5',
-          email: 'patient@example.com',
-          full_name: 'Rahul Kumar',
-          role: ROLES.PATIENT,
-          created_at: '2024-01-14T00:00:00Z',
-          last_sign_in_at: '2024-01-15T11:00:00Z',
-          email_confirmed_at: '2024-01-14T00:00:00Z',
-        },
-      ];
-
-      // Add current user if not in mock data
-      if (user && !mockUsers.find(u => u.id === user.id)) {
-        mockUsers.unshift({
-          id: user.id,
-          email: user.email!,
-          full_name: user.user_metadata?.full_name || 'Current User',
-          role: (user.user_metadata?.role as UserRole) || ROLES.PATIENT,
-          created_at: user.created_at,
-          last_sign_in_at: user.last_sign_in_at || null,
-          email_confirmed_at: user.email_confirmed_at || null,
-        });
+      const res = await fetch('/api/admin/users');
+      const json = await res.json();
+      if (json.success && json.data) {
+        const mapped: User[] = json.data.map((u: any) => ({
+          id: u.id,
+          email: u.email || '',
+          full_name: u.full_name || null,
+          role: u.role || ROLES.PATIENT,
+          created_at: u.created_at || '',
+          last_sign_in_at: null,
+          email_confirmed_at: u.created_at || null,
+        }));
+        setUsers(mapped);
+      } else {
+        toast.error(json.error || 'Failed to load users');
       }
-
-      setUsers(mockUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
@@ -226,23 +171,24 @@ export default function UsersManagementPage() {
 
     setIsUpdating(true);
     try {
-      const supabase = createClient();
-      
-      // In production, this would call a Supabase Edge Function or admin API
-      // to update the user's role in auth.users metadata
-      
-      // Simulated update
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setUsers(prev =>
-        prev.map(u =>
-          u.id === selectedUser.id ? { ...u, role: newRole } : u
-        )
-      );
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: selectedUser.id, role: newRole }),
+      });
+      const json = await res.json();
 
-      toast.success(`Role updated to ${ROLE_LABELS[newRole]}`);
-      setIsRoleDialogOpen(false);
+      if (json.success) {
+        setUsers(prev =>
+          prev.map(u =>
+            u.id === selectedUser.id ? { ...u, role: newRole } : u
+          )
+        );
+        toast.success(`Role updated to ${ROLE_LABELS[newRole]}`);
+        setIsRoleDialogOpen(false);
+      } else {
+        toast.error(json.error || 'Failed to update role');
+      }
     } catch (error) {
       console.error('Error updating role:', error);
       toast.error('Failed to update role');
@@ -256,12 +202,20 @@ export default function UsersManagementPage() {
 
     setIsUpdating(true);
     try {
-      // In production, this would call a Supabase Edge Function or admin API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
-      toast.success('User deleted successfully');
-      setIsDeleteDialogOpen(false);
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: selectedUser.id, is_active: false }),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+        toast.success('User deactivated successfully');
+        setIsDeleteDialogOpen(false);
+      } else {
+        toast.error(json.error || 'Failed to deactivate user');
+      }
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error('Failed to delete user');

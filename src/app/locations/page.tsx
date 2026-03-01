@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Header, Footer } from "@/components/layout";
@@ -11,12 +11,57 @@ import { Badge } from "@/components/ui/badge";
 import { Highlighter } from "@/components/ui/highlighter";
 import { PixelImage } from "@/components/ui/pixel-image";
 import { MapPin, Phone, Mail, Clock, Navigation2, Video, Building2, Star, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
-import { DEFAULT_LOCATIONS, LOCATION_TIERS, type Location } from "@/constants/locations";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
+// Location tier info
+const LOCATION_TIERS = {
+  1: { name: 'Tier 1 (Metro)', color: 'cyan' },
+  2: { name: 'Tier 2', color: 'teal' },
+  3: { name: 'Tier 3', color: 'emerald' },
+};
+
+interface ClinicCenter {
+  id: string;
+  location_id: string;
+  name: string;
+  slug: string;
+  address: string;
+  landmark: string | null;
+  pincode: string | null;
+  phone: string | null;
+  email: string | null;
+  facilities: string[];
+  rating: number;
+  total_reviews: number;
+  is_featured: boolean;
+  is_active: boolean;
+  location?: {
+    id: string;
+    name: string;
+    city: string;
+    tier: number;
+    latitude?: number;
+    longitude?: number;
+  };
+}
+
+// Default coordinates for cities (fallback)
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  'Mumbai': { lat: 19.0760, lng: 72.8777 },
+  'Bangalore': { lat: 12.9716, lng: 77.5946 },
+  'Delhi': { lat: 28.6139, lng: 77.2090 },
+  'Kolkata': { lat: 22.5726, lng: 88.3639 },
+  'Chennai': { lat: 13.0827, lng: 80.2707 },
+  'Hyderabad': { lat: 17.3850, lng: 78.4867 },
+  'Pune': { lat: 18.5204, lng: 73.8567 },
+  'Jaipur': { lat: 26.9124, lng: 75.7873 },
+};
+
 export default function LocationsPage() {
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [clinicCenters, setClinicCenters] = useState<ClinicCenter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedLocation, setSelectedLocation] = useState<ClinicCenter | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
   const [viewState, setViewState] = useState({
@@ -26,24 +71,57 @@ export default function LocationsPage() {
   });
   const [selectedCity, setSelectedCity] = useState<string>('all');
 
-  const filteredLocations = selectedCity === 'all' 
-    ? DEFAULT_LOCATIONS 
-    : DEFAULT_LOCATIONS.filter(loc => loc.city.toLowerCase() === selectedCity.toLowerCase());
-
-  const cities = ['all', ...Array.from(new Set(DEFAULT_LOCATIONS.map(loc => loc.city)))];
-
-  const handleMarkerClick = useCallback((location: Location) => {
-    setSelectedLocation(location);
-    setViewState(prev => ({
-      ...prev,
-      longitude: location.longitude,
-      latitude: location.latitude,
-      zoom: 12
-    }));
+  // Fetch clinic centers from API
+  useEffect(() => {
+    const fetchCenters = async () => {
+      try {
+        const res = await fetch('/api/clinic-centers');
+        const data = await res.json();
+        if (data.success) {
+          setClinicCenters(data.data.centers || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch clinic centers:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCenters();
   }, []);
 
-  const scrollToMap = useCallback((location: Location) => {
-    handleMarkerClick(location);
+  // Get unique cities from dynamic data
+  const cities = ['all', ...Array.from(new Set(clinicCenters.map(c => c.location?.city || '').filter(Boolean)))].sort();
+
+  // Filter centers by selected city
+  const filteredCenters = selectedCity === 'all' 
+    ? clinicCenters 
+    : clinicCenters.filter(c => c.location?.city?.toLowerCase() === selectedCity.toLowerCase());
+
+  // Get coordinates for a center
+  const getCenterCoords = (center: ClinicCenter) => {
+    const city = center.location?.city || '';
+    const coords = CITY_COORDINATES[city] || { lat: 20.5937, lng: 78.9629 };
+    // Add small offset for multiple centers in same city
+    const index = clinicCenters.filter(c => c.location?.city === city).indexOf(center);
+    return {
+      lat: coords.lat + (index * 0.02),
+      lng: coords.lng + (index * 0.02),
+    };
+  };
+
+  const handleMarkerClick = useCallback((center: ClinicCenter) => {
+    setSelectedLocation(center);
+    const coords = getCenterCoords(center);
+    setViewState(prev => ({
+      ...prev,
+      longitude: coords.lng,
+      latitude: coords.lat,
+      zoom: 12
+    }));
+  }, [clinicCenters]);
+
+  const scrollToMap = useCallback((center: ClinicCenter) => {
+    handleMarkerClick(center);
     window.scrollTo({ top: 300, behavior: 'smooth' });
   }, [handleMarkerClick]);
 
@@ -68,7 +146,7 @@ export default function LocationsPage() {
                 </Highlighter>
               </h1>
               <p className="text-[16px] text-gray-600 max-w-2xl mx-auto">
-                With {DEFAULT_LOCATIONS.length}+ state-of-the-art facilities across major Indian cities, quality healthcare is always within reach.
+                With {clinicCenters.length}+ state-of-the-art facilities across major Indian cities, quality healthcare is always within reach.
               </p>
             </div>
           </div>
@@ -125,70 +203,82 @@ export default function LocationsPage() {
                     <NavigationControl position="top-right" />
                     <GeolocateControl position="top-right" />
 
-                    {DEFAULT_LOCATIONS.map((location) => (
-                      <Marker
-                        key={location.id}
-                        longitude={location.longitude}
-                        latitude={location.latitude}
-                        anchor="bottom"
-                        onClick={e => {
-                          e.originalEvent.stopPropagation();
-                          handleMarkerClick(location);
-                        }}
-                      >
-                        <div className="cursor-pointer group">
-                          <div className={`w-10 h-10 rounded-full ${location.tier === 1 ? 'bg-cyan-500' : 'bg-teal-500'} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white`}>
-                            <MapPin className="w-5 h-5 text-white" />
+                    {clinicCenters.map((center) => {
+                      const coords = getCenterCoords(center);
+                      const tier = center.location?.tier || 2;
+                      return (
+                        <Marker
+                          key={center.id}
+                          longitude={coords.lng}
+                          latitude={coords.lat}
+                          anchor="bottom"
+                          onClick={e => {
+                            e.originalEvent.stopPropagation();
+                            handleMarkerClick(center);
+                          }}
+                        >
+                          <div className="cursor-pointer group">
+                            <div className={`w-10 h-10 rounded-full ${tier === 1 ? 'bg-cyan-500' : 'bg-teal-500'} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white`}>
+                              <MapPin className="w-5 h-5 text-white" />
+                            </div>
                           </div>
-                        </div>
-                      </Marker>
-                    ))}
+                        </Marker>
+                      );
+                    })}
 
-                    {selectedLocation && (
-                      <Popup
-                        longitude={selectedLocation.longitude}
-                        latitude={selectedLocation.latitude}
-                        anchor="top"
-                        onClose={() => setSelectedLocation(null)}
-                        closeButton={true}
-                        closeOnClick={false}
-                        className="location-popup"
-                        offset={15}
-                        maxWidth="400px"
-                      >
-                        <div className="p-5 w-[340px]">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className={`w-1 h-6 ${selectedLocation.tier === 1 ? 'bg-cyan-500' : 'bg-teal-500'} rounded-full`} />
-                            <h3 className="font-medium text-[15px] text-gray-900">{selectedLocation.name}</h3>
-                          </div>
-                          <p className="text-[13px] text-gray-600 mb-3 leading-relaxed">{selectedLocation.address}</p>
-                          <div className="space-y-2.5 mb-4">
-                            <div className="flex items-center gap-2.5 text-[13px] text-gray-700">
-                              <Phone className="w-4 h-4 text-cyan-600 flex-shrink-0" />
-                              <a href={`tel:${selectedLocation.phone}`} className="hover:text-cyan-600">
-                                {selectedLocation.phone}
-                              </a>
+                    {selectedLocation && (() => {
+                      const coords = getCenterCoords(selectedLocation);
+                      const tier = selectedLocation.location?.tier || 2;
+                      return (
+                        <Popup
+                          longitude={coords.lng}
+                          latitude={coords.lat}
+                          anchor="top"
+                          onClose={() => setSelectedLocation(null)}
+                          closeButton={true}
+                          closeOnClick={false}
+                          className="location-popup"
+                          offset={15}
+                          maxWidth="400px"
+                        >
+                          <div className="p-5 w-[340px]">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className={`w-1 h-6 ${tier === 1 ? 'bg-cyan-500' : 'bg-teal-500'} rounded-full`} />
+                              <h3 className="font-medium text-[15px] text-gray-900">{selectedLocation.name}</h3>
                             </div>
-                            <div className="flex items-start gap-2.5 text-[13px] text-gray-700">
-                              <Clock className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
-                              <span className="text-[12px] leading-relaxed">{selectedLocation.timings}</span>
+                            <p className="text-[13px] text-gray-600 mb-3 leading-relaxed">{selectedLocation.address}</p>
+                            <div className="space-y-2.5 mb-4">
+                              {selectedLocation.phone && (
+                                <div className="flex items-center gap-2.5 text-[13px] text-gray-700">
+                                  <Phone className="w-4 h-4 text-cyan-600 flex-shrink-0" />
+                                  <a href={`tel:${selectedLocation.phone}`} className="hover:text-cyan-600">
+                                    {selectedLocation.phone}
+                                  </a>
+                                </div>
+                              )}
+                              <div className="flex items-start gap-2.5 text-[13px] text-gray-700">
+                                <Clock className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
+                                <span className="text-[12px] leading-relaxed">Mon-Sat: 8:00 AM - 8:00 PM</span>
+                              </div>
                             </div>
+                            {selectedLocation.facilities?.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mb-4">
+                                {selectedLocation.facilities.slice(0, 2).map((facility: string) => (
+                                  <Badge key={facility} variant="secondary" className="text-[10px] bg-cyan-50 text-cyan-700">
+                                    {facility}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            <Button size="sm" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" asChild>
+                              <Link href={`/booking?location=${selectedLocation.slug}`}>
+                                Book Appointment
+                              </Link>
+                            </Button>
                           </div>
-                          <div className="flex flex-wrap gap-1.5 mb-4">
-                            {selectedLocation.services.slice(0, 2).map((service) => (
-                              <Badge key={service} variant="secondary" className="text-[10px] bg-cyan-50 text-cyan-700">
-                                {service}
-                              </Badge>
-                            ))}
-                          </div>
-                          <Button size="sm" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" asChild>
-                            <Link href={`/booking?location=${selectedLocation.id}`}>
-                              Book Appointment
-                            </Link>
-                          </Button>
-                        </div>
-                      </Popup>
-                    )}
+                        </Popup>
+                      );
+                    })()}
                   </Map>
                 )}
               </div>
@@ -205,7 +295,7 @@ export default function LocationsPage() {
                     <span className="text-[13px] text-gray-600">Tier 2</span>
                   </div>
                 </div>
-                <p className="text-[12px] text-gray-500">{DEFAULT_LOCATIONS.length} locations across India</p>
+                <p className="text-[12px] text-gray-500">{clinicCenters.length} locations across India</p>
               </div>
             </div>
           </div>
@@ -231,7 +321,7 @@ export default function LocationsPage() {
             
             <div className="grid md:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-[48px] font-semibold text-cyan-400 mb-2">{DEFAULT_LOCATIONS.length}+</div>
+                <div className="text-[48px] font-semibold text-cyan-400 mb-2">{clinicCenters.length}+</div>
                 <p className="text-[14px] text-gray-400">Centers Across India</p>
               </div>
               <div className="text-center">
@@ -289,20 +379,42 @@ export default function LocationsPage() {
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredLocations.map((location) => {
-                const tierInfo = LOCATION_TIERS[location.tier as keyof typeof LOCATION_TIERS];
-                const isMetro = location.tier === 1;
-                return (
-                  <div 
-                    key={location.id} 
-                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 transition-all duration-300"
-                  >
-                    {/* Image */}
-                    {location.image && (
+              {loading ? (
+                <div className="col-span-3 flex items-center justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                </div>
+              ) : filteredCenters.length === 0 ? (
+                <div className="col-span-3 text-center py-20 text-gray-500">
+                  <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No centers found in this city</p>
+                </div>
+              ) : (
+                filteredCenters.map((center) => {
+                  const tier = center.location?.tier || 2;
+                  const tierInfo = LOCATION_TIERS[tier as keyof typeof LOCATION_TIERS] || LOCATION_TIERS[2];
+                  const isMetro = tier === 1;
+                  const cityImages: Record<string, string> = {
+                    'Mumbai': 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
+                    'Bangalore': 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=800',
+                    'Delhi': 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800',
+                    'Kolkata': 'https://images.unsplash.com/photo-1558431382-27e303142255?w=800',
+                    'Hyderabad': 'https://images.unsplash.com/photo-1572445271230-a78b4b5573e5?w=800',
+                    'Pune': 'https://images.unsplash.com/photo-1625731226721-b4d51ae70e20?w=800',
+                    'Jaipur': 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800',
+                    'Chennai': 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800',
+                  };
+                  const image = cityImages[center.location?.city || ''] || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800';
+                  
+                  return (
+                    <div 
+                      key={center.id} 
+                      className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 transition-all duration-300"
+                    >
+                      {/* Image */}
                       <div className="relative h-52 overflow-hidden">
                         <img 
-                          src={location.image}
-                          alt={location.name}
+                          src={image}
+                          alt={center.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
@@ -310,66 +422,70 @@ export default function LocationsPage() {
                           {tierInfo.name}
                         </div>
                       </div>
-                    )}
-                    
-                    {/* Content */}
-                    <div className="p-6">
-                      <h3 className="text-[20px] font-medium text-gray-900 mb-3">{location.name}</h3>
                       
-                      <div className="space-y-2.5 mb-5">
-                        <div className="flex items-start gap-3 text-[13px] text-gray-600">
-                          <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-cyan-500" />
-                          <span className="leading-relaxed">{location.address}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-[13px] text-gray-600">
-                          <Phone className="h-4 w-4 flex-shrink-0 text-cyan-500" />
-                          <a href={`tel:${location.phone}`} className="hover:text-cyan-600 transition-colors">
-                            {location.phone}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-3 text-[13px] text-gray-600">
-                          <Clock className="h-4 w-4 flex-shrink-0 text-cyan-500" />
-                          <span>{location.timings}</span>
-                        </div>
-                      </div>
-
-                      {/* Services */}
-                      <div className="mb-5">
-                        <p className="text-[11px] uppercase tracking-wider text-gray-400 font-medium mb-2">Services</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {location.services.slice(0, 3).map((service) => (
-                            <span key={service} className="px-2.5 py-1 rounded-full text-[11px] bg-gray-100 text-gray-600">
-                              {service}
-                            </span>
-                          ))}
-                          {location.services.length > 3 && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] bg-cyan-50 text-cyan-600">
-                              +{location.services.length - 3} more
-                            </span>
+                      {/* Content */}
+                      <div className="p-6">
+                        <h3 className="text-[20px] font-medium text-gray-900 mb-3">{center.name}</h3>
+                        
+                        <div className="space-y-2.5 mb-5">
+                          <div className="flex items-start gap-3 text-[13px] text-gray-600">
+                            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-cyan-500" />
+                            <span className="leading-relaxed">{center.address}</span>
+                          </div>
+                          {center.phone && (
+                            <div className="flex items-center gap-3 text-[13px] text-gray-600">
+                              <Phone className="h-4 w-4 flex-shrink-0 text-cyan-500" />
+                              <a href={`tel:${center.phone}`} className="hover:text-cyan-600 transition-colors">
+                                {center.phone}
+                              </a>
+                            </div>
                           )}
+                          <div className="flex items-center gap-3 text-[13px] text-gray-600">
+                            <Clock className="h-4 w-4 flex-shrink-0 text-cyan-500" />
+                            <span>Mon-Sat: 8:00 AM - 8:00 PM</span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                        <Link 
-                          href={`/booking?location=${location.id}`}
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-gray-900 text-white text-[13px] font-medium hover:bg-gray-800 transition-colors"
-                        >
-                          Book Appointment
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                        <button 
-                          onClick={() => scrollToMap(location)}
-                          className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cyan-600 transition-colors"
-                        >
-                          <Navigation2 className="h-4 w-4" />
-                        </button>
+                        {/* Facilities */}
+                        {center.facilities?.length > 0 && (
+                          <div className="mb-5">
+                            <p className="text-[11px] uppercase tracking-wider text-gray-400 font-medium mb-2">Facilities</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {center.facilities.slice(0, 3).map((facility: string) => (
+                                <span key={facility} className="px-2.5 py-1 rounded-full text-[11px] bg-gray-100 text-gray-600">
+                                  {facility}
+                                </span>
+                              ))}
+                              {center.facilities.length > 3 && (
+                                <span className="px-2.5 py-1 rounded-full text-[11px] bg-cyan-50 text-cyan-600">
+                                  +{center.facilities.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                          <Link 
+                            href={`/booking?location=${center.slug}`}
+                            className="flex-1 flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-gray-900 text-white text-[13px] font-medium hover:bg-gray-800 transition-colors"
+                          >
+                            Book Appointment
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                          <button 
+                            onClick={() => scrollToMap(center)}
+                            className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cyan-600 transition-colors"
+                          >
+                            <Navigation2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </section>

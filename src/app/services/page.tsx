@@ -8,32 +8,53 @@ import { ArrowRight } from "lucide-react";
 
 const services = [
   {
-    id: 'sports_rehab',
-    title: 'Sports Rehabilitation',
-    description: 'Get back to peak performance with our specialized sports injury treatment and prevention programs designed for athletes of all levels.',
-    details: 'Our sports rehabilitation program combines advanced therapeutic techniques with personalized training protocols. We work with professional athletes and weekend warriors alike to ensure optimal recovery and performance enhancement.',
-    color: 'cyan',
-  },
-  {
-    id: 'pain_management',
-    title: 'Pain Management',
+    id: 'pain_relief_physiotherapy',
+    title: 'Pain Relief & Physiotherapy Care',
     description: 'Comprehensive pain relief and mobilization therapy for chronic and acute conditions using evidence-based treatment approaches.',
-    details: 'We understand that chronic pain affects every aspect of your life. Our pain management specialists use a combination of manual therapy, therapeutic exercises, and modern modalities to help you regain control.',
-    color: 'teal',
+    details: 'Our pain management specialists use a combination of manual therapy, therapeutic exercises, and modern modalities to help you regain control of your life. From back pain to joint issues, we provide personalized care.',
+    color: 'red',
   },
   {
-    id: 'physiotherapy',
-    title: 'Physiotherapy',
-    description: 'Physical therapy for improved mobility, strength, and overall functional wellness tailored to your specific needs.',
-    details: 'Our physiotherapy services address a wide range of conditions from post-surgical recovery to mobility issues. Each treatment plan is customized based on thorough assessment and your personal goals.',
-    color: 'cyan',
+    id: 'advanced_rehabilitation',
+    title: 'Advanced Rehabilitation & Recovery',
+    description: 'Specialized rehabilitation for orthopedic, neurological, and post-surgical conditions with comprehensive recovery programs.',
+    details: 'Our advanced rehabilitation services address complex conditions including stroke recovery, spinal cord injuries, and post-surgical rehabilitation. Each program is designed by expert physiotherapists for optimal outcomes.',
+    color: 'blue',
   },
   {
-    id: 'yoga',
-    title: 'Yoga & Wellness',
-    description: 'Therapeutic yoga sessions designed to complement your recovery journey and promote overall mind-body wellness.',
+    id: 'nutrition_lifestyle',
+    title: 'Nutrition & Lifestyle Care',
+    description: 'Personalized nutrition plans and lifestyle modification coaching for athletes and health-conscious individuals.',
+    details: 'Our certified nutritionists work with you to create sustainable eating habits and lifestyle changes. From sports nutrition to weight management, we provide science-backed guidance for your health goals.',
+    color: 'green',
+  },
+  {
+    id: 'mental_wellness',
+    title: 'Mental Wellness & Performance Care',
+    description: 'Sports psychology, stress management, and mental performance coaching for peak mental fitness.',
+    details: 'Mental health is crucial for overall wellbeing and performance. Our specialists help athletes and professionals manage stress, anxiety, and optimize their mental game through proven psychological techniques.',
+    color: 'purple',
+  },
+  {
+    id: 'therapeutic_yoga',
+    title: 'Therapeutic Yoga & Wellness',
+    description: 'Yoga sessions designed for healing, rehabilitation, and promoting overall mind-body wellness.',
     details: 'Our yoga programs are designed by certified instructors with healthcare backgrounds. Whether you\'re recovering from an injury or seeking preventive care, our sessions adapt to your abilities and goals.',
     color: 'teal',
+  },
+  {
+    id: 'sports_performance',
+    title: 'Sports Performance & Athlete Development',
+    description: 'Integrated sports performance analysis, injury prevention, and athletic training programs.',
+    details: 'Our sports performance team combines biomechanical analysis, strength conditioning, and injury prevention to help athletes reach their peak potential. From amateur to professional, we elevate your game.',
+    color: 'orange',
+  },
+  {
+    id: 'digital_health',
+    title: 'Digital Health & Web Solutions',
+    description: 'Tele-rehabilitation, virtual assessments, and remote health monitoring for convenient care.',
+    details: 'Access quality healthcare from anywhere with our digital health solutions. Our tele-rehabilitation services, virtual consultations, and remote monitoring ensure you stay on track with your health goals.',
+    color: 'cyan',
   },
 ];
 
@@ -72,7 +93,7 @@ export default function ServicesPage() {
                 {/* Content Side - Always on left for even, right for odd */}
                 <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
                   <div className="flex items-center gap-4 mb-5">
-                    <div className={`w-1 h-10 ${service.color === 'cyan' ? 'bg-cyan-500' : 'bg-teal-500'} rounded-full`} />
+                    <div className="w-1 h-10 rounded-full bg-cyan-500" />
                     <h2 className="text-[28px] md:text-[36px] font-semibold text-gray-900 tracking-tight">
                       {service.title}
                     </h2>
@@ -86,9 +107,7 @@ export default function ServicesPage() {
                   
                   <Link 
                     href={`/services/${service.id}`} 
-                    className={`inline-flex items-center gap-2 text-[14px] font-medium ${
-                      service.color === 'cyan' ? 'text-cyan-600 hover:text-cyan-700' : 'text-teal-600 hover:text-teal-700'
-                    } transition-colors`}
+                    className="inline-flex items-center gap-2 text-[14px] font-medium transition-colors text-cyan-600 hover:text-cyan-700"
                   >
                     Learn more
                     <ArrowRight className="h-4 w-4" />
@@ -116,8 +135,8 @@ export default function ServicesPage() {
                       {/* Progress/Status Items */}
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg ${service.color === 'cyan' ? 'bg-cyan-100' : 'bg-teal-100'} flex items-center justify-center`}>
-                            <div className={`w-3 h-3 rounded-full ${service.color === 'cyan' ? 'bg-cyan-500' : 'bg-teal-500'}`} />
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100">
+                            <div className="w-3 h-3 rounded-full bg-cyan-500" />
                           </div>
                           <div className="flex-1">
                             <div className="text-[12px] font-medium text-gray-700">Assessment</div>
@@ -125,13 +144,13 @@ export default function ServicesPage() {
                           </div>
                           <div className="flex -space-x-1">
                             <div className="w-5 h-5 rounded-full bg-cyan-200" />
-                            <div className="w-5 h-5 rounded-full bg-teal-200" />
+                            <div className="w-5 h-5 rounded-full bg-cyan-300" />
                           </div>
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg ${service.color === 'cyan' ? 'bg-cyan-100' : 'bg-teal-100'} flex items-center justify-center`}>
-                            <div className={`w-3 h-3 rounded-full ${service.color === 'cyan' ? 'bg-cyan-500' : 'bg-teal-500'}`} />
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100">
+                            <div className="w-3 h-3 rounded-full bg-cyan-500" />
                           </div>
                           <div className="flex-1">
                             <div className="text-[12px] font-medium text-gray-700">Treatment Plan</div>
@@ -165,8 +184,8 @@ export default function ServicesPage() {
                             <div className="text-[16px] font-medium text-gray-900">98%</div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className={`h-1.5 w-8 rounded-full ${service.color === 'cyan' ? 'bg-cyan-500' : 'bg-teal-500'}`} />
-                            <div className={`h-1.5 w-6 rounded-full ${service.color === 'cyan' ? 'bg-cyan-300' : 'bg-teal-300'}`} />
+                            <div className="h-1.5 w-8 rounded-full bg-cyan-500" />
+                            <div className="h-1.5 w-6 rounded-full bg-cyan-300" />
                             <div className="h-1.5 w-4 rounded-full bg-gray-200" />
                           </div>
                         </div>

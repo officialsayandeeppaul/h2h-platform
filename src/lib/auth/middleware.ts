@@ -17,6 +17,7 @@ const PUBLIC_ROUTES = [
   '/booking',
   '/coming-soon',
   '/maintenance',
+  '/super-admin/login',
 ];
 
 // Auth routes (login, register, etc.)
@@ -25,6 +26,7 @@ const AUTH_ROUTES = [
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/doctor/login',
 ];
 
 // API routes that should be excluded from middleware
@@ -46,9 +48,12 @@ export async function authMiddleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+
   let response = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   });
 
@@ -99,7 +104,17 @@ export async function authMiddleware(request: NextRequest) {
     pathname === route || pathname.startsWith(route + '/')
   );
 
-  // If user is not authenticated
+  // Doctor routes use their own cookie-based auth (not Supabase Auth)
+  if (pathname.startsWith('/doctor') && !isAuthRoute) {
+    const doctorSession = request.cookies.get('doctor_session')?.value;
+    if (!doctorSession) {
+      return NextResponse.redirect(new URL('/doctor/login', request.url));
+    }
+    // Cookie exists — allow access (full verification happens in layout)
+    return response;
+  }
+
+  // If user is not authenticated (non-doctor routes)
   if (error || !user) {
     // Allow access to public and auth routes
     if (isPublicRoute || isAuthRoute) {
@@ -117,6 +132,8 @@ export async function authMiddleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth routes
   if (isAuthRoute) {
+    // Don't redirect doctors away from /doctor/login — they use separate auth
+    if (pathname === '/doctor/login') return response;
     const dashboardUrl = new URL(ROLE_DASHBOARDS[userRole], request.url);
     return NextResponse.redirect(dashboardUrl);
   }
@@ -131,7 +148,6 @@ export async function authMiddleware(request: NextRequest) {
   if (
     pathname.startsWith('/admin') ||
     pathname.startsWith('/location-admin') ||
-    pathname.startsWith('/doctor') ||
     pathname.startsWith('/patient')
   ) {
     if (!canAccessRoute(userRole, pathname)) {

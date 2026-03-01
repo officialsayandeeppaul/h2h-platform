@@ -1,6 +1,10 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { 
   Calendar, 
@@ -10,38 +14,126 @@ import {
   ArrowRight,
   FileText,
   CreditCard,
-  Bell
+  Bell,
+  Loader2,
+  Stethoscope
 } from 'lucide-react';
 
-const upcomingAppointments = [
-  {
-    id: '1',
-    service: 'Back Pain Treatment',
-    doctor: 'Dr. Priya Sharma',
-    date: '2026-01-20',
-    time: '10:00 AM',
-    mode: 'offline',
-    status: 'confirmed',
-    location: 'Mumbai - Andheri',
-  },
-  {
-    id: '2',
-    service: 'Therapeutic Yoga',
-    doctor: 'Dr. Amit Patel',
-    date: '2026-01-25',
-    time: '11:30 AM',
-    mode: 'online',
-    status: 'confirmed',
-    location: 'Online',
-  },
-];
-
-const recentPayments = [
-  { id: '1', amount: 1200, date: '2026-01-10', status: 'success', service: 'Physiotherapy Session' },
-  { id: '2', amount: 800, date: '2026-01-05', status: 'success', service: 'Yoga Session' },
-];
+interface DashboardData {
+  user: { id: string; name: string; email: string; phone: string; avatar: string };
+  stats: { upcoming: number; completed: number; records: number; totalSpent: number };
+  upcomingAppointments: Array<{
+    id: string;
+    service: string;
+    doctor: string;
+    date: string;
+    time: string;
+    mode: string;
+    status: string;
+    location: string;
+  }>;
+  recentPayments: Array<{
+    id: string;
+    amount: number;
+    date: string;
+    status: string;
+    service: string;
+  }>;
+}
 
 export default function PatientDashboard() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch('/api/patient/dashboard');
+        const result = await res.json();
+        if (result.success) {
+          setData(result.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-6 lg:p-8">
+        {/* Welcome Header Skeleton */}
+        <div className="mb-8">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+
+        {/* Stats Skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-gray-200">
+              <CardContent className="pt-5 pb-5">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-5 w-5 rounded" />
+                  <div>
+                    <Skeleton className="h-7 w-12 mb-1" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Cards Skeleton */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {[1, 2].map((i) => (
+            <Card key={i} className="border-gray-200">
+              <CardHeader className="pb-4">
+                <Skeleton className="h-5 w-40 mb-1" />
+                <Skeleton className="h-3 w-32" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="flex items-start gap-3 p-3 rounded-lg border border-gray-100">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-32 mb-2" />
+                        <Skeleton className="h-3 w-24 mb-2" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Quick Actions Skeleton */}
+        <Card className="mt-6 border-gray-200">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-5 w-28" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              <Skeleton className="h-9 w-44" />
+              <Skeleton className="h-9 w-40" />
+              <Skeleton className="h-9 w-36" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const stats = data?.stats || { upcoming: 0, completed: 0, records: 0, totalSpent: 0 };
+  const upcomingAppointments = data?.upcomingAppointments || [];
+  const recentPayments = data?.recentPayments || [];
   return (
     <div className="p-6 lg:p-8">
       {/* Welcome Header */}
@@ -57,7 +149,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-cyan-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">2</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.upcoming}</p>
                 <p className="text-[13px] text-gray-500">Upcoming</p>
               </div>
             </div>
@@ -68,7 +160,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-teal-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">12</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.completed}</p>
                 <p className="text-[13px] text-gray-500">Completed</p>
               </div>
             </div>
@@ -79,7 +171,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">5</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.records}</p>
                 <p className="text-[13px] text-gray-500">Records</p>
               </div>
             </div>
@@ -90,7 +182,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <CreditCard className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">₹8,400</p>
+                <p className="text-2xl font-semibold text-gray-900">₹{stats.totalSpent.toLocaleString()}</p>
                 <p className="text-[13px] text-gray-500">Total Spent</p>
               </div>
             </div>
@@ -115,44 +207,54 @@ export default function PatientDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {upcomingAppointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
-                >
-                  <div className={`p-2 rounded-lg ${appointment.mode === 'online' ? 'bg-blue-50' : 'bg-green-50'}`}>
-                    {appointment.mode === 'online' ? (
-                      <Video className="h-4 w-4 text-blue-600" />
-                    ) : (
-                      <Building2 className="h-4 w-4 text-green-600" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-[13px] text-gray-900">{appointment.service}</p>
-                        <p className="text-[12px] text-gray-500">{appointment.doctor}</p>
-                      </div>
-                      <Badge className="bg-cyan-500 text-white border-0 text-[10px] font-medium px-2 py-0.5">
-                        {appointment.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(appointment.date).toLocaleDateString('en-IN', { 
-                          day: 'numeric', 
-                          month: 'short' 
-                        })}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {appointment.time}
-                      </span>
-                    </div>
-                  </div>
+              {upcomingAppointments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                  <p className="text-[13px]">No upcoming appointments</p>
+                  <Button size="sm" className="mt-3 bg-cyan-500 hover:bg-cyan-600 text-white text-[11px]" asChild>
+                    <Link href="/booking">Book Now</Link>
+                  </Button>
                 </div>
-              ))}
+              ) : (
+                upcomingAppointments.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                  >
+                    <div className={`p-2 rounded-lg ${appointment.mode === 'online' ? 'bg-blue-50' : 'bg-green-50'}`}>
+                      {appointment.mode === 'online' ? (
+                        <Video className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <Building2 className="h-4 w-4 text-green-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-medium text-[13px] text-gray-900">{appointment.service}</p>
+                          <p className="text-[12px] text-gray-500">{appointment.doctor}</p>
+                        </div>
+                        <Badge className="bg-cyan-500 text-white border-0 text-[10px] font-medium px-2 py-0.5">
+                          {appointment.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(appointment.date).toLocaleDateString('en-IN', { 
+                            day: 'numeric', 
+                            month: 'short' 
+                          })}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {appointment.time}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -173,21 +275,27 @@ export default function PatientDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentPayments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium text-[13px] text-gray-900">{payment.service}</p>
-                    <p className="text-[11px] text-gray-500">
-                      {new Date(payment.date).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
+              {recentPayments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <CreditCard className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                  <p className="text-[13px]">No payment history yet</p>
+                </div>
+              ) : (
+                recentPayments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                  >
+                    <div>
+                      <p className="font-medium text-[13px] text-gray-900">{payment.service}</p>
+                      <p className="text-[11px] text-gray-500">
+                        {new Date(payment.date).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
                   <div className="text-right">
                     <p className="font-semibold text-[14px] text-gray-900">₹{payment.amount}</p>
                     <Badge className="bg-green-500 text-white border-0 text-[10px] font-medium px-2 py-0.5">
@@ -195,7 +303,8 @@ export default function PatientDashboard() {
                     </Badge>
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -212,6 +321,12 @@ export default function PatientDashboard() {
               <Link href="/booking">
                 <Calendar className="mr-2 h-4 w-4" />
                 Book New Appointment
+              </Link>
+            </Button>
+            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9" asChild>
+              <Link href="/patient/doctors">
+                <Stethoscope className="mr-2 h-4 w-4" />
+                Find Doctors
               </Link>
             </Button>
             <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9" asChild>

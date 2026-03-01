@@ -1,11 +1,42 @@
-import { createClient } from '@/lib/supabase/server';
+/**
+ * H2H Healthcare - Create Razorpay Order API
+ * Creates a payment order for an appointment booking
+ */
+
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Lazy initialization to prevent build errors
+let razorpayInstance: Razorpay | null = null;
+
+function getRazorpay(): Razorpay {
+  if (!razorpayInstance) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error('Razorpay credentials not configured');
+    }
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpayInstance;
+}
+
+interface AppointmentData {
+  id: string;
+  amount: number;
+  patient_id: string;
+  service: {
+    name: string;
+  };
+}
+
+interface UserData {
+  full_name: string;
+  email: string;
+  phone: string | null;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,52 +54,85 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Appointment ID is required' }, { status: 400 });
     }
 
-    const { data: appointment, error: appointmentError } = await supabase
+    const adminClient = createAdminClient();
+
+    // Fetch appointment with service details (use admin client to bypass RLS)
+    const { data: appointment, error: appointmentError } = await adminClient
       .from('appointments')
-      .select('id, amount, patient_id')
+      .select(`
+        id, amount, patient_id,
+        service:services(name)
+      `)
       .eq('id', appointmentId)
-      .single() as { data: { id: string; amount: number; patient_id: string } | null; error: any };
+      .single() as { data: AppointmentData | null; error: any };
 
     if (appointmentError || !appointment) {
+      console.error('Appointment fetch error:', appointmentError);
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    if (appointment.patient_id !== user.id) {
+    // Verify the logged-in user owns this appointment (match by email since IDs may differ)
+    const { data: patientUser } = await adminClient
+      .from('users')
+      .select('id, email')
+      .eq('id', appointment.patient_id)
+      .single() as { data: { id: string; email: string } | null; error: any };
+
+    if (!patientUser || (patientUser.email !== user.email && appointment.patient_id !== user.id)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    // Fetch user details for prefill
+    const { data: userData } = await adminClient
+      .from('users')
+      .select('full_name, email, phone')
+      .eq('id', appointment.patient_id)
+      .single() as { data: UserData | null; error: any };
+
     const options = {
-      amount: Math.round(Number(appointment.amount) * 100),
+      amount: Math.round(Number(appointment.amount) * 100), // Convert to paise
       currency: 'INR',
-      receipt: `receipt_${appointmentId}`,
+      receipt: `h2h_${appointmentId.slice(0, 8)}`,
       notes: {
         appointmentId,
         userId: user.id,
+        service: appointment.service?.name || 'Healthcare Service',
       },
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await getRazorpay().orders.create(options);
 
-    await (supabase as any)
-      .from('appointments')
+    // Update appointment with order ID
+    await (adminClient
+      .from('appointments') as any)
       .update({ razorpay_order_id: order.id })
       .eq('id', appointmentId);
 
-    await (supabase as any)
-      .from('payments')
+    // Create payment record
+    await (adminClient
+      .from('payments') as any)
       .insert({
         appointment_id: appointmentId,
-        user_id: user.id,
+        user_id: appointment.patient_id,
         amount: appointment.amount,
         razorpay_order_id: order.id,
         status: 'pending',
       });
 
     return NextResponse.json({
+      success: true,
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
       keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      prefill: {
+        name: userData?.full_name || '',
+        email: userData?.email || user.email || '',
+        contact: userData?.phone || '',
+      },
+      notes: {
+        service: appointment.service?.name || 'Healthcare Service',
+      },
     });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);

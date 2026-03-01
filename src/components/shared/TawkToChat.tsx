@@ -34,30 +34,41 @@ export function TawkToChat({
       return;
     }
 
-    if (typeof window !== 'undefined' && !window.Tawk_API) {
-      window.Tawk_API = {};
-      window.Tawk_LoadStart = new Date();
+    // Defer Tawk loading by 5s to avoid blocking initial render (Lighthouse perf)
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && !window.Tawk_API) {
+        window.Tawk_API = {
+          customStyle: {
+            visibility: {
+              desktop: { position: 'br' as const, xOffset: 15, yOffset: 15 },
+              mobile: { position: 'br' as const, xOffset: 10, yOffset: 10 },
+            },
+          },
+        };
+        window.Tawk_LoadStart = new Date();
 
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
-      script.charset = 'UTF-8';
-      script.setAttribute('crossorigin', '*');
-      
-      script.onerror = () => {
-        console.warn('Tawk.to: Failed to load script');
-      };
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
+        script.charset = 'UTF-8';
+        script.setAttribute('crossorigin', '*');
+        
+        script.onerror = () => {
+          console.warn('Tawk.to: Failed to load script');
+        };
 
-      const firstScript = document.getElementsByTagName('script')[0];
-      firstScript.parentNode?.insertBefore(script, firstScript);
+        const firstScript = document.getElementsByTagName('script')[0];
+        firstScript.parentNode?.insertBefore(script, firstScript);
+      }
+    }, 5000);
 
-      return () => {
-        const tawkScript = document.querySelector(`script[src*="embed.tawk.to"]`);
-        if (tawkScript) {
-          tawkScript.remove();
-        }
-      };
-    }
+    return () => {
+      clearTimeout(timer);
+      const tawkScript = document.querySelector(`script[src*="embed.tawk.to"]`);
+      if (tawkScript) {
+        tawkScript.remove();
+      }
+    };
   }, [propertyId, widgetId]);
 
   return null;

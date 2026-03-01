@@ -6,7 +6,7 @@ export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancell
 
 export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed';
 
-export type ServiceCategory = 'sports_rehab' | 'pain_management' | 'physiotherapy' | 'yoga';
+export type ServiceCategory = 'pain_relief_physiotherapy' | 'advanced_rehabilitation' | 'nutrition_lifestyle' | 'mental_wellness' | 'therapeutic_yoga' | 'sports_performance' | 'digital_health';
 
 export type NotificationType = 'whatsapp' | 'sms' | 'email';
 
@@ -166,6 +166,19 @@ export interface Notification {
   created_at: string;
 }
 
+export type ContactMessageStatus = 'new' | 'read' | 'replied';
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  message: string;
+  services: string[];
+  status: ContactMessageStatus;
+  created_at: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -218,6 +231,11 @@ export interface Database {
         Row: Notification;
         Insert: Omit<Notification, 'id' | 'created_at'>;
         Update: Partial<Omit<Notification, 'id'>>;
+      };
+      contact_messages: {
+        Row: ContactMessage;
+        Insert: Omit<ContactMessage, 'id' | 'created_at'> & { services?: string[] };
+        Update: Partial<Omit<ContactMessage, 'id'>>;
       };
     };
   };

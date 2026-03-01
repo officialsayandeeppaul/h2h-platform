@@ -82,7 +82,7 @@ h2h-platform/
 
 3. **Set up environment variables**
    ```bash
-   cp env.example .env.local
+   cp .env.example .env.local
    ```
    Fill in your API keys in `.env.local`
 
@@ -163,14 +163,24 @@ NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
 
 ### Deploy to Vercel
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy!
+1. **Push your code to GitHub**
 
-```bash
-npm run build
-```
+2. **Connect your repository to Vercel**
+   - Go to [vercel.com](https://vercel.com) → New Project → Import your repo
+
+3. **Add environment variables in Vercel**
+   - Project → **Settings** → **Environment Variables**
+   - Add each variable from `.env.example` (use Production / Preview / Development as needed)
+   - Vercel injects these at build & runtime — **never commit `.env` or `.env.local`**
+
+4. **Deploy**
+   ```bash
+   npm run build   # test locally first
+   ```
+   Push to `main` to trigger automatic deployment.
+
+5. **Cron jobs** (appointment reminders)
+   - Set `CRON_SECRET` in Vercel and add to your cron endpoint for auth
 
 ## 📄 License
 

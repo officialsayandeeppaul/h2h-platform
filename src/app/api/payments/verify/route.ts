@@ -1,6 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
+/**
+ * H2H Healthcare - Verify Razorpay Payment API
+ * Verifies payment signature and updates appointment status
+ */
+
+import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createVideoRoomUrls } from '@/lib/video-link';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { sendAppointmentConfirmationEmails } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,21 +25,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing payment details' }, { status: 400 });
     }
 
+    // Verify environment variable exists
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      console.error('RAZORPAY_KEY_SECRET not configured');
+      return NextResponse.json({ error: 'Payment configuration error' }, { status: 500 });
+    }
+
+    // Verify signature
     const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
     if (generatedSignature !== razorpay_signature) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+      console.error('Invalid Razorpay signature', { razorpay_order_id, razorpay_payment_id });
+      return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 });
     }
 
-    const { error: paymentError } = await (supabase as any)
-      .from('payments')
+    const adminClient = createAdminClient();
+
+    // Update payment record
+    const { error: paymentError } = await (adminClient
+      .from('payments') as any)
       .update({
         razorpay_payment_id,
-        razorpay_signature,
-        status: 'success',
+        status: 'pending', // DB only allows: pending, failed, refunded
       })
       .eq('razorpay_order_id', razorpay_order_id);
 
@@ -40,15 +57,61 @@ export async function POST(request: NextRequest) {
       console.error('Payment update error:', paymentError);
     }
 
-    const { data: appointment, error: appointmentError } = await (supabase as any)
-      .from('appointments')
-      .update({
-        razorpay_payment_id,
-        payment_status: 'paid',
-        status: 'confirmed',
-      })
+    // Fetch appointment for video room creation (needs doctor name, date, time)
+    const { data: preAppointment } = await (adminClient
+      .from('appointments') as any)
+      .select(`
+        id, mode, google_meet_link, appointment_date, start_time, end_time, metadata,
+        doctor:doctor_id(users:user_id(full_name))
+      `)
       .eq('razorpay_order_id', razorpay_order_id)
-      .select()
+      .single();
+
+    const updates: any = {
+      razorpay_payment_id,
+      payment_status: 'paid',
+      status: 'confirmed',
+    };
+
+    // Create video room for online appointments (Daily.co = doctor host, else Jitsi fallback)
+    if (preAppointment?.mode === 'online' && !preAppointment?.google_meet_link && preAppointment?.id) {
+      try {
+        const doctorName = preAppointment?.doctor?.users?.full_name || 'Doctor';
+        const urls = await createVideoRoomUrls({
+          appointmentId: preAppointment.id,
+          doctorName,
+          appointmentDate: preAppointment.appointment_date,
+          startTime: preAppointment.start_time,
+          endTime: preAppointment.end_time,
+        });
+        updates.google_meet_link = urls.patientUrl;
+        const existingMeta = preAppointment.metadata && typeof preAppointment.metadata === 'object' && !Array.isArray(preAppointment.metadata)
+          ? { ...(preAppointment.metadata as Record<string, unknown>) }
+          : {};
+        updates.metadata = {
+          ...existingMeta,
+          doctor_video_url: urls.doctorUrl,
+          admin_video_url: urls.adminUrl,
+        };
+      } catch (err) {
+        console.error('Video room creation failed, using Jitsi fallback:', err);
+        const { generateJitsiLink } = await import('@/lib/video-link');
+        updates.google_meet_link = generateJitsiLink(preAppointment.id);
+      }
+    }
+
+    // Update appointment status to confirmed after payment
+    const { data: appointment, error: appointmentError } = await (adminClient
+      .from('appointments') as any)
+      .update(updates)
+      .eq('razorpay_order_id', razorpay_order_id)
+      .select(`
+        *,
+        doctor:doctor_id(id, users:user_id(full_name, email)),
+        service:service_id(id, name, duration_minutes),
+        location:location_id(id, name, city, address),
+        patient:patient_id(id, full_name, email, phone)
+      `)
       .single();
 
     if (appointmentError) {
@@ -56,10 +119,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update appointment' }, { status: 500 });
     }
 
+    // Build Google Calendar "Add to Calendar" URL
+    let calendarUrl: string | null = null;
+    if (appointment) {
+      const apt = appointment as any;
+      const startDT = `${apt.appointment_date.replace(/-/g, '')}T${apt.start_time.replace(/:/g, '')}00`;
+      const endDT = `${apt.appointment_date.replace(/-/g, '')}T${apt.end_time.replace(/:/g, '')}00`;
+      const doctorName = apt.doctor?.users?.full_name || 'Doctor';
+      const serviceName = apt.service?.name || 'Appointment';
+      const locationText = apt.mode === 'online'
+        ? (apt.google_meet_link || 'Online')
+        : `${apt.location?.name || ''}, ${apt.location?.city || ''}`;
+      const details = `H2H Healthcare Appointment\nService: ${serviceName}\nDoctor: ${doctorName}\nMode: ${apt.mode === 'online' ? 'Video Consultation' : 'In-Clinic'}\n${apt.google_meet_link ? 'Meet Link: ' + apt.google_meet_link : ''}`;
+
+      calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`H2H: ${serviceName} with ${doctorName}`)}&dates=${startDT}/${endDT}&ctz=Asia/Kolkata&details=${encodeURIComponent(details)}&location=${encodeURIComponent(locationText)}`;
+    }
+
+    // Send confirmation emails (non-blocking - don't fail payment if email fails)
+    if (appointment) {
+      const apt = appointment as any;
+      const doctorName = apt.doctor?.users?.full_name || 'Doctor';
+      // Strip "Dr." prefix if already present in DB name
+      const cleanDoctorName = doctorName.replace(/^Dr\.?\s*/i, '');
+      
+      sendAppointmentConfirmationEmails({
+        appointmentId: apt.id,
+        patientName: apt.patient?.full_name || 'Patient',
+        patientEmail: apt.patient?.email || user.email || '',
+        doctorName: cleanDoctorName,
+        doctorEmail: apt.doctor?.users?.email || '',
+        serviceName: apt.service?.name || 'Consultation',
+        appointmentDate: apt.appointment_date,
+        startTime: apt.start_time,
+        endTime: apt.end_time,
+        mode: apt.mode,
+        amount: parseFloat(apt.amount) || 0,
+        locationName: apt.location?.name || undefined,
+        locationCity: apt.location?.city || undefined,
+        googleMeetLink: apt.google_meet_link || null,
+      }).catch(err => console.error('Email sending failed:', err));
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Payment verified successfully',
       appointmentId: appointment?.id,
+      googleMeetLink: (appointment as any)?.google_meet_link || null,
+      calendarUrl,
     });
   } catch (error) {
     console.error('Error verifying payment:', error);

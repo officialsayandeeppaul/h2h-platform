@@ -25,6 +25,7 @@ import {
   User,
   Building2,
   ChevronLeft,
+  Activity,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -52,6 +53,7 @@ interface DashboardSidebarProps {
 const patientNav: NavItem[] = [
   { title: 'Dashboard', href: '/patient', icon: LayoutDashboard },
   { title: 'My Appointments', href: '/patient/appointments', icon: Calendar },
+  { title: 'Find Doctors', href: '/patient/doctors', icon: Stethoscope },
   { title: 'Medical Records', href: '/patient/records', icon: FileText },
   { title: 'Payments', href: '/patient/payments', icon: CreditCard },
   { title: 'Profile', href: '/patient/profile', icon: User },
@@ -62,6 +64,7 @@ const doctorNav: NavItem[] = [
   { title: 'Appointments', href: '/doctor/appointments', icon: Calendar },
   { title: 'Patients', href: '/doctor/patients', icon: Users },
   { title: 'Prescriptions', href: '/doctor/prescriptions', icon: FileText },
+  { title: 'Activity', href: '/doctor/activity', icon: Activity },
   { title: 'Schedule', href: '/doctor/schedule', icon: Calendar },
   { title: 'Profile', href: '/doctor/profile', icon: User },
 ];
@@ -78,6 +81,7 @@ const locationAdminNav: NavItem[] = [
 const superAdminNav: NavItem[] = [
   { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { title: 'Appointments', href: '/admin/appointments', icon: Calendar },
+  { title: 'Prescriptions', href: '/admin/prescriptions', icon: FileText },
   { title: 'Locations', href: '/admin/locations', icon: MapPin },
   { title: 'Doctors', href: '/admin/doctors', icon: Stethoscope },
   { title: 'Users', href: '/admin/users', icon: Users },
@@ -103,8 +107,8 @@ function SidebarContent({
 }) {
   return (
     <div className="flex flex-col h-full bg-[#1a2e35]">
-      {/* Logo */}
-      <div className={cn("h-16 flex items-center", collapsed ? "px-3 justify-center" : "px-5")}>
+      {/* Logo - Top section with rounded corners */}
+      <div className={cn("h-16 flex items-center shrink-0 border-b border-white/5", collapsed ? "px-3 justify-center" : "px-5")}>
         <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-teal-400">
             <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#1a2e35]" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -123,7 +127,11 @@ function SidebarContent({
       <ScrollArea className="flex-1 py-4">
         <nav className={cn("space-y-1", collapsed ? "px-2" : "px-3")}>
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            // For dashboard links, only match exact path
+            const isDashboard = item.title === 'Dashboard';
+            const isActive = isDashboard 
+              ? pathname === item.href 
+              : pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
                 key={item.href}
@@ -234,9 +242,9 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden fixed top-4 left-4 z-50"
+            className="lg:hidden fixed top-3 left-3 z-40 h-10 w-10 bg-white shadow-md border border-gray-200 rounded-xl hover:bg-gray-50"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5 text-gray-700" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-72">
@@ -255,25 +263,27 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       {/* Desktop Sidebar - Fixed h-screen */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col h-screen sticky top-0 bg-[#1a2e35] transition-all duration-300 relative',
+          'hidden lg:flex flex-col h-screen sticky top-0 bg-[#1a2e35] transition-all duration-300 relative rounded-r-2xl shadow-xl overflow-visible',
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
-        <SidebarContent 
-          navItems={navItems} 
-          pathname={pathname} 
-          onLogout={handleLogout}
-          collapsed={collapsed}
-          user={user}
-        />
-        {/* Collapse Toggle Button */}
+        <div className="flex flex-col h-full overflow-hidden rounded-r-2xl">
+          <SidebarContent 
+            navItems={navItems} 
+            pathname={pathname} 
+            onLogout={handleLogout}
+            collapsed={collapsed}
+            user={user}
+          />
+        </div>
+        {/* Collapse Toggle Button - fully visible, high z-index */}
         <Button
           variant="outline"
           size="icon"
-          className="absolute -right-3 top-20 h-6 w-6 rounded-full border-gray-300 bg-white shadow-md hover:bg-gray-50 z-50"
+          className="absolute -right-3 top-20 h-8 w-8 rounded-full border-gray-200 bg-white shadow-lg hover:bg-gray-50 hover:shadow-xl z-[100] transition-all"
           onClick={() => setCollapsed(!collapsed)}
         >
-          <ChevronLeft className={cn("h-3.5 w-3.5 text-gray-600 transition-transform duration-200", collapsed && "rotate-180")} />
+          <ChevronLeft className={cn("h-4 w-4 text-gray-600 transition-transform duration-200", collapsed && "rotate-180")} />
         </Button>
       </aside>
     </>

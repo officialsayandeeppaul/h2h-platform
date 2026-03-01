@@ -8,13 +8,18 @@ import {
   Award,
   Shield,
   Zap,
-  Home as HomeIcon,
-  Calendar,
-  Trophy,
-  Star,
 } from "lucide-react";
 
-const GridMotion = dynamic(() => import("@/components/ui/grid-motion"), { ssr: false });
+// Optimistic: show gradient instantly; grid-motion loads async; fallback on chunk error
+const GridFallback = () => (
+  <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15),transparent_70%)]" />
+  </div>
+);
+const GridMotion = dynamic(
+  () => import("@/components/ui/grid-motion").catch(() => ({ default: GridFallback })),
+  { ssr: false, loading: () => <GridFallback /> }
+);
 
 export function GridMotionSection() {
   return (

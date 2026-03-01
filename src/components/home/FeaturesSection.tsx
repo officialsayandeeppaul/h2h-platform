@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from "next/dynamic";
-import { Activity, Heart, MapPin } from "lucide-react";
 import { Highlighter } from "@/components/ui/highlighter";
 import { AnimatedList } from "@/components/ui/animated-list";
 import { features } from './data';
@@ -26,18 +25,18 @@ export function FeaturesSection() {
       <div className="absolute top-20 left-10 md:left-20 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-gradient-to-br from-cyan-500/10 to-teal-500/5 rounded-full blur-[100px]" />
       <div className="absolute bottom-20 right-10 md:right-20 w-[175px] md:w-[350px] h-[175px] md:h-[350px] bg-gradient-to-br from-blue-500/10 to-cyan-500/5 rounded-full blur-[100px]" />
 
-      {/* CardSwap Container - positioned at bottom right - hidden on mobile/tablet */}
+      {/* CardSwap - absolute positioned at bottom-right, hidden on smaller screens */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none hidden xl:block">
         <div className="relative w-full h-full pointer-events-auto">
           <CardSwap
             width={600}
             height={400}
-            cardDistance={65}
-            verticalDistance={75}
-            delay={5000}
+            cardDistance={55}
+            verticalDistance={65}
+            delay={3500}
             pauseOnHover
-            skewAmount={6}
-            easing="elastic"
+            skewAmount={4}
+            easing="linear"
           >
             {/* Card 1 - Sports Rehabilitation */}
             <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-2xl shadow-blue-500/20 rounded-2xl">
@@ -114,7 +113,7 @@ export function FeaturesSection() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content - left side */}
       <div className="max-w-[1200px] mx-auto px-6 lg:px-12 relative z-10">
         <div className="max-w-md">
           <h2 className="text-[32px] md:text-[40px] font-medium text-cyan-400 mb-6 leading-tight tracking-tight">

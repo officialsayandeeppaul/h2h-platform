@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail, Phone, MapPin, Activity } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { APP_CONFIG } from '@/constants/config';
 import { SERVICE_CATEGORIES } from '@/constants/services';
 
@@ -20,11 +20,13 @@ export function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2 mb-5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/h2hwebsitelogo.png"
                 alt="H2H Healthcare"
-                className="h-20 sm:h-32 w-auto object-contain"
+                width={160}
+                height={64}
+                className="h-16 sm:h-20 w-auto object-contain"
+                loading="lazy"
               />
             </Link>
 

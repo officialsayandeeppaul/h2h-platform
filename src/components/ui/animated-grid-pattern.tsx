@@ -47,6 +47,7 @@ export function AnimatedGridPattern({
   const containerRef = useRef<SVGSVGElement | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const [squares, setSquares] = useState<Array<Square>>([])
+  const [canAnimate, setCanAnimate] = useState(false)
 
   const getPos = useCallback((): [number, number] => {
     return [
@@ -90,6 +91,13 @@ export function AnimatedGridPattern({
       setSquares(generateSquares(numSquares))
     }
   }, [dimensions.width, dimensions.height, generateSquares, numSquares])
+
+  useEffect(() => {
+    const id = typeof requestIdleCallback !== 'undefined'
+      ? requestIdleCallback(() => setCanAnimate(true), { timeout: 300 })
+      : window.setTimeout(() => setCanAnimate(true), 150) as unknown as number
+    return () => (typeof cancelIdleCallback !== 'undefined' ? cancelIdleCallback(id) : clearTimeout(id))
+  }, [])
 
   useEffect(() => {
     const element = containerRef.current
@@ -149,7 +157,7 @@ export function AnimatedGridPattern({
         {squares.map(({ pos: [squareX, squareY], id, iteration }, index) => (
           <motion.rect
             initial={{ opacity: 0 }}
-            animate={{ opacity: maxOpacity }}
+            animate={canAnimate ? { opacity: maxOpacity } : { opacity: 0 }}
             transition={{
               duration,
               repeat: 1,
