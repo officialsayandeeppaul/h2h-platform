@@ -48,6 +48,17 @@ export async function authMiddleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Public routes: return immediately WITHOUT calling Supabase.
+  // Fixes 504 on custom domain when Supabase is slow/blocked from certain regions (e.g. Mumbai).
+  const isPublicRoute = PUBLIC_ROUTES.some(route =>
+    pathname === route || pathname.startsWith(route + '/')
+  );
+  if (isPublicRoute) {
+    return NextResponse.next({
+      request: { headers: new Headers(request.headers) },
+    });
+  }
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
 
@@ -94,12 +105,7 @@ export async function authMiddleware(request: NextRequest) {
     error = e;
   }
 
-  // Check if route is public
-  const isPublicRoute = PUBLIC_ROUTES.some(route => 
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
-  // Check if route is auth route
+  // Check if route is auth route (public routes already returned above)
   const isAuthRoute = AUTH_ROUTES.some(route => 
     pathname === route || pathname.startsWith(route + '/')
   );
@@ -116,8 +122,8 @@ export async function authMiddleware(request: NextRequest) {
 
   // If user is not authenticated (non-doctor routes)
   if (error || !user) {
-    // Allow access to public and auth routes
-    if (isPublicRoute || isAuthRoute) {
+    // Allow access to auth routes (public routes already returned above)
+    if (isAuthRoute) {
       return response;
     }
     
