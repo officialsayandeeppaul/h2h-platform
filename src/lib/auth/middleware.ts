@@ -80,17 +80,17 @@ export async function authMiddleware(request: NextRequest) {
     }
   );
 
-  // Get current user - wrapped in try-catch to handle network failures gracefully
+  // Use getSession() instead of getUser() - reads JWT from cookies only, NO network call.
+  // This avoids MIDDLEWARE_INVOCATION_TIMEOUT when Supabase API is slow/unreachable.
+  // Full verification still happens in API routes and layouts via getUser().
   let user = null;
   let error = null;
   try {
-    const result = await supabase.auth.getUser();
-    user = result.data.user;
-    error = result.error;
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    user = session?.user ?? null;
+    error = sessionError ?? null;
   } catch (e) {
-    // Network error (fetch failed) - treat as unauthenticated
-    // This commonly happens in Edge Runtime when Supabase is unreachable
-    console.warn('Middleware: Failed to fetch user session:', e);
+    console.warn('Middleware: Failed to read session:', e);
     error = e;
   }
 
