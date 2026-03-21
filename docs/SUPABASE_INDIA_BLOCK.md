@@ -1,4 +1,4 @@
-# Supabase Blocked in India – Fix with Cloudflare Worker
+# Supabase Blocked in India – Fix
 
 ## The Problem
 
@@ -6,68 +6,41 @@ Indian ISPs (Jio, Airtel, ACT) have DNS-blocked `*.supabase.co`. Browser request
 
 - `net::ERR_NAME_NOT_RESOLVED`
 - `AuthRetryableFetchError: Failed to fetch`
-- Login/auth pages hang
-- Realtime, storage, and DB calls from the browser fail
+- Google login gives **Cloudflare Error 1016** (Cloudflare's edge in India also can't resolve Supabase)
 
-Server-side code (API routes, Vercel server) may work because it runs outside India.
+## Fix 1: Vercel API Proxy (Recommended)
 
-## The Fix: Cloudflare Worker Proxy (Free)
+This app includes a built-in proxy. Vercel runs in US/EU where Supabase is reachable.
 
-Route browser Supabase requests through a Cloudflare Worker. The Worker runs on `*.workers.dev`, which is reachable in India.
-
-### Step 1: Create the Cloudflare Worker
-
-1. Go to [dash.cloudflare.com](https://dash.cloudflare.com/) → **Workers & Pages** → **Create Worker**
-2. Name it `supabase-proxy` → **Deploy**
-3. **Edit code** and replace with:
-
-```javascript
-const SUPABASE_ORIGIN = 'https://njfkgczmuaoqqkpmufun.supabase.co';
-
-export default {
-  async fetch(request) {
-    const url = new URL(request.url);
-    const targetUrl = SUPABASE_ORIGIN + url.pathname + url.search;
-
-    const headers = new Headers(request.headers);
-    headers.set('host', new URL(SUPABASE_ORIGIN).host);
-
-    if (request.headers.get('Upgrade') === 'websocket') {
-      return fetch(targetUrl, { headers, method: request.method });
-    }
-
-    return fetch(targetUrl, {
-      method: request.method,
-      headers,
-      body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
-      redirect: 'follow',
-    });
-  },
-};
-```
-
-4. **Deploy** and copy your Worker URL, e.g. `https://supabase-proxy.<account>.workers.dev`
-
-### Step 2: Update Vercel Environment Variable
+### Step 1: Add Vercel Environment Variables
 
 1. Vercel → Project → **Settings** → **Environment Variables**
-2. Edit `NEXT_PUBLIC_SUPABASE_URL`:
-   - **Before:** `https://njfkgczmuaoqqkpmufun.supabase.co`
-   - **After:** `https://supabase-proxy.<your-account>.workers.dev`
-3. **Save** → **Redeploy**
+2. Add/update:
 
-`NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` stay the same.
+| Variable | Value |
+|----------|-------|
+| `NEXT_PUBLIC_SUPABASE_USE_PROXY` | `true` |
+| `SUPABASE_DIRECT_URL` | `https://njfkgczmuaoqqkpmufun.supabase.co` |
 
-### Step 3: Verify
+3. Keep `NEXT_PUBLIC_SUPABASE_URL` as `https://njfkgczmuaoqqkpmufun.supabase.co` (used server-side and as fallback)
+4. **Save** → **Redeploy**
 
-- Open the app from an Indian network
-- DevTools → Network: requests should go to `*.workers.dev` with 200 OK instead of `ERR_NAME_NOT_RESOLVED`
+The browser will use `your-domain.com/api/supabase-proxy` automatically.
 
-## Alternative: JioBase (Managed Proxy)
+**Note:** Supabase Realtime (WebSockets) may not work through this proxy. Auth and REST API will work.
 
-[JioBase](https://app.jiobase.com) offers a managed Supabase proxy. Sign up, add your Supabase URL, and use their proxy URL instead of `supabase.co`.
+---
 
-## References
+## Fix 2: Cloudflare Worker (Alternative)
 
-- [Dev.to: Supabase India fix with Cloudflare Worker](https://dev.to/ritvikdayal/supabase-is-blocked-in-india-heres-the-exact-fix-using-a-cloudflare-worker-2ejf)
-- [JioBase](https://github.com/sunithvs/jiobase)
+Cloudflare Workers can hit Error 1016 if the Worker runs in India (same DNS block). Try first; if it fails, use the Vercel proxy above.
+
+1. [dash.cloudflare.com](https://dash.cloudflare.com/) → **Workers & Pages** → **Create Worker**
+2. Replace code with the proxy script from the [Dev.to guide](https://dev.to/ritvikdayal/supabase-is-blocked-in-india-heres-the-exact-fix-using-a-cloudflare-worker-2ejf)
+3. Set `NEXT_PUBLIC_SUPABASE_URL` to your Worker URL
+
+---
+
+## Fix 3: JioBase (Managed Proxy)
+
+[JioBase](https://app.jiobase.com) offers a managed Supabase proxy. Sign up, add your Supabase URL, and use their proxy URL.
