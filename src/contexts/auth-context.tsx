@@ -48,7 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
+      const getUserPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Refresh timeout')), 8000)
+      );
+      const { data: { user: supabaseUser }, error } = await Promise.race([
+        getUserPromise,
+        timeoutPromise,
+      ]);
       
       if (error || !supabaseUser) {
         setUser(null);
@@ -57,28 +64,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(mapSupabaseUser(supabaseUser));
-      
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
-    } catch (error) {
-      console.error('Error refreshing user:', error);
+    } catch {
       setUser(null);
       setSession(null);
     }
   }, [supabase.auth]);
 
   useEffect(() => {
-    // Get initial session
     const initializeAuth = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        // Timeout after 8s - Supabase may be unreachable (e.g. blocked in India)
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 8000)
+        );
+        const { data: { session: initialSession } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise,
+        ]);
         
         if (initialSession?.user) {
           setUser(mapSupabaseUser(initialSession.user));
           setSession(initialSession);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        // Supabase unreachable (ERR_NAME_NOT_RESOLVED, timeout, etc.) - treat as logged out
+        setUser(null);
+        setSession(null);
       } finally {
         setIsLoading(false);
       }
@@ -86,7 +100,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (currentSession?.user) {
@@ -119,15 +132,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase.auth, router]);
 
   const signOut = useCallback(async () => {
+    setUser(null);
+    setSession(null);
     try {
       await supabase.auth.signOut();
-      setUser(null);
-      setSession(null);
-      router.push('/login');
-      router.refresh();
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch {
+      // Supabase unreachable - already cleared local state
     }
+    router.push('/login');
+    router.refresh();
   }, [supabase.auth, router]);
 
   const value: AuthContextType = {

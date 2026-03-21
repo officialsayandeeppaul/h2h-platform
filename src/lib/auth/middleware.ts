@@ -15,6 +15,7 @@ const PUBLIC_ROUTES = [
   '/services',
   '/locations',
   '/booking',
+  '/blog',
   '/coming-soon',
   '/maintenance',
   '/super-admin/login',
