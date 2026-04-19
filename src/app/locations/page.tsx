@@ -6,13 +6,17 @@ import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-m
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Header, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Highlighter } from "@/components/ui/highlighter";
-import { PixelImage } from "@/components/ui/pixel-image";
-import { MapPin, Phone, Mail, Clock, Navigation2, Video, Building2, Star, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+import { MapPin, Phone, Clock, Navigation2, Video, Building2, Loader2, ArrowRight } from "lucide-react";
+import { APP_CONFIG } from "@/constants/config";
+import { SERVICE_CATEGORIES } from "@/constants/services";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+
+const CARE_VERTICALS = Object.keys(SERVICE_CATEGORIES).length;
+const CLINIC_DAYS_PER_WEEK = 6;
+const phoneTel = (p: string) => `tel:${p.replace(/\s/g, "")}`;
 
 // Location tier info
 const LOCATION_TIERS = {
@@ -70,6 +74,10 @@ export default function LocationsPage() {
     zoom: 4.2
   });
   const [selectedCity, setSelectedCity] = useState<string>('all');
+
+  const cityCount = new Set(
+    clinicCenters.map((c) => c.location?.city || "").filter(Boolean)
+  ).size;
 
   // Fetch clinic centers from API
   useEffect(() => {
@@ -145,8 +153,41 @@ export default function LocationsPage() {
                   <span className="text-cyan-600">Center Near You</span>
                 </Highlighter>
               </h1>
-              <p className="text-[16px] text-gray-600 max-w-2xl mx-auto">
-                With {clinicCenters.length}+ state-of-the-art facilities across major Indian cities, quality healthcare is always within reach.
+              <p className="text-[16px] text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                {loading ? (
+                  <>
+                    Loading our centre list… You can book physio, sports rehab, and pain care—in clinic, online, or at
+                    home where we operate. Need help? Call{' '}
+                    <a href={phoneTel(APP_CONFIG.phone)} className="text-cyan-600 font-medium hover:underline">
+                      {APP_CONFIG.phone}
+                    </a>
+                    .
+                  </>
+                ) : clinicCenters.length > 0 ? (
+                  <>
+                    We currently list{' '}
+                    <span className="font-medium text-gray-800">{clinicCenters.length}</span> centre
+                    {clinicCenters.length === 1 ? "" : "s"} across{" "}
+                    <span className="font-medium text-gray-800">{cityCount}</span> cities. Same services you see on the
+                    homepage—transparent booking, no inflated claims. For the fastest help, use{" "}
+                    <Link href="/booking" className="text-cyan-600 font-medium hover:underline">
+                      Book Appointment
+                    </Link>{" "}
+                    or our toll-free line.
+                  </>
+                ) : (
+                  <>
+                    We couldn&apos;t load centre details right now. Please try refreshing, use{" "}
+                    <Link href="/booking" className="text-cyan-600 font-medium hover:underline">
+                      Book Appointment
+                    </Link>
+                    , or call{" "}
+                    <a href={phoneTel(APP_CONFIG.phone)} className="text-cyan-600 font-medium hover:underline">
+                      {APP_CONFIG.phone}
+                    </a>
+                    .
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -160,8 +201,9 @@ export default function LocationsPage() {
                 Interactive{' '}
                 <span className="text-cyan-600">Location Map</span>
               </h2>
-              <p className="text-[15px] text-gray-600 max-w-2xl mx-auto">
-                Explore our centers across India. Click on any marker to view details.
+              <p className="text-[15px] text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Markers match the centres listed below (tiers reflect metro vs regional hubs in our static directory).
+                Tap a pin for address and booking.
               </p>
             </div>
 
@@ -251,7 +293,7 @@ export default function LocationsPage() {
                               {selectedLocation.phone && (
                                 <div className="flex items-center gap-2.5 text-[13px] text-gray-700">
                                   <Phone className="w-4 h-4 text-cyan-600 flex-shrink-0" />
-                                  <a href={`tel:${selectedLocation.phone}`} className="hover:text-cyan-600">
+                                  <a href={phoneTel(selectedLocation.phone)} className="hover:text-cyan-600">
                                     {selectedLocation.phone}
                                   </a>
                                 </div>
@@ -295,7 +337,9 @@ export default function LocationsPage() {
                     <span className="text-[13px] text-gray-600">Tier 2</span>
                   </div>
                 </div>
-                <p className="text-[12px] text-gray-500">{clinicCenters.length} locations across India</p>
+                <p className="text-[12px] text-gray-500">
+                  {loading ? "Loading…" : `${clinicCenters.length} centre${clinicCenters.length === 1 ? "" : "s"} listed`}
+                </p>
               </div>
             </div>
           </div>
@@ -309,34 +353,52 @@ export default function LocationsPage() {
           
           <div className="max-w-[1200px] mx-auto px-6 relative z-10">
             <div className="text-center mb-16">
-              <p className="text-[13px] text-cyan-400 font-medium mb-3">Why Choose Us</p>
+              <p className="text-[13px] text-cyan-400 font-medium mb-3">Why H2H on the map</p>
               <h2 className="text-[32px] md:text-[44px] font-medium text-white tracking-tight mb-4">
-                Healthcare at Your{' '}
-                <span className="text-cyan-400">Doorstep</span>
+                Care that fits{' '}
+                <span className="text-cyan-400">real life</span>
               </h2>
-              <p className="text-[15px] text-gray-400 max-w-xl mx-auto">
-                Experience world-class healthcare services across India
+              <p className="text-[15px] text-gray-400 max-w-xl mx-auto leading-relaxed">
+                Numbers below come from this page&apos;s centre list and our public service map—not vanity metrics.
               </p>
             </div>
             
-            <div className="grid md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-[48px] font-semibold text-cyan-400 mb-2">{clinicCenters.length}+</div>
-                <p className="text-[14px] text-gray-400">Centers Across India</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+              <div className="text-center lg:text-left">
+                <div className="text-[44px] md:text-[48px] font-semibold text-cyan-400 mb-2 tabular-nums leading-none">
+                  {loading ? "—" : clinicCenters.length}
+                </div>
+                <p className="text-[14px] text-gray-400">Centres listed here</p>
               </div>
-              <div className="text-center">
-                <div className="text-[48px] font-semibold text-teal-400 mb-2">50K+</div>
-                <p className="text-[14px] text-gray-400">Patients Treated</p>
+              <div className="text-center lg:text-left">
+                <div className="text-[44px] md:text-[48px] font-semibold text-teal-400 mb-2 tabular-nums leading-none">
+                  {loading ? "—" : cityCount}
+                </div>
+                <p className="text-[14px] text-gray-400">Cities covered</p>
               </div>
-              <div className="text-center">
-                <div className="text-[48px] font-semibold text-cyan-400 mb-2">100+</div>
-                <p className="text-[14px] text-gray-400">Expert Therapists</p>
+              <div className="text-center lg:text-left">
+                <div className="text-[44px] md:text-[48px] font-semibold text-cyan-400 mb-2 tabular-nums leading-none">
+                  {CARE_VERTICALS}
+                </div>
+                <p className="text-[14px] text-gray-400">Care verticals (site-wide)</p>
               </div>
-              <div className="text-center">
-                <div className="text-[48px] font-semibold text-teal-400 mb-2">4.9</div>
-                <p className="text-[14px] text-gray-400">Average Rating</p>
+              <div className="text-center lg:text-left">
+                <div className="text-[44px] md:text-[48px] font-semibold text-teal-400 mb-2 tabular-nums leading-none">
+                  {CLINIC_DAYS_PER_WEEK}
+                </div>
+                <p className="text-[14px] text-gray-400">Typical clinic days (Mon–Sat)</p>
               </div>
             </div>
+            <p className="text-center text-[13px] text-gray-500 mt-12 max-w-2xl mx-auto">
+              Toll-free:{" "}
+              <a href={phoneTel(APP_CONFIG.phone)} className="text-cyan-400 hover:underline">
+                {APP_CONFIG.phone}
+              </a>
+              {" · "}
+              <a href={`mailto:${APP_CONFIG.email}`} className="text-cyan-400 hover:underline">
+                {APP_CONFIG.email}
+              </a>
+            </p>
           </div>
         </section>
 
@@ -373,8 +435,9 @@ export default function LocationsPage() {
               <h2 className="text-[32px] md:text-[44px] font-medium text-gray-900 tracking-tight mb-4">
                 Healthcare Centers
               </h2>
-              <p className="text-[15px] text-gray-500 max-w-2xl mx-auto">
-                Each location is equipped with modern facilities and staffed by expert healthcare professionals.
+              <p className="text-[15px] text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                Each card reflects our directory entry: address, tier, facilities, and hours. Clinicians and equipment
+                vary by site—details are confirmed when you book.
               </p>
             </div>
             
@@ -435,7 +498,7 @@ export default function LocationsPage() {
                           {center.phone && (
                             <div className="flex items-center gap-3 text-[13px] text-gray-600">
                               <Phone className="h-4 w-4 flex-shrink-0 text-cyan-500" />
-                              <a href={`tel:${center.phone}`} className="hover:text-cyan-600 transition-colors">
+                              <a href={phoneTel(center.phone)} className="hover:text-cyan-600 transition-colors">
                                 {center.phone}
                               </a>
                             </div>
@@ -500,8 +563,13 @@ export default function LocationsPage() {
             <h2 className="text-[32px] md:text-[44px] font-medium text-white tracking-tight mb-6">
               Can&apos;t Visit a Center?
             </h2>
-            <p className="text-[16px] text-white/90 max-w-2xl mx-auto mb-10">
-              No worries! Book an online consultation and connect with our experts from anywhere in India via video call.
+            <p className="text-[16px] text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Book a video consult when online is offered for your service, or choose a centre above. Support:
+              {" "}
+              <a href={phoneTel(APP_CONFIG.phone)} className="font-medium underline decoration-white/40 hover:decoration-white">
+                {APP_CONFIG.phone}
+              </a>
+              .
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button className="h-12 px-8 text-[14px] font-medium bg-white hover:bg-gray-100 text-gray-900 rounded-full" asChild>

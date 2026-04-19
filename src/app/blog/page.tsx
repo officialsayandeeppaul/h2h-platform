@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { MARKETING_IMAGES } from '@/constants/marketing-images';
 import { Header, Footer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Highlighter } from '@/components/ui/highlighter';
@@ -15,7 +16,7 @@ const blogPosts = [
     author: 'Dr. Priya Sharma',
     date: 'Jan 15, 2026',
     readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=500&fit=crop',
+    image: MARKETING_IMAGES.physio,
     color: 'bg-cyan-50',
     textColor: 'text-cyan-600',
   },
@@ -51,7 +52,7 @@ const blogPosts = [
     author: 'Dr. Rajesh Kumar',
     date: 'Jan 8, 2026',
     readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=500&fit=crop',
+    image: MARKETING_IMAGES.activeRecovery,
     color: 'bg-purple-50',
     textColor: 'text-purple-600',
   },

@@ -17,6 +17,7 @@ import {
   Loader2, IndianRupee, CreditCard, Calendar, 
   CheckCircle2, Clock, XCircle, Download, FileText
 } from 'lucide-react';
+import { APP_CONFIG } from '@/constants/config';
 
 interface Payment {
   id: string;
@@ -203,7 +204,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:#1e293b;line-height:1.4;back
   </div>
   <div class="footer">
     <div class="footer-left"><p><strong>${inv.company?.name || 'H2H Healthcare'}</strong></p><p>${inv.company?.address || 'Tower B, DLF Cyber City, Gurgaon, Haryana 122002'}</p><p>GSTIN: ${inv.company?.gstin || '06AABCH1234A1Z5'}</p><p style="margin-top:3px;font-size:8px">Computer-generated invoice</p></div>
-    <div class="footer-right"><div class="thank">Thank you!</div><p>${inv.company?.phone || '+91 1800 123 4567'}</p><p>${inv.company?.email || 'support@h2hhealthcare.com'}</p></div>
+    <div class="footer-right"><div class="thank">Thank you!</div><p>${inv.company?.phone || APP_CONFIG.phone}</p><p>${inv.company?.email || APP_CONFIG.email}</p></div>
   </div>
 </div>
 <script>

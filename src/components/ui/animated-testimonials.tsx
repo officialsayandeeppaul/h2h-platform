@@ -190,7 +190,7 @@ export function AnimatedTestimonials() {
             {' '}Say
           </h2>
           <p className="text-[15px] text-gray-400 max-w-2xl mx-auto">
-            Real stories from patients who transformed their health with H2H Healthcare.
+            Illustrative feedback—names and photos are placeholders; your experience is always individual.
           </p>
         </div>
 

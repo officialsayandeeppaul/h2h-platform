@@ -19,7 +19,7 @@ export function HealToHealthSection() {
           </Highlighter>
         </h2>
         <p className="text-[17px] text-gray-500 max-w-2xl mx-auto mb-10">
-          We don&apos;t just treat symptoms — we transform lives. Your journey from healing to lasting health starts here.
+          From acute injury to long-term pain—we focus on what you can do next, not buzzwords.
         </p>
 
         {/* Dock with quick actions */}
@@ -47,7 +47,7 @@ export function HealToHealthSection() {
           <Highlighter action="box" color="#06b6d4" strokeWidth={1}>
             H2H Healthcare
           </Highlighter>
-          {' '}— Trusted by thousands across India 🇮🇳
+          {' '}— Physiotherapy &amp; sports rehab, built in India 🇮🇳
         </p>
       </div>
     </section>

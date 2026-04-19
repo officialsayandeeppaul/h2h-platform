@@ -1,9 +1,12 @@
 export const APP_CONFIG = {
   name: 'H2H Healthcare',
   tagline: 'Your Partner in Sports Rehab, Pain Management & Wellness',
-  description: 'Comprehensive healthcare platform specializing in Sports Rehabilitation, Pain Management, Physiotherapy, and Yoga services across India.',
+  description:
+    'Sports rehabilitation, physiotherapy, pain management, and yoga—book online for clinic, telehealth, or home visits where we operate.',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in',
   email: 'support@healtohealth.in',
+  /** H2H Absolute Performance — sports academies, federations, elite programmes */
+  performanceEmail: 'h2hab.performance@gmail.com',
   phone: '+91 1800 123 4567',
   social: {
     facebook: 'https://facebook.com/healtohealth',

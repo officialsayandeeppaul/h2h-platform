@@ -26,13 +26,13 @@ export function LocationsSection() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-[32px] md:text-[40px] font-medium text-white mb-6 leading-tight tracking-tight">
-              Available Across{' '}
+              Serving{' '}
               <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
-                8+ Cities
+                major Indian cities
               </span>
             </h2>
             <p className="text-[15px] text-gray-400 mb-10">
-              From metros to tier-2 cities, we&apos;re bringing world-class healthcare closer to you.
+              Check live availability for clinics, online consults, and home visits in your area—we&apos;re adding locations steadily.
             </p>
 
             {/* City tags - Dark theme */}
@@ -75,8 +75,8 @@ export function LocationsSection() {
               {/* Center content */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-[48px] font-light text-white">8+</p>
-                  <p className="text-[13px] text-cyan-400">Cities</p>
+                  <p className="text-[22px] font-medium text-white leading-tight">India</p>
+                  <p className="text-[13px] text-cyan-400">Network</p>
                 </div>
               </div>
 
@@ -96,13 +96,13 @@ export function LocationsSection() {
             </div>
 
             {/* Floating stat cards - Dark theme */}
-            <div className="absolute top-8 right-8 bg-gray-800/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-700">
-              <p className="text-[20px] font-medium text-white">10K+</p>
-              <p className="text-[11px] text-gray-500">Patients Served</p>
+            <div className="absolute top-8 right-8 bg-gray-800/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-700 max-w-[140px]">
+              <p className="text-[12px] font-medium text-white leading-snug">Online + clinic</p>
+              <p className="text-[11px] text-gray-500 mt-1">One account</p>
             </div>
-            <div className="absolute bottom-8 left-8 bg-gray-800/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-700">
-              <p className="text-[20px] font-medium text-white">50+</p>
-              <p className="text-[11px] text-gray-500">Expert Doctors</p>
+            <div className="absolute bottom-8 left-8 bg-gray-800/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-700 max-w-[140px]">
+              <p className="text-[12px] font-medium text-white leading-snug">Specialist match</p>
+              <p className="text-[11px] text-gray-500 mt-1">By service &amp; city</p>
             </div>
           </div>
         </div>

@@ -1,13 +1,11 @@
 'use client';
 
-import dynamic from "next/dynamic";
 import { CheckCircle2, Play, Sparkles, Users, Award } from "lucide-react";
+import { DotPattern } from "@/components/ui/backgrounds";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
+import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
+import { MARKETING_IMAGES } from "@/constants/marketing-images";
 import { loreleiAvatars } from './data';
-
-// These components use browser APIs - must be client-only
-const DotPattern = dynamic(() => import("@/components/ui/backgrounds").then(m => ({ default: m.DotPattern })), { ssr: false });
-const AvatarCircles = dynamic(() => import("@/components/ui/avatar-circles").then(m => ({ default: m.AvatarCircles })), { ssr: false });
-const HeroVideoDialog = dynamic(() => import("@/components/ui/hero-video-dialog").then(mod => ({ default: mod.HeroVideoDialog })), { ssr: false });
 
 export function VideoSection() {
   return (
@@ -26,8 +24,8 @@ export function VideoSection() {
             <span className="text-xs font-medium text-blue-700">Watch Our Story</span>
           </div>
           <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-3 leading-tight">
-            Transforming Lives Through{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Expert Care</span>
+            Recovery,{' '}
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">explained clearly</span>
           </h2>
         </div>
 
@@ -40,21 +38,21 @@ export function VideoSection() {
             </div>
             
             <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-6 leading-[1.15] tracking-tight">
-              Discover how H2H Healthcare is{' '}
-              <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">transforming lives</span>
+              See how H2H Healthcare{' '}
+              <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">supports recovery</span>
             </h2>
             <p className="text-base text-[15px] text-gray-600 mb-8 leading-relaxed max-w-md">
-              Experience world-class physiotherapy and rehabilitation services designed to help you achieve your health goals faster.
+              Physiotherapy, sports rehab, and pain care—with straightforward booking and clinicians who explain your plan in plain language.
             </p>
 
             <div className="flex items-center gap-4 mb-8">
               <AvatarCircles
-                numPeople={1000}
+                numPeople={100}
                 avatarUrls={loreleiAvatars}
               />
               <div>
-                <p className="text-sm font-medium text-gray-900">10,000+ Happy Patients</p>
-                <p className="text-xs text-gray-500">Join our growing family</p>
+                <p className="text-sm font-medium text-gray-900">Patients &amp; athletes</p>
+                <p className="text-xs text-gray-500">From everyday pain to return-to-sport</p>
               </div>
             </div>
 
@@ -80,20 +78,20 @@ export function VideoSection() {
               {/* Clean video container - no box styling */}
               <HeroVideoDialog
                 animationStyle="from-center"
-                videoSrc="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                thumbnailSrc="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=450&fit=crop"
-                thumbnailAlt="H2H Healthcare Video"
+                mp4Src="https://videos.pexels.com/video-files/5319980/5319980-sd_540_960_25fps.mp4"
+                thumbnailSrc={MARKETING_IMAGES.physio}
+                thumbnailAlt="Physiotherapy and rehabilitation care at H2H Healthcare"
                 className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg"
               />
               
               {/* Floating stats - visible on all screens */}
-              <div className="absolute -bottom-4 -left-2 sm:-bottom-6 sm:-left-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10">
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">98%</p>
-                <p className="text-[10px] sm:text-xs text-emerald-600 font-semibold">Success Rate</p>
+              <div className="absolute -bottom-4 -left-2 sm:-bottom-6 sm:-left-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10 max-w-[130px]">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-900 leading-snug">Your plan, your pace</p>
+                <p className="text-[10px] text-emerald-600 mt-1">No confusing jargon</p>
               </div>
-              <div className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10">
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">50+</p>
-                <p className="text-[10px] sm:text-xs text-blue-600 font-semibold">Expert Doctors</p>
+              <div className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10 max-w-[130px]">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-900 leading-snug">Specialist network</p>
+                <p className="text-[10px] text-blue-600 mt-1">Physios &amp; doctors</p>
               </div>
             </div>
           </div>

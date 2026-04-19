@@ -498,13 +498,14 @@ export function Marquee({
   pauseOnHover = false,
   children,
   vertical = false,
-  repeat = 4,
+  repeat = 2,
 }: {
   className?: string;
   reverse?: boolean;
   pauseOnHover?: boolean;
   children?: ReactNode;
   vertical?: boolean;
+  /** Duplicate track count for seamless loop; 2 is enough for horizontal marquees */
   repeat?: number;
 }) {
   return (

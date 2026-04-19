@@ -5,55 +5,73 @@ import { Header, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Highlighter } from "@/components/ui/highlighter";
 import { ArrowRight } from "lucide-react";
+import {
+  ServiceSectionVisual,
+  type ServiceVisualId,
+} from "@/components/services/ServiceSectionVisual";
 
 const services = [
   {
     id: 'pain_relief_physiotherapy',
     title: 'Pain Relief & Physiotherapy Care',
-    description: 'Comprehensive pain relief and mobilization therapy for chronic and acute conditions using evidence-based treatment approaches.',
-    details: 'Our pain management specialists use a combination of manual therapy, therapeutic exercises, and modern modalities to help you regain control of your life. From back pain to joint issues, we provide personalized care.',
+    description:
+      'Help for back pain, neck pain, sports niggles, and everyday aches—using hands-on physio and movement you can actually stick to.',
+    details:
+      'We start by listening: how pain shows up, what makes it worse, and what you want to do again. Then we combine hands-on treatment, simple exercises, and home tips so you move more freely—with fewer big words and more real progress.',
     color: 'red',
   },
   {
     id: 'advanced_rehabilitation',
     title: 'Advanced Rehabilitation & Recovery',
-    description: 'Specialized rehabilitation for orthopedic, neurological, and post-surgical conditions with comprehensive recovery programs.',
-    details: 'Our advanced rehabilitation services address complex conditions including stroke recovery, spinal cord injuries, and post-surgical rehabilitation. Each program is designed by expert physiotherapists for optimal outcomes.',
+    description:
+      'Structured support after surgery, stroke, or a serious injury—so you rebuild strength and confidence step by step.',
+    details:
+      'Whether you’re recovering from a joint replacement, a neurological setback, or a long hospital stay, we set clear, realistic goals—like walking farther, climbing stairs, or getting back to work—and adjust your plan as you improve.',
     color: 'blue',
   },
   {
     id: 'nutrition_lifestyle',
     title: 'Nutrition & Lifestyle Care',
-    description: 'Personalized nutrition plans and lifestyle modification coaching for athletes and health-conscious individuals.',
-    details: 'Our certified nutritionists work with you to create sustainable eating habits and lifestyle changes. From sports nutrition to weight management, we provide science-backed guidance for your health goals.',
+    description:
+      'Practical eating and lifestyle guidance—no fad diets, just habits that fit your routine and your health goals.',
+    details:
+      'Our nutritionists help with everyday meals: more energy, steadier weight, better blood sugar, or fuel for sport. You’ll get ideas you can cook at home, not a rigid rulebook—because food should work for your family and your schedule.',
     color: 'green',
   },
   {
     id: 'mental_wellness',
     title: 'Mental Wellness & Performance Care',
-    description: 'Sports psychology, stress management, and mental performance coaching for peak mental fitness.',
-    details: 'Mental health is crucial for overall wellbeing and performance. Our specialists help athletes and professionals manage stress, anxiety, and optimize their mental game through proven psychological techniques.',
+    description:
+      'Support for stress, nerves, focus, and motivation—in sport, at work, or when life feels heavy.',
+    details:
+      'You’ll work with people who get pressure and recovery. We focus on simple tools: sleep, breathing, confidence, and balance—explained in plain language, with space to ask anything without judgement.',
     color: 'purple',
   },
   {
     id: 'therapeutic_yoga',
     title: 'Therapeutic Yoga & Wellness',
-    description: 'Yoga sessions designed for healing, rehabilitation, and promoting overall mind-body wellness.',
-    details: 'Our yoga programs are designed by certified instructors with healthcare backgrounds. Whether you\'re recovering from an injury or seeking preventive care, our sessions adapt to your abilities and goals.',
+    description:
+      'Gentle yoga that respects pain and stiffness—breath, stretching, and strength at the level that’s right for you.',
+    details:
+      'Perfect if you’re healing from an injury, managing a long-term condition, or new to yoga. We slow things down, offer options for every body, and never push you into poses that don’t feel safe.',
     color: 'teal',
   },
   {
     id: 'sports_performance',
     title: 'Sports Performance & Athlete Development',
-    description: 'Integrated sports performance analysis, injury prevention, and athletic training programs.',
-    details: 'Our sports performance team combines biomechanical analysis, strength conditioning, and injury prevention to help athletes reach their peak potential. From amateur to professional, we elevate your game.',
+    description:
+      'Train smarter for your game—fitness, injury prevention, and coaching through our H2H Absolute Performance programme.',
+    details:
+      'For players, students, and clubs: we look at how you move, where you’re vulnerable, and how to get stronger and faster without breaking down. From preseason to coming back after time off, we’re on your side.',
     color: 'orange',
   },
   {
     id: 'digital_health',
     title: 'Digital Health & Web Solutions',
-    description: 'Tele-rehabilitation, virtual assessments, and remote health monitoring for convenient care.',
-    details: 'Access quality healthcare from anywhere with our digital health solutions. Our tele-rehabilitation services, virtual consultations, and remote monitoring ensure you stay on track with your health goals.',
+    description:
+      'Freelance web and product engineering—apps, internal tools, integrations. Clear scopes, direct line to the people building.',
+    details:
+      'We ship and iterate software for Heal to Health and other serious scopes: user-facing products, admin tools, and delivery you can sustain after launch—domain-agnostic when the problem is clear.',
     color: 'cyan',
   },
 ];
@@ -70,13 +88,13 @@ export default function ServicesPage() {
             <div className="text-center mb-8">
               {/* <p className="text-[13px] text-cyan-600 font-medium mb-3">Our Services</p> */}
               <h1 className="text-[36px] md:text-[48px] font-medium text-gray-900 tracking-tight leading-tight mb-6">
-                Comprehensive{' '}
+                Care that fits{' '}
                 <Highlighter action="highlight" color="#06b6d4" isView>
-                  <span className="text-white">Healthcare Services</span>
+                  <span className="text-white">your real life</span>
                 </Highlighter>
               </h1>
-              <p className="text-[15px] text-gray-500 max-w-2xl mx-auto">
-                 your needs. From sports injuries to chronic pain management, our expert team provides personalized care.
+              <p className="text-[15px] text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                From pain and rehab to nutrition, yoga, and sports—we explain things clearly and build a plan around you. No corporate jargon; just honest guidance you can understand and use.
               </p>
             </div>
           </div>
@@ -89,9 +107,9 @@ export default function ServicesPage() {
             className={`py-24 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
           >
             <div className="max-w-[1200px] mx-auto px-6">
-              <div className="grid lg:grid-cols-2 gap-20 items-center">
+              <div className="grid lg:grid-cols-2 lg:items-stretch gap-12 lg:gap-20">
                 {/* Content Side - Always on left for even, right for odd */}
-                <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
+                <div className={`flex flex-col justify-center ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-1 h-10 rounded-full bg-cyan-500" />
                     <h2 className="text-[28px] md:text-[36px] font-semibold text-gray-900 tracking-tight">
@@ -114,85 +132,12 @@ export default function ServicesPage() {
                   </Link>
                 </div>
 
-                {/* Visual/Mockup Side */}
-                <div className={`relative ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                  {/* Mockup Container */}
-                  <div className="relative bg-gray-100 rounded-2xl p-8 flex items-center justify-center min-h-[450px]">
-                    {/* Corner Diamonds */}
-                    <div className="absolute top-4 left-4 w-2 h-2 bg-gray-300 rotate-45" />
-                    <div className="absolute top-4 right-4 w-2 h-2 bg-gray-300 rotate-45" />
-                    <div className="absolute bottom-4 left-4 w-2 h-2 bg-gray-300 rotate-45" />
-                    <div className="absolute bottom-4 right-4 w-2 h-2 bg-gray-300 rotate-45" />
-                    
-                    {/* Mockup Card */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-[320px] w-full">
-                      {/* Header */}
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="text-[13px] font-medium text-gray-900">{service.title}</div>
-                        <div className="text-[11px] text-gray-400">H2H Healthcare</div>
-                      </div>
-                      
-                      {/* Progress/Status Items */}
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100">
-                            <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-[12px] font-medium text-gray-700">Assessment</div>
-                            <div className="text-[11px] text-gray-400">Initial evaluation</div>
-                          </div>
-                          <div className="flex -space-x-1">
-                            <div className="w-5 h-5 rounded-full bg-cyan-200" />
-                            <div className="w-5 h-5 rounded-full bg-cyan-300" />
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100">
-                            <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-[12px] font-medium text-gray-700">Treatment Plan</div>
-                            <div className="text-[11px] text-gray-400">Personalized care</div>
-                          </div>
-                          <div className="flex -space-x-1">
-                            <div className="w-5 h-5 rounded-full bg-gray-200" />
-                            <div className="w-5 h-5 rounded-full bg-gray-300" />
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <div className="w-3 h-3 rounded-full bg-gray-300" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-[12px] font-medium text-gray-700">Recovery</div>
-                            <div className="text-[11px] text-gray-400">Progress tracking</div>
-                          </div>
-                          <div className="flex -space-x-1">
-                            <div className="w-5 h-5 rounded-full bg-gray-200" />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Bottom Stats */}
-                      <div className="mt-6 pt-4 border-t border-gray-100">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-[11px] text-gray-400">Success Rate</div>
-                            <div className="text-[16px] font-medium text-gray-900">98%</div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="h-1.5 w-8 rounded-full bg-cyan-500" />
-                            <div className="h-1.5 w-6 rounded-full bg-cyan-300" />
-                            <div className="h-1.5 w-4 rounded-full bg-gray-200" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* Illustration-only panel — no stock photos */}
+                <ServiceSectionVisual
+                  serviceId={service.id as ServiceVisualId}
+                  title={service.title}
+                  className={index % 2 === 1 ? 'lg:order-1' : undefined}
+                />
               </div>
             </div>
           </section>
@@ -212,7 +157,7 @@ export default function ServicesPage() {
                 <span className="text-cyan-400">Patients Say</span>
               </h2>
               <p className="text-[15px] text-gray-400 max-w-xl mx-auto">
-                Real stories from real patients who have experienced our care
+                Everyday people—athletes, parents, and grandparents—sharing what changed for them
               </p>
             </div>
             
@@ -311,10 +256,10 @@ export default function ServicesPage() {
           
           <div className="max-w-[1200px] mx-auto px-6 text-center relative z-10">
             <h2 className="text-[32px] md:text-[44px] font-medium text-white tracking-tight mb-6">
-              Not Sure Which Service You Need?
+              Not sure where to start?
             </h2>
-            <p className="text-[15px] text-white/80 max-w-2xl mx-auto mb-10">
-              Our experts can help you find the right treatment plan. Book a free consultation to discuss your health concerns and get personalized recommendations.
+            <p className="text-[15px] text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Tell us what’s going on—we’ll suggest the right service and answer your questions. Book a free consultation and take it one easy step at a time.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 

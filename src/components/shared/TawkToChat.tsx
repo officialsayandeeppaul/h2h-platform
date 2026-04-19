@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
     Tawk_API?: {
+      customStyle?: unknown;
       onLoad?: () => void;
       hideWidget?: () => void;
       showWidget?: () => void;
@@ -19,6 +20,24 @@ declare global {
   }
 }
 
+const TAWK_DEFER_MS = 5000;
+
+function isTawkEmbedUrl(url: string | undefined): boolean {
+  return !!url && url.includes('embed.tawk.to');
+}
+
+/** Official pattern: `var Tawk_API=Tawk_API||{}` — merge into existing, never replace mid-flight. */
+function ensureTawkApiPreload(): void {
+  window.Tawk_API = window.Tawk_API ?? {};
+  window.Tawk_API.customStyle = {
+    visibility: {
+      desktop: { position: 'br' as const, xOffset: 15, yOffset: 15 },
+      mobile: { position: 'br' as const, xOffset: 10, yOffset: 10 },
+    },
+  };
+  window.Tawk_LoadStart = new Date();
+}
+
 interface TawkToChatProps {
   propertyId?: string;
   widgetId?: string;
@@ -28,46 +47,65 @@ export function TawkToChat({
   propertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID,
   widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID 
 }: TawkToChatProps) {
+  const injectedRef = useRef(false);
+
   useEffect(() => {
     if (!propertyId || !widgetId) {
       console.warn('Tawk.to: Missing propertyId or widgetId');
       return;
     }
 
-    // Defer Tawk loading by 5s to avoid blocking initial render (Lighthouse perf)
-    const timer = setTimeout(() => {
-      if (typeof window !== 'undefined' && !window.Tawk_API) {
-        window.Tawk_API = {
-          customStyle: {
-            visibility: {
-              desktop: { position: 'br' as const, xOffset: 15, yOffset: 15 },
-              mobile: { position: 'br' as const, xOffset: 10, yOffset: 10 },
-            },
-          },
-        };
-        window.Tawk_LoadStart = new Date();
+    const embedSrc = `https://embed.tawk.to/${propertyId}/${widgetId}`;
+
+    // Avoid Next dev overlay on rare third-party runtime errors inside Tawk's bundle.
+    const onError = (event: ErrorEvent) => {
+      const msg = event.message ?? '';
+      const fromTawk =
+        isTawkEmbedUrl(event.filename) ||
+        /\$_Tawk|embed\.tawk\.to/i.test(msg);
+      if (fromTawk) {
+        event.stopImmediatePropagation();
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Tawk.to: suppressed script error (non-fatal)', msg);
+        }
+      }
+    };
+    window.addEventListener('error', onError, true);
+
+    const timer = window.setTimeout(() => {
+      if (typeof window === 'undefined') return;
+
+      if (injectedRef.current || document.querySelector(`script[src="${embedSrc}"]`)) {
+        injectedRef.current = true;
+        return;
+      }
+
+      try {
+        ensureTawkApiPreload();
 
         const script = document.createElement('script');
         script.async = true;
-        script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
+        script.src = embedSrc;
         script.charset = 'UTF-8';
         script.setAttribute('crossorigin', '*');
-        
+
         script.onerror = () => {
           console.warn('Tawk.to: Failed to load script');
         };
 
         const firstScript = document.getElementsByTagName('script')[0];
         firstScript.parentNode?.insertBefore(script, firstScript);
+        injectedRef.current = true;
+      } catch (e) {
+        console.warn('Tawk.to: Failed to inject script', e);
       }
-    }, 5000);
+    }, TAWK_DEFER_MS);
 
     return () => {
-      clearTimeout(timer);
-      const tawkScript = document.querySelector(`script[src*="embed.tawk.to"]`);
-      if (tawkScript) {
-        tawkScript.remove();
-      }
+      window.removeEventListener('error', onError, true);
+      window.clearTimeout(timer);
+      // Do not remove the embed script on unmount: tearing it down mid-init corrupts Tawk's
+      // internal state and can throw (e.g. i18next / $_Tawk). The widget is session-scoped.
     };
   }, [propertyId, widgetId]);
 

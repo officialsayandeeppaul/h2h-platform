@@ -21,11 +21,11 @@ export function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-2 mb-5">
               <Image
-                src="/h2hwebsitelogo.png"
+                src="/h2hLogo-caps.png"
                 alt="H2H Healthcare"
-                width={160}
-                height={64}
-                className="h-16 sm:h-20 w-auto object-contain"
+                width={133}
+                height={45}
+                className="h-12 sm:h-14 w-auto object-contain"
                 loading="lazy"
               />
             </Link>
@@ -113,7 +113,7 @@ export function Footer() {
                 </div>
                 <div>
                   <p className="text-[11px] text-gray-500 mb-0.5">Toll Free</p>
-                  <a href={`tel:${APP_CONFIG.phone}`} className="text-[13px] text-gray-300 hover:text-cyan-400 transition-colors">
+                  <a href={`tel:${APP_CONFIG.phone.replace(/\s/g, '')}`} className="text-[13px] text-gray-300 hover:text-cyan-400 transition-colors">
                     {APP_CONFIG.phone}
                   </a>
                 </div>
@@ -136,7 +136,7 @@ export function Footer() {
                 <div>
                   <p className="text-[11px] text-gray-500 mb-0.5">Locations</p>
                   <Link href="/locations" className="text-[13px] text-gray-300 hover:text-cyan-400 transition-colors">
-                    8+ Cities Across India
+                    Clinics &amp; partners across India
                   </Link>
                 </div>
               </li>
@@ -145,13 +145,21 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[12px] text-gray-500">
+        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-[12px] text-gray-500 text-center sm:text-left">
             © {new Date().getFullYear()} {APP_CONFIG.name}. All rights reserved.
           </p>
-          <p className="text-[12px] text-gray-500">
-            Made with ❤️ in India
-          </p>
+          <nav
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[12px] text-gray-500"
+            aria-label="Legal"
+          >
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">
+              Terms of Service
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

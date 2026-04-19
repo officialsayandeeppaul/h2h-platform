@@ -20,6 +20,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'api.dicebear.com' },
+      { protocol: 'https', hostname: 'i.ytimg.com' },
+      { protocol: 'https', hostname: 'img.youtube.com' },
+      { protocol: 'https', hostname: 'images.pexels.com' },
     ],
   },
   // Enable compression
@@ -28,6 +31,15 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Optimize production builds
   productionBrowserSourceMaps: false,
+  async redirects() {
+    return [
+      {
+        source: "/favicon.ico",
+        destination: "/h2h-short-logo.png",
+        permanent: true,
+      },
+    ];
+  },
   // Headers for caching static assets
   async headers() {
     return [

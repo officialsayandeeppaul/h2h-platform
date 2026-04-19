@@ -13,8 +13,8 @@ interface LazySectionProps {
 export function LazySection({ 
   children, 
   className = '', 
-  rootMargin = '500px',
-  threshold = 0.1,
+  rootMargin = '800px 0px',
+  threshold = 0,
   minHeight = '200px'
 }: LazySectionProps) {
   const [isVisible, setIsVisible] = useState(false);

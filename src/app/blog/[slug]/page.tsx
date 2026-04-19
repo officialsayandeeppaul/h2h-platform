@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { MARKETING_IMAGES } from '@/constants/marketing-images';
 import { Header, Footer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock, User, Share2, Bookmark, ArrowRight } from 'lucide-react';
@@ -35,7 +36,7 @@ const blogData: Record<string, {
     authorImage: 'https://api.dicebear.com/9.x/lorelei/svg?seed=DrPriya&backgroundColor=b6e3f4',
     date: 'Jan 15, 2026',
     readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=600&fit=crop',
+    image: MARKETING_IMAGES.physio,
     color: 'bg-cyan-50',
     textColor: 'text-cyan-600',
   },
@@ -96,7 +97,7 @@ const blogData: Record<string, {
     authorImage: 'https://api.dicebear.com/9.x/lorelei/svg?seed=DrRajesh&backgroundColor=d1d4f9',
     date: 'Jan 8, 2026',
     readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=1200&h=600&fit=crop',
+    image: MARKETING_IMAGES.activeRecovery,
     color: 'bg-purple-50',
     textColor: 'text-purple-600',
   },

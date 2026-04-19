@@ -47,17 +47,10 @@ export function FeaturesSection() {
                     <p className="text-[14px] text-gray-400">Peak performance recovery</p>
                   </div>
                 </div>
-                <p className="text-[15px] text-gray-300 mb-6 leading-relaxed">Get back to peak performance with specialized care from our expert sports physiotherapists.</p>
-                <div className="flex items-center gap-8">
-                  <div>
-                    <p className="text-[28px] font-bold text-cyan-400">40%</p>
-                    <p className="text-[12px] text-gray-500">Faster Recovery</p>
-                  </div>
-                  <div className="h-12 w-px bg-gray-700" />
-                  <div>
-                    <p className="text-[28px] font-bold text-cyan-400">500+</p>
-                    <p className="text-[12px] text-gray-500">Athletes Treated</p>
-                  </div>
+                <p className="text-[15px] text-gray-300 mb-6 leading-relaxed">Return-to-sport planning with physios who understand training loads and match schedules.</p>
+                <div className="flex flex-wrap gap-6 text-[13px] text-gray-400">
+                  <span className="rounded-lg border border-cyan-500/30 px-3 py-2 text-cyan-200">Load management</span>
+                  <span className="rounded-lg border border-cyan-500/30 px-3 py-2 text-cyan-200">On-field readiness</span>
                 </div>
               </div>
             </Card>
@@ -71,17 +64,10 @@ export function FeaturesSection() {
                     <p className="text-[14px] text-gray-400">Chronic pain relief</p>
                   </div>
                 </div>
-                <p className="text-[15px] text-gray-300 mb-6 leading-relaxed">Long-term relief from chronic back & joint pain with evidence-based treatment protocols.</p>
-                <div className="flex items-center gap-8">
-                  <div>
-                    <p className="text-[28px] font-bold text-teal-400">98%</p>
-                    <p className="text-[12px] text-gray-500">Pain Reduction</p>
-                  </div>
-                  <div className="h-12 w-px bg-gray-700" />
-                  <div>
-                    <p className="text-[28px] font-bold text-teal-400">10K+</p>
-                    <p className="text-[12px] text-gray-500">Happy Patients</p>
-                  </div>
+                <p className="text-[15px] text-gray-300 mb-6 leading-relaxed">Back, neck, and joint programmes built on assessment—not one-size tape-and-exercise routines.</p>
+                <div className="flex flex-wrap gap-6 text-[13px] text-gray-400">
+                  <span className="rounded-lg border border-teal-500/30 px-3 py-2 text-teal-200">Hands-on therapy</span>
+                  <span className="rounded-lg border border-teal-500/30 px-3 py-2 text-teal-200">Home exercise plan</span>
                 </div>
               </div>
             </Card>
@@ -95,17 +81,10 @@ export function FeaturesSection() {
                     <p className="text-[14px] text-gray-400">Care at your doorstep</p>
                   </div>
                 </div>
-                <p className="text-[15px] text-gray-300 mb-6 leading-relaxed">Expert care at your doorstep with no travel hassle. We come to you for your convenience.</p>
-                <div className="flex items-center gap-8">
-                  <div>
-                    <p className="text-[28px] font-bold text-blue-400">8+</p>
-                    <p className="text-[12px] text-gray-500">Cities Covered</p>
-                  </div>
-                  <div className="h-12 w-px bg-gray-700" />
-                  <div>
-                    <p className="text-[28px] font-bold text-blue-400">Free</p>
-                    <p className="text-[12px] text-gray-500">First Consult</p>
-                  </div>
+                <p className="text-[15px] text-gray-300 mb-6 leading-relaxed">Physio at home when available in your city—fewer travel days, same clinical standards.</p>
+                <div className="flex flex-wrap gap-6 text-[13px] text-gray-400">
+                  <span className="rounded-lg border border-blue-500/30 px-3 py-2 text-blue-200">Check coverage</span>
+                  <span className="rounded-lg border border-blue-500/30 px-3 py-2 text-blue-200">Same specialists</span>
                 </div>
               </div>
             </Card>
@@ -124,7 +103,7 @@ export function FeaturesSection() {
           </h2>
 
           <p className="text-[15px] text-gray-400 mb-8 leading-relaxed">
-            We combine cutting-edge technology with compassionate care to deliver exceptional physiotherapy services tailored to your unique needs.
+            Simple booking, clear plans, and clinicians who speak plain language—whether you&apos;re an athlete or managing everyday pain.
           </p>
 
           <AnimatedList delay={800} className="gap-4">

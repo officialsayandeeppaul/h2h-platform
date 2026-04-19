@@ -76,7 +76,7 @@ export function TreatmentProcessSection() {
                     <Image src="https://api.dicebear.com/9.x/lorelei/svg?seed=Doc2&backgroundColor=c0aede" alt="Doctor avatar" width={32} height={32} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" loading="lazy" />
                     <Image src="https://api.dicebear.com/9.x/lorelei/svg?seed=Doc3&backgroundColor=ffd5dc" alt="Doctor avatar" width={32} height={32} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" loading="lazy" />
                   </div>
-                  <span className="text-[11px] font-medium text-cyan-600 bg-cyan-50 px-2 py-1 rounded-full">1K+ Docs</span>
+                  <span className="text-[11px] font-medium text-cyan-600 bg-cyan-50 px-2 py-1 rounded-full">Specialists</span>
                 </div>
               </div>
 
@@ -100,7 +100,7 @@ export function TreatmentProcessSection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[12px] text-gray-500">50+ slots available today</span>
+                    <span className="text-[12px] text-gray-500">Live availability in booking</span>
                   </div>
                   <Button size="sm" className="h-9 px-4 text-[12px] bg-gray-900 hover:bg-gray-800 transition-colors duration-150">
                     Confirm Booking

@@ -17,6 +17,8 @@ import { Marquee } from '@/components/ui/magic-components';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
+const phoneTel = `tel:${APP_CONFIG.phone.replace(/\s/g, '')}`;
+
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services', hasDropdown: true },
@@ -66,7 +68,7 @@ export function Header() {
     <>
       {/* Beta Mode Banner */}
       <div role="banner" aria-label="Beta announcement" className="fixed top-0 left-0 right-0 z-[60] h-[30px] bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 overflow-hidden">
-        <Marquee className="py-1.5" pauseOnHover={false}>
+        <Marquee className="py-1.5" pauseOnHover={false} repeat={2}>
           <div className="flex items-center gap-8 text-[12px] text-white font-medium">
             <span>We&apos;re currently in Beta Mode</span>
             <span className="text-white/60">•</span>
@@ -90,11 +92,11 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
             <Image
-              src="/h2hwebsitelogo.png"
+              src="/h2hLogo-caps.png"
               alt="H2H Healthcare"
-              width={160}
-              height={64}
-              className="h-16 sm:h-20 w-auto object-contain"
+              width={133}
+              height={45}
+              className="h-12 sm:h-14 w-auto object-contain"
               priority
             />
           </Link>
@@ -138,7 +140,7 @@ export function Header() {
           {/* Right Side */}
           <div className="flex items-center gap-3">
             <a
-              href={`tel:${APP_CONFIG.phone}`}
+              href={phoneTel}
               aria-label={`Call us at ${APP_CONFIG.phone}`}
               className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] sm:text-[13px] text-gray-600 hover:text-blue-600 rounded-lg transition-all"
             >

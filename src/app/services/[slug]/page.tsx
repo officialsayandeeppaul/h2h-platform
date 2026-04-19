@@ -1,11 +1,14 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Highlighter } from "@/components/ui/highlighter";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { MARKETING_IMAGES, SERVICE_CATEGORY_IMAGES } from "@/constants/marketing-images";
+import { DigitalHealthServiceDetail } from "@/components/services/DigitalHealthServiceDetail";
 
 type ServiceColor = 'red' | 'blue' | 'green' | 'purple' | 'teal' | 'orange' | 'cyan';
 
@@ -16,182 +19,185 @@ const servicesData: Record<string, {
   benefits: string[];
   process: { step: string; title: string; description: string }[];
   image: string;
+  /** Tailwind object-* for hero crop (e.g. focus on faces / action) */
+  imageObjectClass?: string;
   color: ServiceColor;
 }> = {
   // 1. Pain Relief & Physiotherapy Care
   'pain_relief_physiotherapy': {
     title: 'Pain Relief & Physiotherapy Care',
-    description: 'Comprehensive pain relief and mobilization therapy for chronic and acute conditions using evidence-based treatment approaches.',
-    details: 'We understand that chronic pain affects every aspect of your life. Our pain management specialists use a combination of manual therapy, therapeutic exercises, and modern modalities to help you regain control. We focus on treating the root cause, not just the symptoms, ensuring long-term relief and improved quality of life.',
+    description:
+      'Help for back pain, neck pain, sports niggles, and everyday aches—using hands-on physio and movement you can actually stick to.',
+    details:
+      'Pain can make simple things—sitting, sleeping, playing with kids—feel impossible. We listen first, then use hands-on treatment, guided exercises, and easy home routines so you move better and hurt less. We focus on what’s causing the pain, not just masking it.',
     benefits: [
-      'Long-term pain relief without dependency on medication',
-      'Improved mobility and functional capacity',
-      'Personalized treatment plans for your specific condition',
-      'Evidence-based therapeutic approaches',
-      'Home exercise programs for continued improvement',
-      'Holistic care addressing physical and lifestyle factors'
+      'Less reliance on painkillers when movement and therapy can help',
+      'Clear exercises you can repeat at home between visits',
+      'A plan built around your job, sport, and daily life',
+      'Honest explanations—no confusing jargon',
+      'Support for back, neck, joint, and muscle problems',
+      'Steps toward lasting relief, not quick fixes that fade',
     ],
     process: [
-      { step: '01', title: 'Pain Assessment', description: 'Detailed evaluation of pain patterns, triggers, and impact on daily life' },
-      { step: '02', title: 'Diagnosis', description: 'Identifying the root cause using clinical examination and diagnostic tools' },
-      { step: '03', title: 'Treatment', description: 'Multi-modal approach combining manual therapy, exercises, and modalities' },
-      { step: '04', title: 'Maintenance', description: 'Long-term strategies and home programs for sustained relief' },
+      { step: '01', title: 'We listen', description: 'You tell us when it hurts, what you’ve tried, and what you want to do again' },
+      { step: '02', title: 'We check', description: 'A careful look at how you move so we know what’s going on' },
+      { step: '03', title: 'We treat', description: 'Hands-on work plus exercises that fit your body and schedule' },
+      { step: '04', title: 'You keep going', description: 'Simple habits and check-ins so progress lasts' },
     ],
-    image: 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=600&fit=crop',
+    image: SERVICE_CATEGORY_IMAGES.pain_relief_physiotherapy,
     color: 'red',
   },
 
   // 2. Advanced Rehabilitation & Recovery
   'advanced_rehabilitation': {
     title: 'Advanced Rehabilitation & Recovery',
-    description: 'Specialized rehabilitation for orthopedic, neurological, and post-surgical conditions with comprehensive recovery programs.',
-    details: 'Our advanced rehabilitation services address complex conditions including stroke recovery, spinal cord injuries, joint replacements, and post-surgical rehabilitation. Each program is designed by expert physiotherapists using the latest evidence-based protocols to ensure optimal outcomes and faster return to normal life.',
+    description:
+      'Structured support after surgery, stroke, or a serious injury—so you rebuild strength and confidence step by step.',
+    details:
+      'Recovery isn’t linear. Whether you’ve had a joint replaced, a stroke, or a long hospital stay, we set small wins: walking farther, climbing stairs, getting back to work or family life. Your family can be part of the conversation when it helps—we explain what to expect in plain language.',
     benefits: [
-      'Faster recovery from surgeries and injuries',
-      'Specialized neurological rehabilitation protocols',
-      'Advanced equipment and therapeutic techniques',
-      'Multidisciplinary approach to complex conditions',
-      'Regular progress monitoring and plan adjustments',
-      'Family education and involvement in care'
+      'A roadmap after surgery or major illness—not guesswork',
+      'Help for bone, joint, nerve, and post-hospital recovery',
+      'Equipment and exercises suited to where you are today',
+      'Goals you can feel: distance walked, stairs climbed, confidence back',
+      'Regular tweaks to your plan as you improve',
+      'Family-friendly explanations when you want support at home',
     ],
     process: [
-      { step: '01', title: 'Comprehensive Assessment', description: 'Detailed evaluation of functional limitations and recovery potential' },
-      { step: '02', title: 'Goal Setting', description: 'Collaborative goal-setting with patient and family' },
-      { step: '03', title: 'Intensive Therapy', description: 'Structured rehabilitation with progressive challenges' },
-      { step: '04', title: 'Transition Planning', description: 'Preparation for return to daily activities and independence' },
+      { step: '01', title: 'Where you are now', description: 'We see what you can do safely—movement, balance, stamina' },
+      { step: '02', title: 'Where you want to go', description: 'Together we pick realistic goals: home, work, hobbies' },
+      { step: '03', title: 'Step-by-step rehab', description: 'Structured sessions that gradually ask a bit more of you' },
+      { step: '04', title: 'Back to real life', description: 'Practice for daily tasks and transitions home or to work' },
     ],
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop',
+    image: SERVICE_CATEGORY_IMAGES.advanced_rehabilitation,
     color: 'blue',
   },
 
   // 3. Nutrition & Lifestyle Care
   'nutrition_lifestyle': {
     title: 'Nutrition & Lifestyle Care',
-    description: 'Personalized nutrition plans and lifestyle modification coaching for athletes and health-conscious individuals.',
-    details: 'Our certified nutritionists work with you to create sustainable eating habits and lifestyle changes. From sports nutrition to weight management, diabetes care to heart health, we provide science-backed guidance tailored to your health goals and lifestyle preferences.',
+    description:
+      'Practical eating and lifestyle guidance—no fad diets, just habits that fit your routine and your health goals.',
+    details:
+      'Food should work for your kitchen, your budget, and your culture—not a rigid app or a crash diet. We help with energy, weight, blood sugar, heart health, or fuel for sport. You’ll leave with ideas you can actually cook, not a list of “don’ts” that lasts a week.',
     benefits: [
-      'Personalized nutrition plans based on your goals',
-      'Sports-specific nutrition for peak performance',
-      'Weight management with sustainable approaches',
-      'Disease-specific dietary guidance',
-      'Lifestyle modification coaching',
-      'Regular monitoring and plan adjustments'
+      'Meal ideas that fit Indian kitchens and busy weeks',
+      'Support for weight, energy, diabetes-friendly eating, and more',
+      'Sports nutrition explained without supplement hype',
+      'Small changes first—so they stick',
+      'Someone who listens before handing you a plan',
+      'Check-ins so the plan grows with you',
     ],
     process: [
-      { step: '01', title: 'Nutritional Assessment', description: 'Comprehensive evaluation of current diet and health status' },
-      { step: '02', title: 'Goal Definition', description: 'Setting realistic and achievable nutrition goals' },
-      { step: '03', title: 'Plan Creation', description: 'Customized meal plans and dietary recommendations' },
-      { step: '04', title: 'Follow-up', description: 'Regular check-ins and plan optimization' },
+      { step: '01', title: 'What you eat today', description: 'Honest look at meals, snacks, and habits—no judgement' },
+      { step: '02', title: 'What you want to change', description: 'Energy, weight, blood tests, sport—we align with your goals' },
+      { step: '03', title: 'Your food plan', description: 'Simple swaps, portions, and timing you can follow' },
+      { step: '04', title: 'Keep it working', description: 'Follow-ups to adjust when life or travel gets in the way' },
     ],
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=600&fit=crop',
+    image: SERVICE_CATEGORY_IMAGES.nutrition_lifestyle,
     color: 'green',
   },
 
   // 4. Mental Wellness & Performance Care
   'mental_wellness': {
     title: 'Mental Wellness & Performance Care',
-    description: 'Sports psychology, stress management, and mental performance coaching for peak mental fitness.',
-    details: 'Mental health is crucial for overall wellbeing and performance. Our specialists help athletes and professionals manage stress, anxiety, and optimize their mental game through proven psychological techniques. We address performance anxiety, burnout, and help develop mental resilience.',
+    description:
+      'Support for stress, nerves, focus, and motivation—in sport, at work, or when life feels heavy.',
+    details:
+      'You don’t need a textbook to feel better. We talk about sleep, pressure before a match or presentation, worry that won’t switch off, and confidence that dipped after injury or burnout. Tools are simple—breathing, routines, self-talk—and we go at your pace.',
     benefits: [
-      'Enhanced mental performance and focus',
-      'Stress and anxiety management techniques',
-      'Improved sleep quality and recovery',
-      'Performance anxiety resolution',
-      'Mental resilience building',
-      'Work-life balance optimization'
+      'A safe space to say what’s really going on',
+      'Practical tools for nerves, sleep, and focus',
+      'Help for athletes, students, and working professionals',
+      'No shame, no labels—just conversation that helps',
+      'Ways to bounce back after setbacks',
+      'Balance between ambition and rest',
     ],
     process: [
-      { step: '01', title: 'Mental Assessment', description: 'Evaluation of mental health status and performance barriers' },
-      { step: '02', title: 'Strategy Development', description: 'Creating personalized mental performance strategies' },
-      { step: '03', title: 'Skill Training', description: 'Learning and practicing mental techniques' },
-      { step: '04', title: 'Integration', description: 'Applying skills in real-world situations' },
+      { step: '01', title: 'What’s hard right now', description: 'We map stress, sleep, mood, and goals together' },
+      { step: '02', title: 'What might help', description: 'A few strategies chosen for you—not a generic script' },
+      { step: '03', title: 'Practice', description: 'Short exercises you can use before games, exams, or tough days' },
+      { step: '04', title: 'Real life', description: 'We adjust as seasons, jobs, or family life change' },
     ],
-    image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop',
+    image: SERVICE_CATEGORY_IMAGES.mental_wellness,
     color: 'purple',
   },
 
   // 5. Therapeutic Yoga & Wellness
   'therapeutic_yoga': {
     title: 'Therapeutic Yoga & Wellness',
-    description: 'Yoga sessions designed for healing, rehabilitation, and promoting overall mind-body wellness.',
-    details: 'Our yoga programs are designed by certified instructors with healthcare backgrounds. Whether you\'re recovering from an injury, managing chronic conditions, or seeking preventive care, our sessions adapt to your abilities and goals. We combine traditional yoga with therapeutic techniques for optimal results.',
+    description:
+      'Gentle yoga that respects pain and stiffness—breath, stretching, and strength at the level that’s right for you.',
+    details:
+      'Not every body bends the same way—and that’s fine. Instructors with a healthcare lens adapt poses for injuries, arthritis, or beginners. We pair movement with breath so you feel steadier, more flexible, and calmer, without forcing shapes that don’t suit you.',
     benefits: [
-      'Improved flexibility and mobility',
-      'Stress reduction and mental clarity',
-      'Better breathing and respiratory health',
-      'Enhanced body awareness',
-      'Improved sleep quality',
-      'Complementary support for rehabilitation'
+      'Options and props so poses feel safe for your body',
+      'Breathing practices that calm the mind',
+      'Better flexibility without competition',
+      'Support alongside physio or after injury',
+      'Stress relief in a quiet, guided setting',
+      'Short routines you can try gently at home',
     ],
     process: [
-      { step: '01', title: 'Consultation', description: 'Understanding your health status and wellness goals' },
-      { step: '02', title: 'Program Design', description: 'Creating a customized yoga routine for your needs' },
-      { step: '03', title: 'Guided Sessions', description: 'Expert-led yoga and breathing exercises' },
-      { step: '04', title: 'Home Practice', description: 'Guidance for daily practice and integration' },
+      { step: '01', title: 'Your story', description: 'Pain, injuries, goals—we meet you where you are' },
+      { step: '02', title: 'Your pace', description: 'A sequence that fits your mobility and energy' },
+      { step: '03', title: 'Guided class', description: 'Clear cues, modifications, and rest when needed' },
+      { step: '04', title: 'Little and often', description: 'Easy home ideas to stay consistent' },
     ],
-    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=600&fit=crop',
+    image: SERVICE_CATEGORY_IMAGES.therapeutic_yoga,
+    imageObjectClass: 'object-cover object-[center_35%]',
     color: 'teal',
   },
 
   // 6. Sports Performance & Athlete Development
   'sports_performance': {
     title: 'Sports Performance & Athlete Development',
-    description: 'Integrated sports performance analysis, injury prevention, and athletic training programs.',
-    details: 'Our sports performance team combines biomechanical analysis, strength conditioning, and injury prevention to help athletes reach their peak potential. From amateur to professional, we use cutting-edge technology and evidence-based training methods to elevate your game and keep you injury-free.',
+    description:
+      'Train smarter for your game—fitness, injury prevention, and coaching through our H2H Absolute Performance programme.',
+    details:
+      'Whether you play for school, club, or yourself, we look at how you move, where you’re tight or weak, and how to build speed and strength without breaking down. Absolute Performance ties coaching, screening, and rehab thinking together so you stay on the field longer.',
     benefits: [
-      'Comprehensive performance assessment',
-      'Biomechanical analysis and correction',
-      'Sport-specific training programs',
-      'Injury prevention strategies',
-      'Return-to-sport protocols',
-      'Performance monitoring and optimization'
+      'Clear picture of fitness and movement for your sport',
+      'Warm-up and strength ideas that match your season',
+      'Fewer niggles turning into long injuries',
+      'A path back after time off or surgery',
+      'Support for academies and teams—not just individuals',
+      'Honest talk about load, rest, and recovery',
     ],
     process: [
-      { step: '01', title: 'Performance Testing', description: 'Comprehensive fitness and movement assessment' },
-      { step: '02', title: 'Analysis', description: 'Biomechanical and performance data analysis' },
-      { step: '03', title: 'Training Program', description: 'Customized training for your sport and goals' },
-      { step: '04', title: 'Progress Tracking', description: 'Regular testing and program optimization' },
+      { step: '01', title: 'See where you stand', description: 'Movement, strength, and sport demands—we baseline you' },
+      { step: '02', title: 'Spot the risks', description: 'What might cause the next strain or sprain' },
+      { step: '03', title: 'Train the plan', description: 'Sessions and drills aligned with your calendar' },
+      { step: '04', title: 'Stay match-ready', description: 'Check-ins and tweaks through the season' },
     ],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
+    image: SERVICE_CATEGORY_IMAGES.sports_performance,
     color: 'orange',
   },
 
   // 7. Digital Health & Web Solutions
   'digital_health': {
     title: 'Digital Health & Web Solutions',
-    description: 'Tele-rehabilitation, virtual assessments, and remote health monitoring for convenient care.',
-    details: 'Access quality healthcare from anywhere with our digital health solutions. Our tele-rehabilitation services, virtual consultations, and remote monitoring ensure you stay on track with your health goals. Perfect for busy professionals, remote locations, or those who prefer the convenience of home-based care.',
+    description:
+      'Care when you can’t visit in person—video consults, online exercise plans, and follow-ups from your phone or laptop.',
+    details:
+      'Life doesn’t always stop at the clinic door. Video visits, shared exercise videos, and quick messages between sessions help you stay on track if you travel, live outside the city, or need support between in-person appointments. You still get real clinicians—not bots.',
     benefits: [
-      'Access care from anywhere',
-      'Flexible scheduling options',
-      'Video consultations with experts',
-      'Remote progress monitoring',
-      'Digital exercise programs',
-      'Wearable device integration'
+      'Talk to someone from home or while travelling',
+      'Flexible times that suit work and family',
+      'Exercise demos you can replay',
+      'Check-ins so you don’t lose momentum',
+      'Less travel when pain or mobility makes trips hard',
+      'A bridge between face-to-face visits when you need it',
     ],
     process: [
-      { step: '01', title: 'Virtual Consultation', description: 'Initial assessment via video call' },
-      { step: '02', title: 'Digital Assessment', description: 'Remote evaluation using digital tools' },
-      { step: '03', title: 'Online Treatment', description: 'Guided sessions and exercise programs' },
-      { step: '04', title: 'Remote Monitoring', description: 'Track progress with digital tools' },
+      { step: '01', title: 'Book online', description: 'Pick a slot and get a simple video link' },
+      { step: '02', title: 'First video chat', description: 'We assess and explain next steps clearly' },
+      { step: '03', title: 'Your home programme', description: 'Exercises and reminders you can follow remotely' },
+      { step: '04', title: 'Stay connected', description: 'Follow-up calls or messages to keep progress going' },
     ],
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&h=600&fit=crop',
+    image: MARKETING_IMAGES.telehealth,
     color: 'cyan',
   },
-};
-
-// Color utility function
-const getColorClasses = (color: ServiceColor) => {
-  const colors = {
-    red: { bg: 'bg-red-500', bgLight: 'bg-red-100', text: 'text-red-600', hover: 'hover:bg-red-600', hex: '#ef4444' },
-    blue: { bg: 'bg-blue-500', bgLight: 'bg-blue-100', text: 'text-blue-600', hover: 'hover:bg-blue-600', hex: '#3b82f6' },
-    green: { bg: 'bg-green-500', bgLight: 'bg-green-100', text: 'text-green-600', hover: 'hover:bg-green-600', hex: '#22c55e' },
-    purple: { bg: 'bg-purple-500', bgLight: 'bg-purple-100', text: 'text-purple-600', hover: 'hover:bg-purple-600', hex: '#a855f7' },
-    teal: { bg: 'bg-teal-500', bgLight: 'bg-teal-100', text: 'text-teal-600', hover: 'hover:bg-teal-600', hex: '#14b8a6' },
-    orange: { bg: 'bg-orange-500', bgLight: 'bg-orange-100', text: 'text-orange-600', hover: 'hover:bg-orange-600', hex: '#f97316' },
-    cyan: { bg: 'bg-cyan-500', bgLight: 'bg-cyan-100', text: 'text-cyan-600', hover: 'hover:bg-cyan-600', hex: '#06b6d4' },
-  };
-  return colors[color] || colors.cyan;
 };
 
 export default function ServiceDetailPage() {
@@ -217,7 +223,9 @@ export default function ServiceDetailPage() {
     );
   }
 
-  const colors = getColorClasses(service.color);
+  if (slug === 'digital_health') {
+    return <DigitalHealthServiceDetail />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -261,13 +269,16 @@ export default function ServiceDetailPage() {
               </div>
               
               <div className="relative">
-                <div className="relative rounded-2xl overflow-hidden">
-                  <img
+                <div className="relative h-[min(400px,55vw)] w-full overflow-hidden rounded-2xl sm:h-[400px]">
+                  <Image
                     src={service.image}
-                    alt={service.title}
-                    className="w-full h-[400px] object-cover"
+                    alt={`${service.title} at H2H Healthcare`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 480px"
+                    className={`${service.imageObjectClass ?? 'object-cover object-center'}`}
+                    priority
                   />
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent`} />
+                  <div className={`pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent`} />
                 </div>
                 <div className="absolute -z-10 -right-4 -bottom-4 w-full h-full rounded-2xl bg-cyan-100" />
               </div>
@@ -308,7 +319,7 @@ export default function ServiceDetailPage() {
                 Our Process
               </h2>
               <p className="text-[15px] text-gray-500 max-w-xl mx-auto">
-                A structured approach to ensure the best outcomes for your recovery
+                Four simple stages—so you always know what happens next
               </p>
             </div>
             

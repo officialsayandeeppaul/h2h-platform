@@ -1,14 +1,55 @@
 'use client';
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Highlighter } from "@/components/ui/highlighter";
+import { DotPattern } from "@/components/ui/backgrounds";
+import { FEATURED_SERVICE_CARDS } from "@/constants/marketing-images";
+
+const CARDS = [
+  {
+    href: "/services/pain_relief_physiotherapy",
+    title: "Pain Relief & Physiotherapy",
+    accent: "cyan" as const,
+    description:
+      "Comprehensive pain relief and mobilization therapy for chronic and acute conditions.",
+    image: FEATURED_SERVICE_CARDS.painPhysio,
+  },
+  {
+    href: "/services/advanced_rehabilitation",
+    title: "Advanced Rehabilitation",
+    accent: "teal" as const,
+    description: "Ortho, Neuro & Post-surgical rehabilitation for complete recovery.",
+    image: FEATURED_SERVICE_CARDS.advancedRehab,
+  },
+  {
+    href: "/services/therapeutic_yoga",
+    title: "Therapeutic Yoga",
+    accent: "teal" as const,
+    description: "Yoga sessions designed for healing, rehabilitation, and mind-body wellness.",
+    image: FEATURED_SERVICE_CARDS.therapeuticYoga,
+  },
+  {
+    href: "/services/sports_performance",
+    title: "Active Sports & Performance",
+    accent: "cyan" as const,
+    description:
+      "Coaching and fitness for athletes and teams—stay strong, avoid injuries, and get back to play safely (H2H Absolute Performance).",
+    image: FEATURED_SERVICE_CARDS.sportsPerformance,
+  },
+];
 
 export function ServicesSection() {
   return (
-    <section className="relative py-16 md:py-28 bg-white overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+    <section className="relative overflow-hidden bg-slate-50 py-16 md:py-28">
+      <DotPattern
+        className="opacity-30 [mask-image:radial-gradient(800px_circle_at_center,white,transparent)]"
+        color="#94a3b8"
+        cr={1.5}
+      />
+      <div className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-12">
         <div className="text-center mb-16">
           <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-4 leading-tight tracking-tight">
             Comprehensive{' '}
@@ -21,114 +62,57 @@ export function ServicesSection() {
           </p>
         </div>
 
-        {/* Services Grid - Clean Professional Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {/* Pain Relief & Physiotherapy Care */}
-          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-[200px] md:h-full">
-                <img
-                  src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=500&h=400&fit=crop"
-                  alt="Pain Relief & Physiotherapy Care"
-                  className="w-full h-full object-cover"
+        <div className="grid grid-cols-1 md:grid-cols-2 md:items-stretch gap-6 md:gap-8">
+          {CARDS.map((card) => (
+            <div
+              key={card.href}
+              className="group relative flex h-full min-h-[300px] w-full flex-col overflow-hidden rounded-2xl bg-gray-50 shadow-sm transition-all duration-300 hover:shadow-lg md:min-h-[280px] md:flex-row"
+            >
+              {/* Same-width strip; height follows card so every card matches */}
+              <div className="relative h-[200px] w-full shrink-0 md:h-full md:w-[44%] md:shrink-0">
+                <Image
+                  src={card.image}
+                  alt={card.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 260px"
+                  className="object-cover object-center"
+                  priority={false}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-transparent" />
+                <div
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-r ${
+                    card.accent === "cyan" ? "from-cyan-600/20" : "from-teal-600/20"
+                  } to-transparent`}
+                />
               </div>
-              <div className="p-6 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-1 h-6 bg-cyan-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Pain Relief & Physiotherapy</h3>
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between p-6">
+                <div className="min-w-0">
+                  <div className="mb-2 flex items-center gap-3">
+                    <div
+                      className={`h-6 w-1 shrink-0 rounded-full ${
+                        card.accent === "cyan" ? "bg-cyan-500" : "bg-teal-500"
+                      }`}
+                    />
+                    <h3 className="text-[18px] font-medium leading-snug text-gray-900">{card.title}</h3>
+                  </div>
+                  <p className="min-h-[4.75rem] text-[14px] leading-relaxed text-gray-500 line-clamp-4 md:min-h-[5rem]">
+                    {card.description}
+                  </p>
                 </div>
-                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Comprehensive pain relief and mobilization therapy for chronic and acute conditions.
-                </p>
-                <Link href="/services/pain_relief_physiotherapy" className="text-[14px] font-medium text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
+                <Link
+                  href={card.href}
+                  className={`mt-4 inline-flex shrink-0 items-center gap-1 text-[14px] font-medium transition-all group-hover:gap-2 ${
+                    card.accent === "cyan"
+                      ? "text-cyan-600 hover:text-cyan-700"
+                      : "text-teal-600 hover:text-teal-700"
+                  }`}
+                >
+                  Learn more <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
-          </div>
-
-          {/* Advanced Rehabilitation & Recovery */}
-          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-[200px] md:h-full">
-                <img
-                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=500&h=400&fit=crop"
-                  alt="Advanced Rehabilitation & Recovery"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-600/20 to-transparent" />
-              </div>
-              <div className="p-6 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-1 h-6 bg-teal-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Advanced Rehabilitation</h3>
-                </div>
-                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Ortho, Neuro & Post-surgical rehabilitation for complete recovery.
-                </p>
-                <Link href="/services/advanced_rehabilitation" className="text-[14px] font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Sports Performance & Athlete Development */}
-          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-[200px] md:h-full">
-                <img
-                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop"
-                  alt="Sports Performance & Athlete Development"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-transparent" />
-              </div>
-              <div className="p-6 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-1 h-6 bg-cyan-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Sports Performance</h3>
-                </div>
-                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Integrated sports performance analysis, injury prevention, and athletic training.
-                </p>
-                <Link href="/services/sports_performance" className="text-[14px] font-medium text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Therapeutic Yoga & Wellness */}
-          <div className="group relative bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-[200px] md:h-full">
-                <img
-                  src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop"
-                  alt="Therapeutic Yoga & Wellness"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-600/20 to-transparent" />
-              </div>
-              <div className="p-6 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-1 h-6 bg-teal-500 rounded-full" />
-                  <h3 className="text-[18px] font-medium text-gray-900">Therapeutic Yoga</h3>
-                </div>
-                <p className="text-[14px] text-gray-500 mb-4 leading-relaxed">
-                  Yoga sessions designed for healing, rehabilitation, and mind-body wellness.
-                </p>
-                <Link href="/services/therapeutic_yoga" className="text-[14px] font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* View All Services Button */}
         <div className="text-center mt-12">
           <Button
             className="h-12 px-8 text-[14px] font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-full"

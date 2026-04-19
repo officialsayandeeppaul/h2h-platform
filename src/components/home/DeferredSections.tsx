@@ -1,44 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, ReactNode } from 'react';
 import dynamic from "next/dynamic";
+import { LazySection } from "@/components/home/shared/LazySection";
 
-// DEFERRED: Load after scroll - .catch() prevents ChunkLoadError crash, fallback renders null
 const loadSection = <T,>(fn: () => Promise<{ default: T }>) =>
   fn().catch(() => ({ default: (() => null) as T }));
 
-// Placeholder while section loads - keeps layout stable
-const SectionPlaceholder = ({ minH = 80 }: { minH?: number }) => (
-  <div style={{ minHeight: minH }} className="animate-pulse bg-gray-100/50 rounded-lg" aria-hidden />
+const WhyH2HSection = dynamic(
+  () => loadSection(() => import("@/components/home/WhyH2HSection").then((m) => ({ default: m.WhyH2HSection }))),
+  { ssr: false }
 );
-
-// Each section loads only when it's about to enter viewport (progressive, no 15-chunk burst)
-function LazySection({
-  children,
-  minHeight = 100,
-}: {
-  children: ReactNode;
-  minHeight?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e?.isIntersecting) setShow(true); },
-      { rootMargin: '400px', threshold: 0 }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} style={{ minHeight: show ? undefined : minHeight }}>
-      {show ? children : <SectionPlaceholder minH={minHeight} />}
-    </div>
-  );
-}
-
 const CaseStudiesSection = dynamic(() => loadSection(() => import("@/components/home/CaseStudiesSection").then(m => ({ default: m.CaseStudiesSection }))), { ssr: false });
 const HowItWorksSection = dynamic(() => loadSection(() => import("@/components/home/HowItWorksSection").then(m => ({ default: m.HowItWorksSection }))), { ssr: false });
 const FounderSection = dynamic(() => import("@/components/home/FounderSection").then(m => ({ default: m.FounderSection })), { ssr: false });
@@ -59,55 +30,61 @@ const HealToHealthSection = dynamic(() => import("@/components/home/HealToHealth
 const TrustedByThousandsSection = dynamic(() => loadSection(() => import("@/components/ui/trusted-charts").then(mod => ({ default: mod.TrustedByThousandsSection }))), { ssr: false });
 const AnimatedTestimonials = dynamic(() => loadSection(() => import("@/components/ui/animated-testimonials").then(mod => ({ default: mod.AnimatedTestimonials }))), { ssr: false });
 
+/** Wider prefetch + threshold 0 so fast scroll skips the “empty pulse then pop” effect. */
+const LAZY = { rootMargin: "1400px 0px", threshold: 0 } as const;
+
 export function DeferredSections() {
   return (
     <>
-      <LazySection minHeight={120}>
+      <LazySection minHeight="min(520px,85vh)" className="bg-gray-950" {...LAZY}>
+        <WhyH2HSection />
+      </LazySection>
+      <LazySection minHeight="120px" {...LAZY}>
         <CaseStudiesSection />
       </LazySection>
-      <LazySection minHeight={120}>
+      <LazySection minHeight="120px" {...LAZY}>
         <HowItWorksSection />
       </LazySection>
-      <LazySection minHeight={100}>
+      <LazySection minHeight="100px" {...LAZY}>
         <TrustedByThousandsSection />
       </LazySection>
-      <LazySection minHeight={100}>
+      <LazySection minHeight="100px" {...LAZY}>
         <AnimatedTestimonials />
       </LazySection>
-      <LazySection minHeight={200}>
+      <LazySection minHeight="200px" {...LAZY}>
         <FounderSection />
       </LazySection>
-      <LazySection minHeight={150}>
+      <LazySection minHeight="150px" {...LAZY}>
         <TreatmentProcessSection />
       </LazySection>
-      <LazySection minHeight={120}>
+      <LazySection minHeight="120px" {...LAZY}>
         <LocationsSection />
       </LazySection>
-      <LazySection minHeight={100}>
+      <LazySection minHeight="100px" {...LAZY}>
         <TextPressureSection />
       </LazySection>
-      <LazySection minHeight={150}>
+      <LazySection minHeight="150px" {...LAZY}>
         <BlogSection />
       </LazySection>
-      <LazySection minHeight={120}>
+      <LazySection minHeight="120px" {...LAZY}>
         <GallerySection />
       </LazySection>
-      <LazySection minHeight={100}>
+      <LazySection minHeight="100px" {...LAZY}>
         <GlobalReachSection />
       </LazySection>
-      <LazySection minHeight={120}>
+      <LazySection minHeight="120px" {...LAZY}>
         <ContactSection />
       </LazySection>
-      <LazySection minHeight={300}>
+      <LazySection minHeight="300px" {...LAZY}>
         <GridMotionSection />
       </LazySection>
-      <LazySection minHeight={100}>
+      <LazySection minHeight="100px" {...LAZY}>
         <FinalCTASection />
       </LazySection>
-      <LazySection minHeight={100}>
+      <LazySection minHeight="100px" {...LAZY}>
         <DownloadAppSection />
       </LazySection>
-      <LazySection minHeight={120}>
+      <LazySection minHeight="120px" {...LAZY}>
         <HealToHealthSection />
       </LazySection>
     </>

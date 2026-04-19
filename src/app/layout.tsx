@@ -20,8 +20,19 @@ export const metadata: Metadata = {
     default: "H2H Healthcare - Sports Rehab, Physiotherapy & Wellness",
     template: "%s | H2H Healthcare",
   },
-  description: "Comprehensive healthcare platform specializing in Sports Rehabilitation, Pain Management, Physiotherapy, and Yoga services across India. Book your appointment today!",
-  keywords: ["physiotherapy", "sports rehab", "pain management", "yoga", "wellness", "healthcare", "India", "home physiotherapy", "sports rehabilitation"],
+  description:
+    "H2H Healthcare (Heal to Health): book sports rehabilitation, physiotherapy, pain management, and yoga in India. Online booking, clinic visits, and home physio where available. Evidence-led care for athletes and everyday patients.",
+  keywords: [
+    "physiotherapy India",
+    "sports rehabilitation",
+    "home physiotherapy",
+    "pain management clinic",
+    "therapeutic yoga",
+    "sports physio",
+    "online physiotherapy booking",
+    "H2H Healthcare",
+    "Heal to Health",
+  ],
   authors: [{ name: "H2H Healthcare" }],
   alternates: {
     canonical: 'https://healtohealth.in',
@@ -32,13 +43,15 @@ export const metadata: Metadata = {
     url: "https://healtohealth.in",
     siteName: "H2H Healthcare",
     title: "H2H Healthcare - Sports Rehab, Physiotherapy & Wellness",
-    description: "Comprehensive healthcare platform specializing in Sports Rehabilitation, Pain Management, Physiotherapy, and Yoga services across India.",
+    description:
+      "Book sports rehab, physiotherapy, pain care, and yoga in India—clinic, online, or home visits where available.",
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'H2H Healthcare' }],
   },
   twitter: {
     card: "summary_large_image",
     title: "H2H Healthcare - Sports Rehab, Physiotherapy & Wellness",
-    description: "Comprehensive healthcare platform specializing in Sports Rehabilitation, Pain Management, Physiotherapy, and Yoga services across India.",
+    description:
+      "Book sports rehab, physiotherapy, pain care, and yoga in India—clinic, online, or home visits where available.",
     images: ['/og-image.png'],
   },
   robots: {
@@ -51,6 +64,11 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
+  },
+  icons: {
+    icon: [{ url: "/h2h-short-logo.png", type: "image/png", sizes: "any" }],
+    shortcut: "/h2h-short-logo.png",
+    apple: "/h2h-short-logo.png",
   },
   other: {
     'theme-color': '#0284c7',
@@ -80,7 +98,7 @@ export default function RootLayout({
               '@type': 'MedicalBusiness',
               name: 'H2H Healthcare',
               url: 'https://healtohealth.in',
-              logo: 'https://healtohealth.in/h2hwebsitelogo.png',
+              logo: 'https://healtohealth.in/h2hLogo-caps.png',
               description: 'Comprehensive healthcare platform specializing in Sports Rehabilitation, Pain Management, Physiotherapy, and Yoga services across India.',
               telephone: '+91-1800-123-4567',
               address: {

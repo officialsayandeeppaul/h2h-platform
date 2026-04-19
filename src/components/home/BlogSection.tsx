@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MARKETING_IMAGES } from "@/constants/marketing-images";
 
 export function BlogSection() {
   return (
@@ -37,7 +38,7 @@ export function BlogSection() {
               {/* Decorative Image */}
               <div className="absolute bottom-0 right-0 w-48 h-48">
                 <img
-                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=300&h=300&fit=crop"
+                  src={MARKETING_IMAGES.physio}
                   alt=""
                   className="w-full h-full object-cover opacity-20"
                 />
@@ -96,7 +97,7 @@ export function BlogSection() {
               {/* Decorative */}
               <div className="absolute bottom-4 right-4">
                 <img
-                  src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=150&h=150&fit=crop"
+                  src={MARKETING_IMAGES.activeRecovery}
                   alt=""
                   className="w-24 h-24 object-cover rounded-xl opacity-30"
                 />

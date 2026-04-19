@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from "next/dynamic";
+import { ClipboardList, CalendarClock, Stethoscope } from "lucide-react";
 import { Highlighter } from "@/components/ui/highlighter";
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 
@@ -10,10 +11,36 @@ const SuccessMessage = dynamic(() => import("@/components/ui/terminal").then(mod
 const InfoMessage = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.InfoMessage })), { ssr: false });
 const TerminalTyping = dynamic(() => import("@/components/ui/terminal").then(mod => ({ default: mod.TypingAnimation })), { ssr: false });
 
+const CARE_STEPS = [
+  {
+    n: 1,
+    title: "Choose what you need",
+    desc: "Service + location—so we match the right clinician.",
+    Icon: ClipboardList,
+    gradient: "from-blue-500 to-cyan-500",
+    shadow: "shadow-blue-500/25",
+  },
+  {
+    n: 2,
+    title: "Pick a time that works",
+    desc: "Real-time slots; same-day when capacity allows.",
+    Icon: CalendarClock,
+    gradient: "from-teal-500 to-emerald-500",
+    shadow: "shadow-teal-500/25",
+  },
+  {
+    n: 3,
+    title: "Start your plan",
+    desc: "Session notes, exercises, and follow-up in one place.",
+    Icon: Stethoscope,
+    gradient: "from-emerald-500 to-teal-500",
+    shadow: "shadow-emerald-500/25",
+  },
+] as const;
+
 export function HowItWorksSection() {
   return (
     <section className="relative py-28 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
-      {/* Interactive Grid Pattern Background */}
       <InteractiveGridPattern
         className="opacity-30 [mask-image:radial-gradient(600px_circle_at_center,white,transparent)]"
         width={50}
@@ -23,8 +50,7 @@ export function HowItWorksSection() {
       />
 
       <div className="max-w-[1200px] mx-auto px-6 lg:px-12 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left - Content */}
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div>
             <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-6 leading-tight tracking-tight">
               Book Your Session in{' '}
@@ -34,45 +60,30 @@ export function HowItWorksSection() {
             </h2>
 
             <p className="text-[15px] text-gray-500 mb-10 leading-relaxed">
-              Our{' '}
-              <Highlighter action="highlight" color="#dbeafe" animationDuration={600} isView>
-                <span className="text-blue-600 font-medium">streamlined booking process</span>
-              </Highlighter>
-              {' '}gets you from pain to recovery faster than ever. No complicated forms, no waiting - just quick, easy access to{' '}
-              <Highlighter action="highlight" color="#ccfbf1" animationDuration={600} isView>
-                <span className="text-cyan-600 font-medium">world-class care</span>
-              </Highlighter>.
+              Pick a service, choose a slot, get confirmation—no phone tag unless you want it.
             </p>
 
-            {/* Steps */}
             <div className="space-y-6">
-              <div className="flex items-start gap-4 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform">1</div>
-                <div>
-                  <h3 className="text-[15px] font-medium text-gray-900 mb-1">Choose Your Service</h3>
-                  <p className="text-[13px] text-gray-500">Select from our range of specialized treatments</p>
+              {CARE_STEPS.map(({ n, title, desc, Icon, gradient, shadow }) => (
+                <div key={n} className="flex items-start gap-4 group">
+                  <div
+                    className={`relative w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg ${shadow} group-hover:scale-105 transition-transform duration-300`}
+                  >
+                    <Icon className="w-5 h-5" strokeWidth={2} aria-hidden />
+                    <span className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white/95 px-1 text-[10px] font-bold text-gray-800 shadow-sm">
+                      {n}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-medium text-gray-900 mb-1">{title}</h3>
+                    <p className="text-[13px] text-gray-500 leading-relaxed">{desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-4 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg shadow-teal-500/25 group-hover:scale-110 transition-transform">2</div>
-                <div>
-                  <h3 className="text-[15px] font-medium text-gray-900 mb-1">Pick Your Slot</h3>
-                  <p className="text-[13px] text-gray-500">Choose a convenient time that works for you</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform">3</div>
-                <div>
-                  <h3 className="text-[15px] font-medium text-gray-900 mb-1">Start Recovery</h3>
-                  <p className="text-[13px] text-gray-500">Meet your expert and begin your healing journey</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Right - Terminal */}
           <div className="relative">
-            {/* Glow effect behind terminal */}
             <div className="absolute -inset-4 bg-gradient-to-br from-cyan-200/50 to-blue-200/50 rounded-3xl blur-2xl" />
 
             <Terminal theme="dark" className="relative">
@@ -84,8 +95,8 @@ export function HowItWorksSection() {
               <AnimatedSpan><SuccessMessage>Appointment confirmed!</SuccessMessage></AnimatedSpan>
               <AnimatedSpan className="text-gray-400 pl-4">📅 Date: Tomorrow</AnimatedSpan>
               <AnimatedSpan className="text-gray-400 pl-4">⏰ Time: 10:00 AM</AnimatedSpan>
-              <AnimatedSpan className="text-gray-400 pl-4">👨‍⚕️ Doctor: Dr. Rajesh Kumar</AnimatedSpan>
-              <AnimatedSpan className="text-gray-400 pl-4">📍 Location: H2H Mumbai Center</AnimatedSpan>
+              <AnimatedSpan className="text-gray-400 pl-4">👨‍⚕️ Clinician: Assigned physiotherapist</AnimatedSpan>
+              <AnimatedSpan className="text-gray-400 pl-4">📍 Location: Your selected centre / online</AnimatedSpan>
               <AnimatedSpan><SuccessMessage>Confirmation sent to your email & phone!</SuccessMessage></AnimatedSpan>
             </Terminal>
           </div>

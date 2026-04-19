@@ -1,13 +1,24 @@
 import { Header, Footer } from "@/components/layout";
-import { HeroSection } from "@/components/home";
+import { HeroSection } from "@/components/home/HeroSection";
 import { VideoSection } from "@/components/home/VideoSection";
 import { MagnetLinesSection } from "@/components/home/MagnetLinesSection";
 import { TrustedBySection } from "@/components/home/TrustedBySection";
-import { StatsSection } from "@/components/home/StatsSection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { WhyH2HSection } from "@/components/home/WhyH2HSection";
-import { DeferredSections } from "@/components/home/DeferredSections";
+import { CaseStudiesSection } from "@/components/home/CaseStudiesSection";
+import { HowItWorksSection } from "@/components/home/HowItWorksSection";
+import { FounderSection } from "@/components/home/FounderSection";
+import { TreatmentProcessSection } from "@/components/home/TreatmentProcessSection";
+import { LocationsSection } from "@/components/home/LocationsSection";
+import { BlogSection } from "@/components/home/BlogSection";
+import { GlobalReachSection } from "@/components/home/GlobalReachSection";
+import { ContactSection } from "@/components/home/ContactSection";
+import { GridMotionSection } from "@/components/home/GridMotionSection";
+import { FinalCTASection } from "@/components/home/FinalCTASection";
+import { DownloadAppSection } from "@/components/home/DownloadAppSection";
+import { HealToHealthSection } from "@/components/home/HealToHealthSection";
+import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 
 export default function Home() {
   return (
@@ -22,12 +33,22 @@ export default function Home() {
         <VideoSection />
         <MagnetLinesSection />
         <TrustedBySection />
-        <StatsSection />
         <ServicesSection />
         <FeaturesSection />
         <WhyH2HSection />
-
-        <DeferredSections />
+        <CaseStudiesSection />
+        <HowItWorksSection />
+        <AnimatedTestimonials />
+        <FounderSection />
+        <TreatmentProcessSection />
+        <LocationsSection />
+        <BlogSection />
+        <GlobalReachSection />
+        <ContactSection />
+        <GridMotionSection />
+        <FinalCTASection />
+        <DownloadAppSection />
+        <HealToHealthSection />
       </main>
 
       <Footer />

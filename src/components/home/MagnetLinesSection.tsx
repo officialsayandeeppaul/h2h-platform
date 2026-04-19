@@ -1,8 +1,9 @@
 'use client';
 
+import Link from "next/link";
 import dynamic from "next/dynamic";
+import { APP_CONFIG } from "@/constants/config";
 
-// This component uses browser APIs - must be client-only
 const MagnetLines = dynamic(() => import("@/components/ui/magnet-lines"), { ssr: false });
 
 export function MagnetLinesSection() {
@@ -25,23 +26,41 @@ export function MagnetLinesSection() {
           </div>
 
           <div>
-            <h2 className="text-[32px] md:text-[40px] font-medium text-white mb-6 leading-tight tracking-tight">
-              Treatment plans that{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">adapt to you</span>
+            <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-cyan-400 mb-3">
+              Physical fitness → Active sports
+            </p>
+            <h2 className="text-[32px] md:text-[40px] font-medium text-white mb-5 leading-tight tracking-tight">
+              H2H{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">
+                Absolute Performance
+              </span>
             </h2>
-            <p className="text-[15px] text-gray-400 mb-8 leading-relaxed">
-              Just like these magnetic lines respond to your movement, our treatment plans adapt to your unique needs.
+            <p className="text-[15px] text-gray-400 mb-4 leading-relaxed">
+              <strong className="text-gray-300">H2H Absolute Performance</strong> is our sports-science lab: screening, injury rehab,
+              performance support, nutrition guidance, and coaching—built for serious athletes and serious organisations.
+            </p>
+            <p className="text-[14px] text-gray-500 mb-8 leading-relaxed">
+              We help academies and teams run structured programmes—so training loads, medical cover, and return-to-play decisions stay aligned instead of improvised.
             </p>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-900/60 backdrop-blur rounded-xl p-5 border border-gray-700/50 hover:border-cyan-500/30 transition-colors">
-                <p className="text-[24px] font-medium text-cyan-400 mb-1">AI</p>
-                <p className="text-[13px] text-gray-500">Powered Diagnostics</p>
+                <p className="text-[20px] font-medium text-cyan-400 mb-1">Screening</p>
+                <p className="text-[13px] text-gray-500 leading-snug">MSK, psychological & nutritional profiling and programme management</p>
               </div>
               <div className="bg-gray-900/60 backdrop-blur rounded-xl p-5 border border-gray-700/50 hover:border-teal-500/30 transition-colors">
-                <p className="text-[24px] font-medium text-teal-400 mb-1">Real-time</p>
-                <p className="text-[13px] text-gray-500">Progress Tracking</p>
+                <p className="text-[20px] font-medium text-teal-400 mb-1">On-field</p>
+                <p className="text-[13px] text-gray-500 leading-snug">Medical support, posture, emergency care & quarterly fitness profiling</p>
               </div>
             </div>
+            <p className="mt-6 text-[13px] text-gray-500">
+              Sports academies &amp; performance programmes:{' '}
+              <Link
+                href={`mailto:${APP_CONFIG.performanceEmail}`}
+                className="text-cyan-400 hover:text-cyan-300 underline-offset-2 hover:underline"
+              >
+                {APP_CONFIG.performanceEmail}
+              </Link>
+            </p>
           </div>
         </div>
       </div>

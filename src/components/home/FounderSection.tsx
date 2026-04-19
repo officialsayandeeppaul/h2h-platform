@@ -1,5 +1,6 @@
 'use client';
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Award, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,19 +17,16 @@ export function FounderSection() {
           {/* Left - Quote */}
           <div>
             <h2 className="text-[32px] md:text-[40px] font-medium text-white mb-6 leading-tight tracking-tight">
-              Your Health,{' '}
-              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Not Just A Service</span>
+              Stadium-grade rehab,{' '}
+              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">at your doorstep</span>
             </h2>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               <p className="text-[15px] leading-relaxed text-gray-300">
-                &ldquo;I started H2H Healthcare with a simple belief: everyone deserves access to world-class physiotherapy and rehabilitation, regardless of where they live.&rdquo;
+                H2H is built on one idea: the same rigour we bring to elite athletes should guide every recovery plan — clear, disciplined, and honest.
               </p>
-              <p className="text-[14px] leading-relaxed text-gray-400">
-                After seeing countless athletes and patients struggle to find quality care, I knew there had to be a better way. Today, we&apos;ve helped over 10,000 patients recover faster and live better.
-              </p>
-              <p className="text-[14px] leading-relaxed italic text-gray-500 border-l-2 border-cyan-500/50 pl-4">
-                &ldquo;You don&apos;t need a perfect background to build a great future. You just need direction, discipline, and the courage to start.&rdquo;
+              <p className="text-[14px] leading-relaxed italic text-gray-400 border-l-2 border-cyan-500/50 pl-4">
+                &ldquo;You don&apos;t need a perfect start — you need direction, discipline, and the courage to begin.&rdquo;
               </p>
             </div>
 
@@ -49,64 +47,67 @@ export function FounderSection() {
               {/* Decorative gradient glow behind */}
               <div className="absolute -inset-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-3xl blur-xl" />
 
-              {/* Image */}
-              <div className="relative rounded-2xl overflow-hidden border border-gray-800">
-                <img
-                  src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&h=700&fit=crop&crop=face"
-                  alt="Dr. Founder - H2H Healthcare"
-                  className="w-full h-[500px] object-cover object-top"
+              {/* Image — mobile: show full portrait (contain); sm+: cover + focal shift */}
+              <div className="relative w-full overflow-hidden rounded-2xl border border-gray-800 bg-gray-950 aspect-[4/5] min-h-[280px] max-sm:min-h-[300px] max-sm:max-h-[min(72vh,520px)] sm:aspect-[3/4] sm:min-h-[420px] sm:max-h-[560px]">
+                <Image
+                  src="/founders-image--4k.png"
+                  alt="Dr. Sukdeb Mahanta — Founder, H2H Healthcare"
+                  fill
+                  className="object-contain object-top sm:object-cover sm:object-[center_22%]"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 480px"
+                  priority={false}
                 />
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent" />
+                {/* Gradient overlay — lighter mid-tone on mobile so the face stays visible */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/25 to-transparent max-sm:via-gray-950/15 sm:via-gray-950/40" />
 
                 {/* Name overlay at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-[18px] font-medium text-white mb-1">Dr. Rajesh Kumar</h3>
-                  <p className="text-[14px] text-cyan-400">Founder & CEO, H2H Healthcare</p>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-950/95 to-transparent p-4 pt-10 sm:p-6 sm:pt-12">
+                  <h3 className="text-[18px] font-medium text-white mb-1">Dr. Sukdeb Mahanta</h3>
+                  <p className="text-[14px] text-cyan-400">Founder · High-Performance Director, H2H Healthcare</p>
                 </div>
               </div>
 
               {/* Floating Badge - Top Right */}
-              <div className="absolute -top-2 -right-2 flex items-center gap-2 bg-gray-900/90 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-700">
+              <div className="absolute right-2 top-2 flex items-center gap-2 rounded-full border border-gray-700 bg-gray-900/90 px-3 py-1.5 backdrop-blur-sm sm:-right-2 sm:-top-2 sm:px-4 sm:py-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[13px] font-medium text-white">Verified Expert</span>
+                <span className="text-[12px] font-medium text-white sm:text-[13px]">Verified Expert</span>
               </div>
 
               {/* Floating Badge - Left Side */}
-              <div className="absolute top-1/4 -left-4 bg-gray-900/90 backdrop-blur-sm px-4 py-3 rounded-xl border border-gray-700">
+              <div className="absolute left-2 top-[22%] max-w-[calc(100%-1rem)] rounded-xl border border-gray-700 bg-gray-900/90 px-3 py-2 backdrop-blur-sm sm:-left-4 sm:top-1/4 sm:max-w-none sm:px-4 sm:py-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
                     <Award className="w-4 h-4 text-blue-400" />
                   </div>
-                  <div>
-                    <p className="text-[13px] font-medium text-white">15+ Years</p>
-                    <p className="text-[11px] text-gray-500">Experience</p>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-medium text-white sm:text-[13px]">17+ Years</p>
+                    <p className="text-[10px] text-gray-500 sm:text-[11px]">Elite sport medicine</p>
                   </div>
                 </div>
               </div>
 
               {/* Floating Badge - Right Side */}
-              <div className="absolute top-1/2 -right-4 bg-gray-900/90 backdrop-blur-sm px-4 py-3 rounded-xl border border-gray-700">
+              <div className="absolute right-2 top-[42%] max-w-[calc(100%-1rem)] rounded-xl border border-gray-700 bg-gray-900/90 px-3 py-2 backdrop-blur-sm sm:-right-4 sm:top-1/2 sm:max-w-none sm:px-4 sm:py-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                     <Trophy className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <div>
-                    <p className="text-[13px] font-medium text-white">IPL Team</p>
-                    <p className="text-[11px] text-gray-500">Official Physio</p>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-medium text-white sm:text-[13px]">Pro & national</p>
+                    <p className="text-[10px] text-gray-500 sm:text-[11px]">Squads & franchises</p>
                   </div>
                 </div>
               </div>
 
               {/* Floating Badge - Bottom Left */}
-              <div className="absolute bottom-20 -left-4 bg-gray-900/90 backdrop-blur-sm px-4 py-3 rounded-xl border border-gray-700">
+              <div className="absolute bottom-24 left-2 max-w-[calc(100%-1rem)] rounded-xl border border-gray-700 bg-gray-900/90 px-3 py-2 backdrop-blur-sm sm:bottom-20 sm:-left-4 sm:max-w-none sm:px-4 sm:py-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
                     <Users className="w-4 h-4 text-cyan-400" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-medium text-white">10,000+</p>
-                    <p className="text-[11px] text-gray-500">Patients Treated</p>
+                    <p className="text-[13px] font-medium text-white">50+ experts</p>
+                    <p className="text-[11px] text-gray-500">Programs led</p>
                   </div>
                 </div>
               </div>

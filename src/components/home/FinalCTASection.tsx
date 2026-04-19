@@ -20,7 +20,7 @@ export function FinalCTASection() {
           Ready to Transform<br />Your Health?
         </h2>
         <p className="text-[16px] text-white/80 mb-12 max-w-2xl mx-auto">
-          Join 10,000+ patients who achieved their health goals with H2H Healthcare. Book your appointment today!
+          Book sports rehab, physio, or pain care in a few clicks—or call us if you prefer a human on the line first.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" className="h-14 px-10 text-base font-bold bg-white text-blue-600 hover:bg-gray-100 shadow-xl shadow-black/10 font-[family-name:var(--font-poppins)]" asChild>

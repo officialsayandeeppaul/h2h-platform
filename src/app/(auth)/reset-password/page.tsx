@@ -75,9 +75,9 @@ export default function ResetPasswordPage() {
           <Link href="/" className="inline-flex items-center gap-2 mb-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/h2hwebsitelogo.png"
+              src="/h2hLogo-caps.png"
               alt="H2H Healthcare"
-              className="h-24 w-auto object-contain"
+              className="h-12 sm:h-14 w-auto object-contain"
             />
           </Link>
 

@@ -8,6 +8,16 @@ interface GridMotionProps {
   gradientColor?: string;
 }
 
+/** Public-folder paths (/…), http(s), or obvious image filenames — avoids rendering paths as plain text. */
+function isImageSource(content: unknown): content is string {
+  if (typeof content !== 'string') return false;
+  const s = content.trim();
+  if (!s) return false;
+  if (/^https?:\/\//i.test(s)) return true;
+  if (s.startsWith('/')) return true;
+  return /\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i.test(s);
+}
+
 const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -76,16 +86,26 @@ const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }
             >
               {Array.from({ length: 7 }, (_, itemIndex) => {
                 const content = combinedItems[rowIndex * 7 + itemIndex];
+                const showImage = isImageSource(content);
                 return (
-                  <div key={itemIndex} className="relative">
-                    <div className="relative w-full h-full overflow-hidden rounded-[10px] bg-[#111] flex items-center justify-center text-white text-[1.5rem]">
-                      {typeof content === 'string' && content.startsWith('http') ? (
-                        <div
-                          className="w-full h-full bg-cover bg-center absolute top-0 left-0"
-                          style={{ backgroundImage: `url(${content})` }}
-                        ></div>
+                  <div key={itemIndex} className="relative min-h-[100px] md:min-h-[min(18vh,200px)]">
+                    <div className="relative h-full min-h-[inherit] w-full overflow-hidden rounded-[10px] bg-zinc-900">
+                      {showImage ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={content}
+                            alt=""
+                            className="absolute inset-0 z-0 h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/25 to-transparent" />
+                        </>
                       ) : (
-                        <div className="p-4 text-center z-[1]">{content}</div>
+                        <div className="flex h-full min-h-[100px] items-center justify-center p-4 text-center text-sm text-white/80">
+                          {content ?? null}
+                        </div>
                       )}
                     </div>
                   </div>

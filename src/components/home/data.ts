@@ -11,6 +11,7 @@ import {
   Award,
   Trophy,
 } from "lucide-react";
+import { MARKETING_IMAGES } from "@/constants/marketing-images";
 
 export const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Activity,
@@ -19,6 +20,7 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
   Leaf,
 };
 
+/** Used by `StatsSection` (optional); keep numeric fields valid for `Counter`. */
 export const stats = [
   { label: "Happy Patients", value: 1000, suffix: "+", icon: Users },
   { label: "Expert Doctors", value: 50, suffix: "+", icon: Award },
@@ -28,23 +30,23 @@ export const stats = [
 
 export const features = [
   {
-    title: "Expert Physiotherapists",
-    description: "Certified professionals with 10+ years of clinical experience",
+    title: "Expert physiotherapists",
+    description: "Licensed clinicians; many with sports and hospital backgrounds.",
     icon: Video,
   },
   {
-    title: "Home Visits Available",
-    description: "Get treated in the comfort of your home, no travel needed",
+    title: "Home visits (where available)",
+    description: "Same specialists when travel is hard—check your pin code at booking.",
     icon: Calendar,
   },
   {
-    title: "Personalized Care Plans",
-    description: "Treatment tailored to your specific condition and goals",
+    title: "Plans you can follow",
+    description: "Written goals, exercises, and review dates—not vague advice.",
     icon: MapPin,
   },
   {
-    title: "Quick Recovery Focus",
-    description: "Evidence-based methods for faster, lasting results",
+    title: "Evidence-informed care",
+    description: "Protocols grounded in sports medicine and rehab research.",
     icon: Phone,
   },
 ];
@@ -70,18 +72,18 @@ export const testimonials = [
   },
 ];
 
-export const trustedTeams = [
-  'Mumbai Indians',
-  'Chennai Super Kings',
-  'Royal Challengers',
-  'Delhi Capitals',
-  'Kolkata Knight Riders',
-  'Punjab Kings',
-  'Rajasthan Royals',
-  'Sunrisers Hyderabad',
-  'Indian Cricket Team',
-  'ISL Teams',
-];
+/** Files in public/trusted-logos — partner marks for the home marquee */
+export const trustedPartnerLogos = [
+  { src: '/trusted-logos/logo1.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo2.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo3.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo4.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo5.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo6.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo7.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo8.png', alt: 'Partner organisation logo' },
+  { src: '/trusted-logos/logo10.png', alt: 'Partner organisation logo' },
+] as const;
 
 export const cities = [
   'Mumbai',
@@ -110,12 +112,12 @@ export const blogPosts = [
     description: 'A deep dive into how regular physiotherapy sessions can improve mobility, reduce pain, and enhance your quality of life.',
     color: 'cyan',
     size: 'large',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=300&h=300&fit=crop',
+    image: MARKETING_IMAGES.physio,
   },
   {
     href: '/blog/sports-injury-recovery',
     title: 'Sports Injury Recovery Guide',
-    description: 'How we improved recovery time by 40% through specialized rehabilitation programs.',
+    description: 'How structured rehab timelines help you return to sport or work safely.',
     color: 'teal',
     size: 'small',
   },
@@ -132,7 +134,7 @@ export const blogPosts = [
     description: 'We reimagined cardiac care to make it faster to recover, easier to follow, and actually helpful.',
     color: 'purple',
     size: 'medium',
-    image: 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=150&h=150&fit=crop',
+    image: MARKETING_IMAGES.activeRecovery,
   },
   {
     href: '/blog/yoga-wellness',
@@ -144,7 +146,7 @@ export const blogPosts = [
 ];
 
 export const galleryItems = [
-  { id: '1', img: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&h=400&fit=crop', height: 280, title: 'Modern Equipment', description: 'Latest physiotherapy tools' },
+  { id: '1', img: MARKETING_IMAGES.physio, height: 280, title: 'Modern Equipment', description: 'Latest physiotherapy tools' },
   { id: '2', img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=500&fit=crop', height: 350, title: 'Therapy Rooms', description: 'Private treatment spaces' },
   { id: '3', img: 'https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=600&h=350&fit=crop', height: 240, title: 'Rehabilitation Center', description: 'Full recovery support' },
   { id: '4', img: 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=600&h=450&fit=crop', height: 320, title: 'Exercise Area', description: 'Guided workout sessions' },

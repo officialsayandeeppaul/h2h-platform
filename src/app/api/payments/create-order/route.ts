@@ -27,9 +27,8 @@ interface AppointmentData {
   id: string;
   amount: number;
   patient_id: string;
-  service: {
-    name: string;
-  };
+  razorpay_order_id: string | null;
+  service: { name: string } | { name: string }[] | null;
 }
 
 interface UserData {
@@ -38,8 +37,51 @@ interface UserData {
   phone: string | null;
 }
 
+function serviceNameFromAppointment(appointment: AppointmentData): string {
+  const s = appointment.service;
+  if (!s) return 'Healthcare Service';
+  if (Array.isArray(s)) return s[0]?.name || 'Healthcare Service';
+  return s.name || 'Healthcare Service';
+}
+
+/** Razorpay requires receipt ≤40 chars and unique per order (duplicate receipt same day → API error). */
+function uniqueReceipt(appointmentId: string): string {
+  const uuidCompact = appointmentId.replace(/-/g, '');
+  const stamp = `${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
+  const raw = `${uuidCompact}${stamp}`;
+  return raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 40);
+}
+
+function razorpayErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const e = error as Record<string, unknown>;
+    const err = e.error as Record<string, unknown> | undefined;
+    const desc =
+      (typeof err?.description === 'string' && err.description) ||
+      (typeof e.description === 'string' && e.description) ||
+      (typeof e.message === 'string' && e.message);
+    if (desc) return desc;
+  }
+  if (error instanceof Error) return error.message;
+  return 'Failed to create order';
+}
+
 export async function POST(request: NextRequest) {
   try {
+    if (
+      !process.env.RAZORPAY_KEY_ID ||
+      !process.env.RAZORPAY_KEY_SECRET ||
+      !process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+    ) {
+      console.error(
+        'Razorpay env missing: set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and NEXT_PUBLIC_RAZORPAY_KEY_ID'
+      );
+      return NextResponse.json(
+        { error: 'Payment provider is not configured. Please try again later or contact support.' },
+        { status: 503 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -60,7 +102,7 @@ export async function POST(request: NextRequest) {
     const { data: appointment, error: appointmentError } = await adminClient
       .from('appointments')
       .select(`
-        id, amount, patient_id,
+        id, amount, patient_id, razorpay_order_id,
         service:services(name)
       `)
       .eq('id', appointmentId)
@@ -71,14 +113,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    // Verify the logged-in user owns this appointment (match by email since IDs may differ)
+    // Verify the logged-in user owns this appointment (email, phone, or auth id === patient row)
     const { data: patientUser } = await adminClient
       .from('users')
-      .select('id, email')
+      .select('id, email, phone')
       .eq('id', appointment.patient_id)
-      .single() as { data: { id: string; email: string } | null; error: any };
+      .single() as { data: { id: string; email: string | null; phone: string | null } | null; error: any };
 
-    if (!patientUser || (patientUser.email !== user.email && appointment.patient_id !== user.id)) {
+    const userEmail = user.email?.trim().toLowerCase() ?? '';
+    const patientEmail = patientUser?.email?.trim().toLowerCase() ?? '';
+    const emailMatches = userEmail.length > 0 && patientEmail === userEmail;
+    const idMatches = appointment.patient_id === user.id;
+
+    const normPhone = (p: string | null | undefined) =>
+      (p || '').replace(/\s/g, '').replace(/^\+91/, '').replace(/^91/, '');
+    const userPhone = normPhone((user as { phone?: string }).phone);
+    const patientPhone = normPhone(patientUser?.phone);
+    const phoneMatches =
+      userPhone.length >= 10 &&
+      patientPhone.length >= 10 &&
+      userPhone.slice(-10) === patientPhone.slice(-10);
+
+    if (!patientUser || (!emailMatches && !idMatches && !phoneMatches)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -89,35 +145,85 @@ export async function POST(request: NextRequest) {
       .eq('id', appointment.patient_id)
       .single() as { data: UserData | null; error: any };
 
+    const svcName = serviceNameFromAppointment(appointment);
+    const amountPaise = Math.max(100, Math.round(Number(appointment.amount) * 100)); // min ₹1 (100 paise)
+
+    // Idempotent: booking already has a Razorpay order (retry / double submit) — return same checkout payload
+    if (appointment.razorpay_order_id) {
+      return NextResponse.json({
+        success: true,
+        orderId: appointment.razorpay_order_id,
+        amount: amountPaise,
+        currency: 'INR',
+        keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        prefill: {
+          name: userData?.full_name || '',
+          email: userData?.email || user.email || '',
+          contact: userData?.phone || '',
+        },
+        notes: {
+          service: svcName,
+        },
+      });
+    }
+
     const options = {
-      amount: Math.round(Number(appointment.amount) * 100), // Convert to paise
+      amount: amountPaise,
       currency: 'INR',
-      receipt: `h2h_${appointmentId.slice(0, 8)}`,
+      receipt: uniqueReceipt(appointmentId),
       notes: {
         appointmentId,
         userId: user.id,
-        service: appointment.service?.name || 'Healthcare Service',
+        service: svcName,
       },
     };
 
-    const order = await getRazorpay().orders.create(options);
+    let order: { id: string; amount: number | string; currency: string };
+    try {
+      order = (await getRazorpay().orders.create(options)) as {
+        id: string;
+        amount: number | string;
+        currency: string;
+      };
+    } catch (rzErr) {
+      console.error('Razorpay orders.create failed:', rzErr);
+      return NextResponse.json(
+        {
+          error:
+            process.env.NODE_ENV === 'development'
+              ? razorpayErrorMessage(rzErr)
+              : 'Could not start payment. Please try again in a moment.',
+        },
+        { status: 502 }
+      );
+    }
 
     // Update appointment with order ID
-    await (adminClient
+    const { error: apptErr } = await (adminClient
       .from('appointments') as any)
       .update({ razorpay_order_id: order.id })
       .eq('id', appointmentId);
 
-    // Create payment record
-    await (adminClient
+    if (apptErr) {
+      console.error('Failed to attach razorpay_order_id to appointment:', apptErr);
+      return NextResponse.json({ error: 'Failed to save payment reference' }, { status: 500 });
+    }
+
+    // Create payment record (non-fatal: order exists + appointment updated — user can still pay)
+    const { error: payErr } = await (adminClient
       .from('payments') as any)
       .insert({
         appointment_id: appointmentId,
         user_id: appointment.patient_id,
         amount: appointment.amount,
+        currency: 'INR',
         razorpay_order_id: order.id,
         status: 'pending',
       });
+
+    if (payErr && payErr.code !== '23505') {
+      console.error('payments insert error (checkout still allowed):', payErr);
+    }
 
     return NextResponse.json({
       success: true,
@@ -131,11 +237,15 @@ export async function POST(request: NextRequest) {
         contact: userData?.phone || '',
       },
       notes: {
-        service: appointment.service?.name || 'Healthcare Service',
+        service: svcName,
       },
     });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+    const message = razorpayErrorMessage(error);
+    return NextResponse.json(
+      { error: process.env.NODE_ENV === 'development' ? message : 'Failed to create order' },
+      { status: 500 }
+    );
   }
 }

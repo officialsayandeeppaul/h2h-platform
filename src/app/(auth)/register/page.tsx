@@ -111,9 +111,9 @@ export default function RegisterPage() {
           <Link href="/" className="inline-flex items-center gap-2 mb-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/h2hwebsitelogo.png"
+              src="/h2hLogo-caps.png"
               alt="H2H Healthcare"
-              className="h-24 w-auto object-contain"
+              className="h-12 sm:h-14 w-auto object-contain"
             />
           </Link>
 
@@ -238,8 +238,8 @@ export default function RegisterPage() {
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-[13px] text-gray-600 font-normal cursor-pointer">
                         I agree to all{' '}
-                        <Link href="/terms" className="text-cyan-500 hover:underline">Term</Link>,{' '}
-                        <Link href="/privacy" className="text-cyan-500 hover:underline">privacy Policy</Link> and{' '}
+                        <Link href="/terms" className="text-cyan-500 hover:underline">Terms of Service</Link>,{' '}
+                        <Link href="/privacy" className="text-cyan-500 hover:underline">Privacy Policy</Link>, and{' '}
                         <Link href="/fees" className="text-cyan-500 hover:underline">Fees</Link>
                       </FormLabel>
                       <FormMessage className="text-[12px]" />

@@ -17,6 +17,14 @@ import {
   CheckCircle2, IndianRupee, Sparkles, Loader2, Star, AlertCircle, CalendarDays,
   Globe, Users, Phone, Stethoscope
 } from 'lucide-react';
+import {
+  BookingLocationSkeleton,
+  BookingCityGridSkeleton,
+  BookingServiceSkeleton,
+  BookingDoctorSkeleton,
+  BookingTimeSlotGridSkeleton,
+  BookingPageSuspenseSkeleton,
+} from '@/components/booking/BookingSkeletons';
 import { format, addDays, isBefore, isSameDay, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -150,6 +158,10 @@ function BookingPageContent() {
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  /** Prevents parallel POST /api/bookings (double-tap → 409 slot conflict) */
+  const bookingSubmitLockRef = useRef(false);
+  /** Scroll target after auto-advancing a step */
+  const bookingFlowRef = useRef<HTMLElement>(null);
 
   // Get URL params (use for initial state to avoid doctor-step flash in doctor-specific flow)
   const doctorParam = searchParams.get('doctor');
@@ -466,9 +478,17 @@ function BookingPageContent() {
         }
         
         const res = await fetch(`/api/doctors?${params.toString()}`);
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          console.warn('Doctors fetch failed:', res.status, data?.error ?? data);
+          setDoctors([]);
+          return;
+        }
         if (data.success) {
           setDoctors(data.data || []);
+        } else {
+          console.warn('Doctors API:', data?.error || 'Unknown error');
+          setDoctors([]);
         }
       } catch (err) {
         console.error('Failed to fetch doctors:', err);
@@ -574,6 +594,21 @@ function BookingPageContent() {
     if (prevIndex >= 0) setCurrentStep(steps[prevIndex].key);
   };
 
+  const scrollBookingToTop = () => {
+    requestAnimationFrame(() => {
+      bookingFlowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  /** After selecting service or doctor, jump to next step (no extra scroll to tap Continue) */
+  const advanceFromStep = (stepKey: BookingStep) => {
+    const idx = steps.findIndex((s) => s.key === stepKey);
+    if (idx >= 0 && idx + 1 < steps.length) {
+      setCurrentStep(steps[idx + 1].key);
+      scrollBookingToTop();
+    }
+  };
+
   const calculatePrice = () => {
     // Use slot type price based on mode
     if (selectedSlotType) {
@@ -624,8 +659,12 @@ function BookingPageContent() {
 
   // Handle booking submission and payment
   const handleBookingSubmit = async () => {
+    if (bookingSubmitLockRef.current) return;
+    bookingSubmitLockRef.current = true;
     setIsSubmitting(true);
     setBookingError(null);
+
+    let checkoutOpened = false;
 
     try {
       if (!selectedLocation || !selectedService || !selectedDoctor || !selectedDate || !selectedTime) {
@@ -687,6 +726,8 @@ function BookingPageContent() {
           mode: selectedMode,
           notes: notes,
         }));
+        bookingSubmitLockRef.current = false;
+        setIsSubmitting(false);
         router.push('/login?redirect=/booking');
         return;
       }
@@ -749,6 +790,7 @@ function BookingPageContent() {
           } catch {
             setBookingError('Payment verification failed.');
           }
+          bookingSubmitLockRef.current = false;
           setIsSubmitting(false);
         },
         prefill: {
@@ -760,15 +802,21 @@ function BookingPageContent() {
         modal: {
           ondismiss: () => {
             setBookingError('Payment was cancelled');
+            bookingSubmitLockRef.current = false;
             setIsSubmitting(false);
           },
         },
       });
       razorpay.open();
+      checkoutOpened = true;
     } catch (error) {
       console.error('Booking error:', error);
       setBookingError(error instanceof Error ? error.message : 'Booking failed');
       setIsSubmitting(false);
+    } finally {
+      if (!checkoutOpened) {
+        bookingSubmitLockRef.current = false;
+      }
     }
   };
 
@@ -778,7 +826,11 @@ function BookingPageContent() {
       
       <Header />
       
-      <main className="flex-1 mt-12 pt-24 pb-12 relative z-10">
+      <main
+        ref={bookingFlowRef}
+        id="booking-flow"
+        className="flex-1 scroll-mt-28 mt-12 pt-24 pb-12 relative z-10"
+      >
         <div className="max-w-[1100px] mx-auto px-6">
           {/* Progress Steps */}
           <div className="mb-10 bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-100 shadow-sm">
@@ -810,14 +862,9 @@ function BookingPageContent() {
               <div>
                 {/* Show loading while fetching data */}
                 {loadingLocations ? (
-                  <div className="flex items-center justify-center py-16">
-                    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-                  </div>
+                  <BookingLocationSkeleton />
                 ) : isDoctorFlow && !selectedDoctor ? (
-                  /* Doctor flow but still loading doctor data */
-                  <div className="flex items-center justify-center py-16">
-                    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-                  </div>
+                  <BookingLocationSkeleton />
                 ) : (
                 <>
                 {/* Sub-step: Mode Selection */}
@@ -1023,9 +1070,11 @@ function BookingPageContent() {
                                           doctorParams.append('serviceId', matchedService.id);
                                           doctorParams.append('mode', 'online');
                                           
-                                          const doctorRes = await fetch(`/api/patient/doctors?${doctorParams.toString()}`);
-                                          const doctorData = await doctorRes.json();
-                                          if (doctorData.success) {
+                                          const doctorRes = await fetch(`/api/doctors?${doctorParams.toString()}`);
+                                          const doctorData = await doctorRes.json().catch(() => ({}));
+                                          if (!doctorRes.ok) {
+                                            console.warn('Doctors fetch failed:', doctorRes.status, doctorData?.error);
+                                          } else if (doctorData.success) {
                                             setDoctors(doctorData.data || []);
                                           }
                                         } catch (err) {
@@ -1129,9 +1178,11 @@ function BookingPageContent() {
                                           doctorParams.append('serviceId', matchedService.id);
                                           doctorParams.append('centerId', selectedCenter.id);
                                           
-                                          const doctorRes = await fetch(`/api/patient/doctors?${doctorParams.toString()}`);
-                                          const doctorData = await doctorRes.json();
-                                          if (doctorData.success) {
+                                          const doctorRes = await fetch(`/api/doctors?${doctorParams.toString()}`);
+                                          const doctorData = await doctorRes.json().catch(() => ({}));
+                                          if (!doctorRes.ok) {
+                                            console.warn('Doctors fetch failed:', doctorRes.status, doctorData?.error);
+                                          } else if (doctorData.success) {
                                             setDoctors(doctorData.data || []);
                                           }
                                         } catch (err) {
@@ -1399,9 +1450,7 @@ function BookingPageContent() {
                         </div>
                       </div>
                     ) : loadingLocations ? (
-                      <div className="flex items-center justify-center py-16">
-                        <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-                      </div>
+                      <BookingCityGridSkeleton />
                     ) : cities.length === 0 ? (
                       <div className="text-center py-16 text-gray-500">
                         <AlertCircle className="h-14 w-14 mx-auto mb-4 text-gray-300" />
@@ -1808,11 +1857,7 @@ function BookingPageContent() {
                   const isLoading = isDoctorFlow ? false : loadingServices;
                   
                   if (isLoading) {
-                    return (
-                      <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-                      </div>
-                    );
+                    return <BookingServiceSkeleton />;
                   }
                   
                   if (displayServices.length === 0) {
@@ -1833,7 +1878,10 @@ function BookingPageContent() {
                             'group cursor-pointer p-4 md:p-5 rounded-xl border bg-white transition-all hover:shadow-lg',
                             selectedService?.id === service.id ? 'border-cyan-500' : 'border-gray-200'
                           )}
-                          onClick={() => setSelectedService(service)}
+                          onClick={() => {
+                            setSelectedService(service);
+                            advanceFromStep('service');
+                          }}
                         >
                           <div className="flex items-start justify-between mb-3">
                             <Badge className="bg-gray-100 text-gray-600 border-0 text-[11px]">
@@ -1880,9 +1928,7 @@ function BookingPageContent() {
                 </div>
 
                 {loadingDoctors ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-                  </div>
+                  <BookingDoctorSkeleton />
                 ) : doctors.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -1897,7 +1943,10 @@ function BookingPageContent() {
                           'group cursor-pointer p-4 md:p-5 rounded-xl border bg-white transition-all hover:shadow-lg',
                           selectedDoctor?.id === doctor.id ? 'border-cyan-500' : 'border-gray-200'
                         )}
-                        onClick={() => setSelectedDoctor(doctor)}
+                        onClick={() => {
+                          setSelectedDoctor(doctor);
+                          advanceFromStep('doctor');
+                        }}
                       >
                         <div className="flex items-start gap-4">
                           <img 
@@ -2092,9 +2141,7 @@ function BookingPageContent() {
                         <p className="text-sm">Select a date to view available times</p>
                       </div>
                     ) : loadingSlots ? (
-                      <div className="flex items-center justify-center py-16">
-                        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-                      </div>
+                      <BookingTimeSlotGridSkeleton />
                     ) : timeSlots.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                         <Clock className="h-12 w-12 mb-3 text-gray-300" />
@@ -2381,11 +2428,7 @@ function BookingPageContent() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-cyan-500" />
-      </div>
-    }>
+    <Suspense fallback={<BookingPageSuspenseSkeleton />}>
       <BookingPageContent />
     </Suspense>
   );
