@@ -1,6 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
-import { getRequestOrigin } from '@/lib/auth/app-url';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { getRequestOrigin } from '@/lib/auth/app-url';
+import { getSupabaseAuthOptions } from '@/lib/supabase/auth-config';
+import type { Database } from '@/types/database';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,7 +14,7 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/dashboard';
   const redirect = searchParams.get('redirect');
 
-  // Always redirect on the same host that received OAuth (localhost vs beta)
+  // Always redirect on the same host that received OAuth
   const baseUrl = getRequestOrigin(request);
 
   if (error) {
@@ -22,18 +25,41 @@ export async function GET(request: Request) {
   }
 
   if (code) {
-    const supabase = await createClient();
+    const cookieStore = await cookies();
+    const authOptions = getSupabaseAuthOptions();
+    let redirectPath =
+      type === 'recovery'
+        ? '/reset-password'
+        : type === 'signup'
+          ? '/login?verified=true'
+          : redirect || next;
+    if (!redirectPath.startsWith('/')) redirectPath = `/${redirectPath}`;
+
+    const response = NextResponse.redirect(`${baseUrl}${redirectPath}`);
+
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        ...authOptions,
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!exchangeError) {
-      if (type === 'recovery') {
-        return NextResponse.redirect(`${baseUrl}/reset-password`);
-      }
-      if (type === 'signup') {
-        return NextResponse.redirect(`${baseUrl}/login?verified=true`);
-      }
-      const redirectPath = redirect || next;
-      return NextResponse.redirect(`${baseUrl}${redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`}`);
+      return response;
     }
 
     console.error('Code exchange error:', exchangeError.message, exchangeError);

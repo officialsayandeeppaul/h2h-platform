@@ -2,14 +2,17 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
+import { getSupabaseAuthOptions } from '@/lib/supabase/auth-config';
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const authOptions = getSupabaseAuthOptions();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      ...authOptions,
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -21,7 +24,7 @@ export async function createClient() {
             );
           } catch {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
+            // This can be ignored if middleware refreshes user sessions.
           }
         },
       },
