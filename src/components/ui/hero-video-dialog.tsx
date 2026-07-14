@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, X } from "lucide-react";
@@ -76,6 +77,9 @@ interface HeroVideoDialogProps {
   mp4Src?: string;
 }
 
+/** Keep player fully in view with a bit of edge padding */
+const VIEW_PAD = "1.25rem";
+
 export function HeroVideoDialog({
   animationStyle = "from-center",
   videoSrc,
@@ -86,6 +90,7 @@ export function HeroVideoDialog({
 }: HeroVideoDialogProps) {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const selectedAnimation = animationVariants[animationStyle];
 
   const ytThumb = videoSrc ? youtubeEmbedToThumbnail(videoSrc) : null;
@@ -94,6 +99,84 @@ export function HeroVideoDialog({
   const handleThumbError = useCallback(() => {
     setThumbnailFailed(true);
   }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isVideoOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsVideoOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isVideoOpen]);
+
+  const modal = (
+    <AnimatePresence>
+      {isVideoOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setIsVideoOpen(false)}
+          className="fixed inset-0 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-6"
+          style={{ zIndex: 100000 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Video player"
+        >
+          <motion.div
+            {...selectedAnimation}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="relative w-full max-w-5xl flex flex-col"
+            style={{
+              maxHeight: `calc(100dvh - 2 * ${VIEW_PAD})`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full aspect-video max-h-[calc(100dvh-2.5rem)] rounded-xl sm:rounded-2xl overflow-hidden bg-black ring-1 ring-white/10">
+              <button
+                type="button"
+                onClick={() => setIsVideoOpen(false)}
+                className="absolute top-2.5 right-2.5 z-20 text-white transition-colors rounded-full p-2 bg-black/55 hover:bg-black/75 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/60"
+                aria-label="Close video"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+              {mp4Src ? (
+                <video
+                  src={mp4Src}
+                  className="w-full h-full object-contain bg-black"
+                  controls
+                  autoPlay
+                  playsInline
+                >
+                  <track kind="captions" />
+                </video>
+              ) : videoSrc ? (
+                <iframe
+                  title={thumbnailAlt}
+                  src={`${videoSrc}${videoSrc.includes("?") ? "&" : "?"}autoplay=1`}
+                  className="w-full h-full"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                />
+              ) : (
+                <p className="text-white p-8 text-center">No video configured</p>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
   return (
     <div className={cn("relative", className)}>
@@ -116,7 +199,7 @@ export function HeroVideoDialog({
             alt={thumbnailAlt}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover rounded-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300 group-hover:shadow-3xl"
+            className="object-cover rounded-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300"
             priority
             unoptimized={primaryThumb.includes("ytimg.com")}
             onError={handleThumbError}
@@ -133,63 +216,13 @@ export function HeroVideoDialog({
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300 ring-4 ring-white/20">
+          <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:scale-110 transition-transform duration-300 ring-4 ring-white/20">
             <Play className="w-8 h-8 md:w-10 md:h-10 text-white fill-white ml-1" />
           </div>
         </div>
       </div>
 
-      <AnimatePresence>
-        {isVideoOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsVideoOpen(false)}
-            className="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-md"
-            style={{ zIndex: 99999 }}
-          >
-            <motion.div
-              {...selectedAnimation}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="relative w-full max-w-5xl aspect-video mx-2 sm:mx-4 px-2 sm:px-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={() => setIsVideoOpen(false)}
-                className="absolute -top-10 sm:-top-12 right-2 sm:right-0 text-white hover:text-gray-300 transition-colors z-10 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-white/60"
-                aria-label="Close video"
-              >
-                <X className="w-6 h-6 sm:w-8 sm:h-8" />
-              </button>
-              <div className="w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-black">
-                {mp4Src ? (
-                  <video
-                    src={mp4Src}
-                    className="w-full h-full object-contain bg-black"
-                    controls
-                    autoPlay
-                    playsInline
-                  >
-                    <track kind="captions" />
-                  </video>
-                ) : videoSrc ? (
-                  <iframe
-                    title={thumbnailAlt}
-                    src={`${videoSrc}${videoSrc.includes("?") ? "&" : "?"}autoplay=1`}
-                    className="w-full h-full"
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  />
-                ) : (
-                  <p className="text-white p-8 text-center">No video configured</p>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {mounted ? createPortal(modal, document.body) : null}
     </div>
   );
 }

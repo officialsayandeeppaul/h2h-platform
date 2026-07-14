@@ -195,7 +195,8 @@ export async function initiateRefund(
  * Get Razorpay public key for frontend
  */
 export function getPublicKey(): string {
-  return process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
+  // Prefer server KEY_ID so checkout always matches the key that created the order
+  return process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
 }
 
 export { getRazorpay as razorpay };

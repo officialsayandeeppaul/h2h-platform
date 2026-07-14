@@ -55,6 +55,10 @@ function uniqueReceipt(appointmentId: string): string {
 function razorpayErrorMessage(error: unknown): string {
   if (error && typeof error === 'object') {
     const e = error as Record<string, unknown>;
+    const statusCode = e.statusCode ?? e.status;
+    if (statusCode === 401) {
+      return 'Razorpay authentication failed (invalid KEY_ID or KEY_SECRET)';
+    }
     const err = e.error as Record<string, unknown> | undefined;
     const desc =
       (typeof err?.description === 'string' && err.description) ||
@@ -66,18 +70,41 @@ function razorpayErrorMessage(error: unknown): string {
   return 'Failed to create order';
 }
 
+function isRazorpayAuthError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const e = error as Record<string, unknown>;
+  if (e.statusCode === 401 || e.status === 401) return true;
+  const msg = razorpayErrorMessage(error).toLowerCase();
+  return msg.includes('authentication') || msg.includes('unauthorized');
+}
+
+/** Checkout key must be the same key_id used to create the order. */
+function checkoutKeyId(): string {
+  return process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
+}
+
 export async function POST(request: NextRequest) {
   try {
-    if (
-      !process.env.RAZORPAY_KEY_ID ||
-      !process.env.RAZORPAY_KEY_SECRET ||
-      !process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
-    ) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       console.error(
-        'Razorpay env missing: set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and NEXT_PUBLIC_RAZORPAY_KEY_ID'
+        'Razorpay env missing: set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET (and NEXT_PUBLIC_RAZORPAY_KEY_ID for client)'
       );
       return NextResponse.json(
         { error: 'Payment provider is not configured. Please try again later or contact support.' },
+        { status: 503 }
+      );
+    }
+
+    const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (publicKey && publicKey !== process.env.RAZORPAY_KEY_ID) {
+      console.error(
+        'Razorpay key mismatch: RAZORPAY_KEY_ID and NEXT_PUBLIC_RAZORPAY_KEY_ID must be identical'
+      );
+      return NextResponse.json(
+        {
+          error:
+            'Payment keys are misconfigured (KEY_ID mismatch). Update Vercel Production env so RAZORPAY_KEY_ID and NEXT_PUBLIC_RAZORPAY_KEY_ID match, then redeploy.',
+        },
         { status: 503 }
       );
     }
@@ -155,7 +182,7 @@ export async function POST(request: NextRequest) {
         orderId: appointment.razorpay_order_id,
         amount: amountPaise,
         currency: 'INR',
-        keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        keyId: checkoutKeyId(),
         prefill: {
           name: userData?.full_name || '',
           email: userData?.email || user.email || '',
@@ -188,9 +215,18 @@ export async function POST(request: NextRequest) {
     } catch (rzErr) {
       console.error('Razorpay orders.create failed:', rzErr);
       const rzMsg = razorpayErrorMessage(rzErr);
+      if (isRazorpayAuthError(rzErr)) {
+        return NextResponse.json(
+          {
+            error:
+              'Razorpay rejected the API keys (401). In Vercel → Production env, set matching Test keys: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, NEXT_PUBLIC_RAZORPAY_KEY_ID (same key id), then Redeploy.',
+          },
+          { status: 502 }
+        );
+      }
       const hint =
-        rzMsg.toLowerCase().includes('authentication') && process.env.NODE_ENV === 'development'
-          ? ' Check RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET in .env match your Razorpay Test keys, then restart npm run dev.'
+        process.env.NODE_ENV === 'development'
+          ? ' Check RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET in .env, then restart npm run dev.'
           : '';
       return NextResponse.json(
         {
@@ -235,7 +271,7 @@ export async function POST(request: NextRequest) {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      keyId: checkoutKeyId(),
       prefill: {
         name: userData?.full_name || '',
         email: userData?.email || user.email || '',
@@ -247,6 +283,15 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);
+    if (isRazorpayAuthError(error)) {
+      return NextResponse.json(
+        {
+          error:
+            'Razorpay rejected the API keys (401). Fix RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET on Vercel Production, then redeploy.',
+        },
+        { status: 502 }
+      );
+    }
     const message = razorpayErrorMessage(error);
     return NextResponse.json(
       { error: process.env.NODE_ENV === 'development' ? message : 'Failed to create order' },
