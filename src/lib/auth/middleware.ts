@@ -5,6 +5,7 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getSupabaseAuthOptions } from '@/lib/supabase/auth-config';
 import { ROLES, ROLE_DASHBOARDS, canAccessRoute, type UserRole } from './roles';
 
 // Routes that don't require authentication
@@ -69,10 +70,13 @@ export async function authMiddleware(request: NextRequest) {
     },
   });
 
+  const authOptions = getSupabaseAuthOptions();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      ...authOptions,
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -175,10 +179,12 @@ export async function authMiddleware(request: NextRequest) {
 
 // Helper to get user role from request (for use in server components)
 export async function getUserFromRequest(request: NextRequest) {
+  const authOptions = getSupabaseAuthOptions();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      ...authOptions,
       cookies: {
         getAll() {
           return request.cookies.getAll();
