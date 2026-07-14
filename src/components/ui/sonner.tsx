@@ -23,7 +23,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          toast: "!bg-white !text-gray-900 !border-gray-200 !shadow-lg !font-[var(--font-poppins)]",
+          toast: "!bg-white !text-gray-900 !border-gray-200 ! !font-[var(--font-poppins)]",
           success: "!bg-white !text-gray-900 !border-gray-200",
           error: "!bg-white !text-gray-900 !border-gray-200",
           info: "!bg-white !text-gray-900 !border-gray-200",

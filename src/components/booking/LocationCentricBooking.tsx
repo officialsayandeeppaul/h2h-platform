@@ -178,9 +178,9 @@ export function LocationCentricBooking({
             <div
               className={cn(
                 'group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200',
-                'hover:shadow-xl hover:border-cyan-400',
+                'hover:border-cyan-400',
                 selectedMode === 'online' 
-                  ? 'border-cyan-500 bg-cyan-50 shadow-lg' 
+                  ? 'border-cyan-500 bg-cyan-50' 
                   : 'border-gray-200 bg-white'
               )}
               onClick={() => {
@@ -216,9 +216,9 @@ export function LocationCentricBooking({
             <div
               className={cn(
                 'group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200',
-                'hover:shadow-xl hover:border-cyan-400',
+                'hover:border-cyan-400',
                 selectedMode === 'offline' 
-                  ? 'border-cyan-500 bg-cyan-50 shadow-lg' 
+                  ? 'border-cyan-500 bg-cyan-50' 
                   : 'border-gray-200 bg-white'
               )}
               onClick={() => {
@@ -257,7 +257,7 @@ export function LocationCentricBooking({
             <div className="flex justify-center mt-10">
               <Button 
                 onClick={onContinue}
-                className="h-12 px-10 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-full text-[15px] font-medium shadow-lg"
+                className="h-12 px-10 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-full text-[15px] font-medium"
               >
                 Continue with Online
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -302,7 +302,7 @@ export function LocationCentricBooking({
             <Button 
               variant="outline" 
               onClick={() => setStep('mode')}
-              className="h-11 px-6 rounded-full"
+              className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current"
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
@@ -382,7 +382,7 @@ export function LocationCentricBooking({
                 setSelectedCenter(null);
                 setStep('city');
               }}
-              className="h-11 px-6 rounded-full"
+              className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current"
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Cities
             </Button>

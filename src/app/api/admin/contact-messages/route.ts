@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const tag = searchParams.get('tag');
+    const source = searchParams.get('source');
 
     let query = adminClient
       .from('contact_messages')
@@ -39,6 +41,13 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       query = query.eq('status', status);
+    }
+
+    // Call Requests page: manual quick requests + Cal.com webhook bookings
+    if (source === 'call_requests') {
+      query = query.overlaps('services', ['quick_call_request', 'cal_booking']);
+    } else if (tag) {
+      query = query.contains('services', [tag]);
     }
 
     const { data: messages, error } = await query;

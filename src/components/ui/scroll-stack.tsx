@@ -41,7 +41,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
         {childArray.map((child, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 md:p-12 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+            className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-8 md:p-12 transition-all duration-300 hover:-translate-y-1"
           >
             {child}
           </div>

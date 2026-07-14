@@ -333,7 +333,7 @@ export default function LocationsPage() {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {centers.map(center => (
-                          <div key={center.id} className="bg-white rounded-lg border p-4 hover:shadow-md transition-shadow">
+                          <div key={center.id} className="bg-white rounded-lg border p-4 transition-colors">
                             <div className="flex items-start justify-between mb-3">
                               <div>
                                 <h4 className="font-medium text-gray-900">{center.name}</h4>

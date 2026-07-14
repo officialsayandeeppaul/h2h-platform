@@ -31,7 +31,7 @@ export function FounderSection() {
             </div>
 
             <div className="mt-10">
-              <Button size="lg" className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 font-[family-name:var(--font-poppins)]" asChild>
+              <Button size="lg" className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-blue-500/25 font-[family-name:var(--font-poppins)]" asChild>
                 <Link href="/about">
                   Learn Our Story
                   <ArrowRight className="ml-2 h-5 w-5" />

@@ -150,7 +150,7 @@ export default function BlogPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {blogPosts.slice(1).map((post) => (
               <Link key={post.slug} href={`/blog/${post.slug}`} className="group">
-                <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all">
+                <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 transition-all">
                   <div className="relative h-[200px] overflow-hidden">
                     <img
                       src={post.image}

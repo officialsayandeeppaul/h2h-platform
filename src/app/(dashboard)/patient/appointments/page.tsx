@@ -363,7 +363,7 @@ function downloadHTML(){
             onClick={() => { setFilter(f); setSelectedApt(null); }}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               filter === f
-                ? 'bg-cyan-500 text-white shadow-sm'
+                ? 'bg-cyan-500 text-white'
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -539,8 +539,8 @@ function downloadHTML(){
                 <div
                   key={apt.id}
                   onClick={() => setSelectedApt(apt)}
-                  className={`bg-white rounded-xl border-2 p-4 cursor-pointer transition-all hover:shadow-md ${
-                    isSelected ? 'border-cyan-500 shadow-md ring-1 ring-cyan-100' : 'border-gray-100 hover:border-gray-200'
+                  className={`bg-white rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                    isSelected ? 'border-cyan-500 ring-1 ring-cyan-100' : 'border-gray-100 hover:border-gray-200'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -784,7 +784,7 @@ function downloadHTML(){
                           href={selectedApt.googleMeetLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-lg shadow-cyan-500/20 transition-all hover:shadow-cyan-500/25 col-span-2 group"
+                          className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white shadow-cyan-500/20 transition-all hover:shadow-cyan-500/25 col-span-2 group"
                         >
                           <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                             <Video className="h-6 w-6" strokeWidth={2.5} />
@@ -818,7 +818,7 @@ function downloadHTML(){
       {/* Reschedule Modal */}
       {rescheduleApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden">
             <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 text-white flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-lg">Request Reschedule</h3>

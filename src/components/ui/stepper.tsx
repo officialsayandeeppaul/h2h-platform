@@ -82,7 +82,7 @@ export default function Stepper({
       {...rest}
     >
       <div
-        className={`mx-auto w-full max-w-md rounded-3xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/20 ${stepCircleContainerClassName}`}
+        className={`mx-auto w-full max-w-md rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 ${stepCircleContainerClassName}`}
       >
         <div className={`${stepContainerClassName} flex w-full items-center p-8`}>
           {stepsArray.map((_, index) => {

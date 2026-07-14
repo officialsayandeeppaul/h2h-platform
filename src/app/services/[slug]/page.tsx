@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { Header, Footer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,22 @@ import { Highlighter } from '@/components/ui/highlighter';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { DigitalHealthServiceDetail } from '@/components/services/DigitalHealthServiceDetail';
 import { ServiceReadyCta } from '@/components/services/ServiceReadyCta';
+import {
+  LazyServiceHeroImage,
+  ServiceDetailPageSkeleton,
+} from '@/components/services/ServiceDetailSkeleton';
 import { SERVICE_PAGE_CONTENT } from '@/constants/service-pages';
 
 export default function ServiceDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const service = SERVICE_PAGE_CONTENT[slug];
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [slug]);
 
   if (!service) {
     return (
@@ -42,6 +52,10 @@ export default function ServiceDetailPage() {
     return <DigitalHealthServiceDetail />;
   }
 
+  if (!ready) {
+    return <ServiceDetailPageSkeleton />;
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <Header />
@@ -62,7 +76,7 @@ export default function ServiceDetailPage() {
               <div>
                 <div className="mb-4 flex items-center gap-4">
                   <div className="h-12 w-1 rounded-full bg-cyan-500" />
-                  <h1 className="text-[36px] font-semibold leading-tight tracking-tight text-gray-900 md:text-[48px]">
+                  <h1 className="text-[36px] font-medium leading-tight tracking-tight text-gray-900 md:text-[48px]">
                     {service.title}
                   </h1>
                 </div>
@@ -80,7 +94,8 @@ export default function ServiceDetailPage() {
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Button
-                    className="h-12 rounded-full bg-cyan-500 px-8 text-[14px] font-medium text-white hover:bg-cyan-600"
+                    variant="cyan"
+                    className="h-12 rounded-full px-8 text-[14px] font-medium"
                     asChild
                   >
                     <Link href={`/booking?service=${slug}`}>
@@ -90,7 +105,7 @@ export default function ServiceDetailPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-12 rounded-full border-gray-200 px-8 text-[14px] font-medium text-gray-700"
+                    className="h-12 rounded-full border-gray-200 px-8 text-[14px] font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                     asChild
                   >
                     <Link href="/contact">Contact Us</Link>
@@ -98,22 +113,11 @@ export default function ServiceDetailPage() {
                 </div>
               </div>
 
-              <div className="relative">
-                <div className="relative h-[min(400px,55vw)] w-full overflow-hidden rounded-2xl sm:h-[400px]">
-                  <Image
-                    src={service.image}
-                    alt={`${service.title} at H2H Healthcare`}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 480px"
-                    className={
-                      service.imageObjectClass ?? 'object-cover object-center'
-                    }
-                    priority
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
-                </div>
-                <div className="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-2xl bg-cyan-100" />
-              </div>
+              <LazyServiceHeroImage
+                src={service.image}
+                alt={`${service.title} at H2H Healthcare`}
+                objectClass={service.imageObjectClass}
+              />
             </div>
           </div>
         </section>
@@ -179,7 +183,6 @@ export default function ServiceDetailPage() {
           </div>
         </section>
 
-        {/* Service-specific CTA */}
         <ServiceReadyCta
           title={service.cta.title}
           subtitle={service.cta.subtitle}

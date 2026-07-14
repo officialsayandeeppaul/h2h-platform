@@ -72,7 +72,7 @@ export function WeekAvailabilityView({
                 : 'bg-gray-50 border border-gray-100',
               day.dayOfWeek === today && 'ring-2 ring-cyan-400',
               selectedDay === day.dayOfWeek && 'ring-2 ring-cyan-500 bg-cyan-50',
-              onSelectDay && day.isOpen && 'cursor-pointer hover:shadow-md'
+              onSelectDay && day.isOpen && 'cursor-pointer '
             )}
             onClick={() => day.isOpen && onSelectDay?.(day.dayOfWeek)}
           >

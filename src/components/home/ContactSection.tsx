@@ -23,7 +23,7 @@ export function ContactSection() {
           <ContactMessageForm />
 
           <div className="relative">
-            <div className="rounded-2xl overflow-hidden shadow-2xl">
+            <div className="rounded-2xl overflow-hidden">
               <Image
                 src={MARKETING_IMAGES.contactUs}
                 alt="Professional consultation at H2H Healthcare"
@@ -33,7 +33,7 @@ export function ContactSection() {
                 loading="lazy"
               />
             </div>
-            <div className="absolute -bottom-6 left-0 md:-left-6 bg-white rounded-2xl p-4 md:p-5 shadow-xl border border-gray-100">
+            <div className="absolute -bottom-6 left-0 md:-left-6 bg-white rounded-2xl p-4 md:p-5 border border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   <Image src="https://api.dicebear.com/9.x/lorelei/svg?seed=Doc1&backgroundColor=b6e3f4" alt="Doctor avatar" width={36} height={36} className="w-9 h-9 rounded-full border-2 border-white" loading="lazy" />

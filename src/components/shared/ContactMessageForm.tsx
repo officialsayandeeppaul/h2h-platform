@@ -114,7 +114,7 @@ export function ContactMessageForm({ className }: ContactMessageFormProps) {
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-sm',
+        'bg-white rounded-2xl p-6 sm:p-8 border border-gray-200',
         className
       )}
     >

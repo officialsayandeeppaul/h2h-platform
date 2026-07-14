@@ -8,7 +8,7 @@ export function BookingStepperSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border border-gray-100 bg-white/90 p-4 shadow-sm backdrop-blur-sm',
+        'rounded-2xl border border-gray-100 bg-white/90 p-4 backdrop-blur-sm',
         className
       )}
     >
@@ -42,7 +42,7 @@ export function BookingLocationSkeleton() {
         {[0, 1].map((i) => (
           <div
             key={i}
-            className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+            className="rounded-2xl border border-gray-100 bg-white p-6"
           >
             <div className="mb-4 flex items-center justify-between">
               <Skeleton className="h-14 w-14 rounded-2xl bg-gray-200/80" />
@@ -70,16 +70,19 @@ export function BookingCityGridSkeleton() {
         <Skeleton className="mx-auto h-9 max-w-sm rounded-lg bg-gray-200/90" />
         <Skeleton className="mx-auto h-4 max-w-md rounded-md bg-gray-100" />
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, i) => (
+      <div className="mx-auto grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md"
+            className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5"
           >
-            <Skeleton className="h-32 w-full rounded-none bg-gradient-to-br from-gray-200 to-gray-100" />
-            <div className="space-y-2 p-3">
-              <Skeleton className="h-4 w-2/3 rounded-md" />
-              <Skeleton className="h-3 w-1/2 rounded-md bg-gray-100" />
+            <div className="flex items-start justify-between">
+              <Skeleton className="h-11 w-11 rounded-xl bg-gray-100" />
+              <Skeleton className="h-5 w-14 rounded-full bg-gray-100" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-2/3 rounded-md" />
+              <Skeleton className="h-3.5 w-1/2 rounded-md bg-gray-100" />
             </div>
           </div>
         ))}
@@ -105,7 +108,7 @@ export function BookingServiceSkeleton() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
+            className="rounded-xl border border-gray-100 bg-white p-5"
           >
             <div className="mb-3 flex items-start justify-between">
               <Skeleton className="h-5 w-20 rounded-md bg-gray-100" />
@@ -137,7 +140,7 @@ export function BookingDoctorSkeleton() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
+            className="rounded-xl border border-gray-100 bg-white p-5"
           >
             <div className="flex items-start gap-4">
               <Skeleton className="h-14 w-14 shrink-0 rounded-full bg-gray-200/90" />
@@ -175,7 +178,7 @@ export function BookingTimeSlotGridSkeleton() {
 export function BookingDateTimeSlotsSkeleton() {
   return (
     <div className="grid max-w-4xl animate-in fade-in gap-4 duration-300 lg:grid-cols-2">
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-gray-100 bg-white p-5">
         <div className="mb-4 flex items-center justify-between">
           <Skeleton className="h-4 w-28 rounded-md" />
           <Skeleton className="h-7 w-24 rounded-full bg-gray-100" />
@@ -194,7 +197,7 @@ export function BookingDateTimeSlotsSkeleton() {
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-gray-100 bg-white p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="space-y-2">
             <Skeleton className="h-4 w-32 rounded-md" />

@@ -39,7 +39,7 @@ export function FeaturesSection() {
             easing="linear"
           >
             {/* Card 1 - Sports Rehabilitation */}
-            <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-2xl shadow-blue-500/20 rounded-2xl">
+            <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-blue-500/20 rounded-2xl">
               <div className="h-full flex flex-col justify-center">
                 <div className="flex items-center gap-4 mb-5">
                   <div>
@@ -56,7 +56,7 @@ export function FeaturesSection() {
             </Card>
 
             {/* Card 2 - Pain Management */}
-            <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-2xl shadow-teal-500/20 rounded-2xl">
+            <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-teal-500/20 rounded-2xl">
               <div className="h-full flex flex-col justify-center">
                 <div className="flex items-center gap-4 mb-5">
                   <div>
@@ -73,7 +73,7 @@ export function FeaturesSection() {
             </Card>
 
             {/* Card 3 - Home Physiotherapy */}
-            <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-2xl shadow-emerald-500/20 rounded-2xl">
+            <Card className="p-8 bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl border-gray-700/50 shadow-emerald-500/20 rounded-2xl">
               <div className="h-full flex flex-col justify-center">
                 <div className="flex items-center gap-4 mb-5">
                   <div>

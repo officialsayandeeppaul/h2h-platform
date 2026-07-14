@@ -73,9 +73,9 @@ export function ClinicCenterCard({
     <div
       className={cn(
         'group relative cursor-pointer rounded-2xl border bg-white p-5 transition-all duration-200',
-        'hover:shadow-lg hover:border-cyan-200',
+        'hover:border-cyan-200',
         isSelected 
-          ? 'border-cyan-500 ring-2 ring-cyan-100 shadow-lg' 
+          ? 'border-cyan-500 ring-2 ring-cyan-100' 
           : 'border-gray-200'
       )}
       onClick={() => onSelect(center)}
@@ -83,7 +83,7 @@ export function ClinicCenterCard({
       {/* Featured Badge */}
       {center.is_featured && (
         <div className="absolute -top-2 -right-2 z-10">
-          <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 shadow-md">
+          <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
             <Sparkles className="h-3 w-3 mr-1" />
             Featured
           </Badge>

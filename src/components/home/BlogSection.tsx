@@ -23,7 +23,7 @@ export function BlogSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* Large Card - Left */}
           <Link href="/blog/physiotherapy-benefits" className="sm:col-span-2 group">
-            <div className="relative h-[320px] rounded-2xl overflow-hidden bg-cyan-50 p-6 flex flex-col justify-between transition-all hover:shadow-lg">
+            <div className="relative h-[320px] rounded-2xl overflow-hidden bg-cyan-50 p-6 flex flex-col justify-between transition-all hover:">
               <div>
                 <h3 className="text-[22px] font-medium text-gray-900 mb-3 leading-tight max-w-md">
                   How Physiotherapy Can Transform Your Daily Life
@@ -48,7 +48,7 @@ export function BlogSection() {
 
           {/* Small Card - Top Right */}
           <Link href="/blog/sports-injury-recovery" className="group">
-            <div className="relative h-[320px] rounded-2xl overflow-hidden bg-teal-50 p-6 flex flex-col justify-between transition-all hover:shadow-lg">
+            <div className="relative h-[320px] rounded-2xl overflow-hidden bg-teal-50 p-6 flex flex-col justify-between transition-all hover:">
               <div>
                 <h3 className="text-[18px] font-medium text-gray-900 mb-2 leading-tight">
                   Sports Injury Recovery Guide
@@ -65,7 +65,7 @@ export function BlogSection() {
 
           {/* Small Card - Bottom Left */}
           <Link href="/blog/home-exercises" className="group">
-            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-orange-50 p-6 flex flex-col justify-between transition-all hover:shadow-lg">
+            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-orange-50 p-6 flex flex-col justify-between transition-all hover:">
               <div>
                 <h3 className="text-[18px] font-medium text-gray-900 mb-2 leading-tight">
                   5 Home Exercises for Back Pain
@@ -82,7 +82,7 @@ export function BlogSection() {
 
           {/* Medium Card - Bottom Middle */}
           <Link href="/blog/cardiac-rehabilitation" className="group">
-            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-purple-50 p-6 flex flex-col justify-between transition-all hover:shadow-lg">
+            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-purple-50 p-6 flex flex-col justify-between transition-all hover:">
               <div>
                 <h3 className="text-[18px] font-medium text-gray-900 mb-2 leading-tight">
                   Cardiac Rehabilitation: What to Expect
@@ -107,7 +107,7 @@ export function BlogSection() {
 
           {/* Small Card - Bottom Right */}
           <Link href="/blog/yoga-wellness" className="group">
-            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-green-50 p-6 flex flex-col justify-between transition-all hover:shadow-lg">
+            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-green-50 p-6 flex flex-col justify-between transition-all hover:">
               <div>
                 <h3 className="text-[18px] font-medium text-gray-900 mb-2 leading-tight">
                   Yoga & Wellness Tips

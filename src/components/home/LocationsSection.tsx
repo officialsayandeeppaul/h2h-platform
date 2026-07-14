@@ -84,7 +84,7 @@ export function LocationsSection() {
               {globePositions.map((pos, i) => (
                 <div
                   key={i}
-                  className="absolute w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse"
+                  className="absolute w-3 h-3 rounded-full bg-blue-500 shadow-blue-500/50 animate-pulse"
                   style={{
                     top: `${pos.top}%`,
                     left: `${pos.left}%`,

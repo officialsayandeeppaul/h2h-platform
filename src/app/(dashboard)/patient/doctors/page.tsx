@@ -157,7 +157,7 @@ export default function PatientDoctorsPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDoctors.map((doctor) => (
-            <Card key={doctor.id} className="bg-white border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all">
+            <Card key={doctor.id} className="bg-white border-gray-200 rounded-xl hover:border-gray-300 transition-all">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <DoctorAvatar

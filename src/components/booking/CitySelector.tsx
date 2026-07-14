@@ -88,10 +88,10 @@ export function CitySelector({
             key={city.name}
             className={cn(
               'group relative cursor-pointer rounded-2xl overflow-hidden transition-all duration-200',
-              'hover:shadow-xl hover:scale-[1.02]',
+              'hover:scale-[1.02]',
               selectedCity === city.name 
-                ? 'ring-3 ring-cyan-500 shadow-lg' 
-                : 'shadow-md'
+                ? 'ring-3 ring-cyan-500' 
+                : ''
             )}
             onClick={() => onSelectCity(city.name)}
           >

@@ -249,7 +249,7 @@ export default function DoctorSchedulePage() {
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left: Weekly slots */}
-        <Card className="border-gray-200 shadow-sm">
+        <Card className="border-gray-200">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Calendar className="h-5 w-5 text-gray-600" /> Weekly availability
@@ -292,7 +292,7 @@ export default function DoctorSchedulePage() {
         {/* Right */}
         <div className="space-y-6">
           {/* Request time off */}
-          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 shadow-sm">
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
                 <AlertCircle className="h-5 w-5 text-amber-600" /> Request time off
@@ -310,7 +310,7 @@ export default function DoctorSchedulePage() {
           </Card>
 
           {/* Upcoming date blocks */}
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-gray-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <Ban className="h-5 w-5 text-rose-500" /> Upcoming blocked dates
@@ -343,7 +343,7 @@ export default function DoctorSchedulePage() {
           </Card>
 
           {/* Request history */}
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-gray-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <Inbox className="h-5 w-5 text-gray-600" /> Request history

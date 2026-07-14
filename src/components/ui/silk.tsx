@@ -1,7 +1,17 @@
 /* eslint-disable react/no-unknown-property */
 'use client';
 
-import React, { forwardRef, useMemo, useRef, useLayoutEffect } from 'react';
+import React, {
+  Component,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react';
 import { Canvas, useFrame, useThree, RootState } from '@react-three/fiber';
 import { Color, Mesh, ShaderMaterial } from 'three';
 import { IUniform } from 'three';
@@ -15,6 +25,20 @@ const hexToNormalizedRGB = (hex: string): NormalizedRGB => {
   const b = parseInt(clean.slice(4, 6), 16) / 255;
   return [r, g, b];
 };
+
+function canUseWebGL(): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      canvas.getContext('webgl2') ||
+      canvas.getContext('webgl') ||
+      canvas.getContext('experimental-webgl')
+    );
+  } catch {
+    return false;
+  }
+}
 
 interface UniformValue<T = number | Color> {
   value: T;
@@ -120,16 +144,66 @@ const SilkPlane = forwardRef<Mesh, SilkPlaneProps>(function SilkPlane({ uniforms
 });
 SilkPlane.displayName = 'SilkPlane';
 
+function SilkFallback({ color }: { color: string }) {
+  return (
+    <div
+      className="h-full w-full"
+      style={{
+        background: `linear-gradient(135deg, ${color} 0%, #0e7490 45%, #134e4a 100%)`,
+      }}
+      aria-hidden
+    />
+  );
+}
+
+class SilkErrorBoundary extends Component<
+  { color: string; children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(_error: Error, _info: ErrorInfo) {
+    // WebGL unavailable / context lost — fall back silently
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <SilkFallback color={this.props.color} />;
+    }
+    return this.props.children;
+  }
+}
+
 export interface SilkProps {
   speed?: number;
   scale?: number;
   color?: string;
   noiseIntensity?: number;
   rotation?: number;
+  /** Opt-in: WebGL often fails on locked-down GPUs and crashes Next.js overlay. Default = CSS only. */
+  enableWebGL?: boolean;
 }
 
-const Silk: React.FC<SilkProps> = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, rotation = 0 }) => {
+const Silk: React.FC<SilkProps> = ({
+  speed = 5,
+  scale = 1,
+  color = '#7B7481',
+  noiseIntensity = 1.5,
+  rotation = 0,
+  enableWebGL = false,
+}) => {
   const meshRef = useRef<Mesh>(null);
+  const [webglOk, setWebglOk] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!enableWebGL) return;
+    setWebglOk(canUseWebGL());
+  }, [enableWebGL]);
 
   const uniforms = useMemo<SilkUniforms>(
     () => ({
@@ -138,15 +212,39 @@ const Silk: React.FC<SilkProps> = ({ speed = 5, scale = 1, color = '#7B7481', no
       uNoiseIntensity: { value: noiseIntensity },
       uColor: { value: new Color(...hexToNormalizedRGB(color)) },
       uRotation: { value: rotation },
-      uTime: { value: 0 }
+      uTime: { value: 0 },
     }),
     [speed, scale, noiseIntensity, color, rotation]
   );
 
+  if (!enableWebGL || !webglOk || failed) {
+    return <SilkFallback color={color} />;
+  }
+
   return (
-    <Canvas dpr={[1, 2]} frameloop="always">
-      <SilkPlane ref={meshRef} uniforms={uniforms} />
-    </Canvas>
+    <SilkErrorBoundary color={color}>
+      <Canvas
+        dpr={[1, 1.5]}
+        frameloop="always"
+        gl={{
+          antialias: false,
+          alpha: true,
+          powerPreference: 'low-power',
+          failIfMajorPerformanceCaveat: false,
+        }}
+        fallback={<SilkFallback color={color} />}
+        onCreated={({ gl }) => {
+          const canvas = gl.domElement;
+          const loseContext = (event: Event) => {
+            event.preventDefault();
+            setFailed(true);
+          };
+          canvas.addEventListener('webglcontextlost', loseContext, false);
+        }}
+      >
+        <SilkPlane ref={meshRef} uniforms={uniforms} />
+      </Canvas>
+    </SilkErrorBoundary>
   );
 };
 

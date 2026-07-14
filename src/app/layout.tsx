@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TawkToChat } from "@/components/shared/TawkToChat";
+import { DevConsoleGuard } from "@/components/shared/DevConsoleGuard";
 import { PostHogProvider } from "@/components/shared/PostHogProvider";
 import { GoogleAnalytics } from "@/components/shared/GoogleAnalytics";
 
@@ -116,6 +117,7 @@ export default function RootLayout({
           }}
         />
         <PostHogProvider>
+          <DevConsoleGuard />
           {children}
           <Toaster position="top-right" richColors />
           <TawkToChat />

@@ -68,7 +68,7 @@ export function ServicesSection() {
           {CARDS.map((card) => (
             <div
               key={card.href}
-              className="group relative flex h-full min-h-[300px] w-full flex-col overflow-hidden rounded-2xl bg-gray-50 shadow-sm transition-all duration-300 hover:shadow-lg md:min-h-[280px] md:flex-row"
+              className="group relative flex h-full min-h-[300px] w-full flex-col overflow-hidden rounded-2xl bg-gray-50 transition-all duration-300 md:min-h-[280px] md:flex-row"
             >
               {/* Same-width strip; height follows card so every card matches */}
               <div className="relative h-[200px] w-full shrink-0 md:h-full md:w-[44%] md:shrink-0">

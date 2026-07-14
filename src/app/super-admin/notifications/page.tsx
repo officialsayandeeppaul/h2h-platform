@@ -156,7 +156,7 @@ export default function NotificationsPage() {
           {filtered.map((item) => (
             <div
               key={`${item.type}-${item.id}`}
-              className="rounded-xl border bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-xl border bg-white overflow-hidden transition-colors"
             >
               {item.type === 'contact' ? (
                 <div className="flex items-start justify-between gap-4 p-4">

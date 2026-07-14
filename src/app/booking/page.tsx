@@ -877,7 +877,7 @@ function BookingPageContent() {
       >
         <div className="max-w-[1100px] mx-auto px-6">
           {/* Progress Steps */}
-          <div className="mb-10 bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <div className="mb-10 bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-100">
             <div className="flex items-center justify-between">
               {steps.map((step, index) => (
                 <div key={step.key} className="flex items-center flex-1">
@@ -948,9 +948,9 @@ function BookingPageContent() {
                             <div
                               className={cn(
                                 'group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200',
-                                'hover:shadow-xl hover:border-cyan-400',
+                                'hover:border-cyan-400',
                                 selectedMode === 'online' 
-                                  ? 'border-cyan-500 bg-cyan-50 shadow-lg' 
+                                  ? 'border-cyan-500 bg-cyan-50' 
                                   : 'border-gray-200 bg-white'
                               )}
                               onClick={() => {
@@ -991,9 +991,9 @@ function BookingPageContent() {
                             <div
                               className={cn(
                                 'group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200',
-                                'hover:shadow-xl hover:border-cyan-400',
+                                'hover:border-cyan-400',
                                 selectedMode === 'offline'
-                                  ? 'border-cyan-500 bg-cyan-50 shadow-lg' 
+                                  ? 'border-cyan-500 bg-cyan-50' 
                                   : 'border-gray-200 bg-white'
                               )}
                               onClick={() => {
@@ -1070,9 +1070,9 @@ function BookingPageContent() {
                           <div
                             className={cn(
                               'group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200',
-                              'hover:shadow-xl hover:border-cyan-400',
+                              'hover:border-cyan-400',
                               selectedMode === 'online' 
-                                ? 'border-cyan-500 bg-cyan-50 shadow-lg' 
+                                ? 'border-cyan-500 bg-cyan-50' 
                                 : 'border-gray-200 bg-white'
                             )}
                             onClick={async () => {
@@ -1171,9 +1171,9 @@ function BookingPageContent() {
                           <div
                             className={cn(
                               'group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200',
-                              'hover:shadow-xl hover:border-cyan-400',
+                              'hover:border-cyan-400',
                               selectedMode === 'offline' && selectedCenter
-                                ? 'border-cyan-500 bg-cyan-50 shadow-lg' 
+                                ? 'border-cyan-500 bg-cyan-50' 
                                 : 'border-gray-200 bg-white'
                             )}
                             onClick={async () => {
@@ -1327,7 +1327,7 @@ function BookingPageContent() {
                           }
                         }}
                         disabled={!selectedLocation}
-                        className="h-12 px-10 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-full text-[15px] font-medium shadow-lg disabled:opacity-50"
+                        className="h-12 px-10 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-full text-[15px] font-medium disabled:opacity-50"
                       >
                         Continue
                         <ArrowRight className="ml-2 h-5 w-5" />
@@ -1388,7 +1388,7 @@ function BookingPageContent() {
                                   key={cityName}
                                   className={cn(
                                     'cursor-pointer p-4 rounded-xl border-2 transition-all',
-                                    'hover:shadow-lg hover:border-cyan-400',
+                                    'hover:border-cyan-400',
                                     selectedCity === cityName
                                       ? 'border-cyan-500 bg-cyan-50'
                                       : 'border-gray-200 bg-white'
@@ -1417,7 +1417,7 @@ function BookingPageContent() {
                                     <MapPin className="h-5 w-5 text-cyan-500" />
                                     {selectedCity === cityName && <CheckCircle2 className="h-5 w-5 text-cyan-500" />}
                                   </div>
-                                  <h3 className="font-semibold text-gray-900">{cityName}</h3>
+                                  <h3 className="font-medium text-gray-900">{cityName}</h3>
                                   <p className="text-xs text-gray-500">{centersInCity.length} center{centersInCity.length > 1 ? 's' : ''}</p>
                                 </div>
                               );
@@ -1438,7 +1438,7 @@ function BookingPageContent() {
                                   key={center.id}
                                   className={cn(
                                     'cursor-pointer p-4 rounded-xl border-2 transition-all',
-                                    'hover:shadow-lg hover:border-cyan-400',
+                                    'hover:border-cyan-400',
                                     selectedCenter?.id === center.id
                                       ? 'border-cyan-500 bg-cyan-50'
                                       : 'border-gray-200 bg-white'
@@ -1484,7 +1484,7 @@ function BookingPageContent() {
                           <Button 
                             variant="outline" 
                             onClick={() => setLocationStep('mode')}
-                            className="h-11 px-6 rounded-full"
+                            className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current"
                           >
                             <ArrowLeft className="mr-2 h-4 w-4" /> Back
                           </Button>
@@ -1506,59 +1506,61 @@ function BookingPageContent() {
                         <p className="text-[14px] mt-2">Please try online consultation instead.</p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {cities.sort((a, b) => a.tier - b.tier || b.centerCount - a.centerCount).map((city) => (
-                          <div
-                            key={city.name}
-                            className={cn(
-                              'group relative cursor-pointer rounded-2xl overflow-hidden transition-all duration-200',
-                              'hover:shadow-xl hover:scale-[1.02]',
-                              selectedCity === city.name 
-                                ? 'ring-3 ring-cyan-500 shadow-lg' 
-                                : 'shadow-md'
-                            )}
-                            onClick={() => {
-                              setSelectedCity(city.name);
-                              setSelectedCenter(null);
-                              setLocationStep('center');
-                            }}
-                          >
-                            <div className="relative h-32 bg-gradient-to-br from-cyan-500 to-teal-600">
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                              
-                              {selectedCity === city.name && (
-                                <div className="absolute top-3 right-3">
-                                  <div className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center">
-                                    <CheckCircle2 className="h-4 w-4 text-white" />
-                                  </div>
-                                </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                        {cities.sort((a, b) => a.tier - b.tier || b.centerCount - a.centerCount).map((city) => {
+                          const isSelected = selectedCity === city.name;
+                          return (
+                            <button
+                              key={city.name}
+                              type="button"
+                              className={cn(
+                                'group relative flex flex-col items-start gap-3 rounded-2xl border bg-white p-5 text-left transition-all duration-200 cursor-pointer',
+                                'hover:border-cyan-300 hover:bg-cyan-50/40 ',
+                                isSelected
+                                  ? 'border-cyan-500 bg-cyan-50/60 ring-1 ring-cyan-500/25'
+                                  : 'border-gray-200'
                               )}
-
-                              <div className="absolute top-3 left-3">
-                                <Badge 
-                                  className={cn(
-                                    "text-[10px] font-medium border-0",
-                                    city.tier === 1 
-                                      ? 'bg-cyan-500 text-white' 
-                                      : 'bg-teal-500 text-white'
+                              onClick={() => {
+                                setSelectedCity(city.name);
+                                setSelectedCenter(null);
+                                setLocationStep('center');
+                              }}
+                            >
+                              <div className="flex w-full items-start justify-between gap-3">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 group-hover:bg-cyan-100 group-hover:text-cyan-700 transition-colors">
+                                  <MapPin className="h-5 w-5" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={cn(
+                                      'rounded-full px-2.5 py-0.5 text-[10px] font-medium',
+                                      city.tier === 1
+                                        ? 'bg-slate-100 text-slate-600'
+                                        : 'bg-slate-50 text-slate-500 border border-slate-200'
+                                    )}
+                                  >
+                                    Tier {city.tier}
+                                  </span>
+                                  {isSelected && (
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500 text-white">
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </span>
                                   )}
-                                >
-                                  Tier {city.tier}
-                                </Badge>
+                                </div>
                               </div>
 
-                              <div className="absolute bottom-0 left-0 right-0 p-3">
-                                <h3 className="text-white font-semibold text-[16px] mb-1">
+                              <div>
+                                <h3 className="text-[17px] font-medium text-gray-900 tracking-tight">
                                   {city.name}
                                 </h3>
-                                <div className="flex items-center gap-1.5 text-white/80 text-[12px]">
-                                  <Building2 className="h-3.5 w-3.5" />
-                                  <span>{city.centerCount} center{city.centerCount !== 1 ? 's' : ''}</span>
-                                </div>
+                                <p className="mt-1 flex items-center gap-1.5 text-[13px] text-gray-500">
+                                  <Building2 className="h-3.5 w-3.5 text-gray-400" />
+                                  {city.centerCount} center{city.centerCount !== 1 ? 's' : ''}
+                                </p>
                               </div>
-                            </div>
-                          </div>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -1568,7 +1570,7 @@ function BookingPageContent() {
                         <Button 
                           variant="outline" 
                           onClick={() => setLocationStep('mode')}
-                          className="h-11 px-6 rounded-full"
+                          className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current"
                         >
                           <ArrowLeft className="mr-2 h-4 w-4" /> Back
                         </Button>
@@ -1616,9 +1618,9 @@ function BookingPageContent() {
                             key={center.id}
                             className={cn(
                               'group relative cursor-pointer rounded-2xl border bg-white p-5 transition-all duration-200',
-                              'hover:shadow-lg hover:border-cyan-200',
+                              'hover:border-cyan-200',
                               selectedCenter?.id === center.id 
-                                ? 'border-cyan-500 ring-2 ring-cyan-100 shadow-lg' 
+                                ? 'border-cyan-500 ring-2 ring-cyan-100' 
                                 : 'border-gray-200'
                             )}
                             onClick={() => {
@@ -1638,7 +1640,7 @@ function BookingPageContent() {
                             {/* Featured Badge */}
                             {center.is_featured && (
                               <div className="absolute -top-2 -right-2 z-10">
-                                <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 shadow-md">
+                                <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
                                   <Sparkles className="h-3 w-3 mr-1" />
                                   Featured
                                 </Badge>
@@ -1654,7 +1656,7 @@ function BookingPageContent() {
 
                             {/* Header */}
                             <div className="mb-4">
-                              <h3 className="text-[17px] font-semibold text-gray-900 pr-8 mb-2">
+                              <h3 className="text-[17px] font-medium text-gray-900 pr-8 mb-2">
                                 {center.name}
                               </h3>
                               
@@ -1824,7 +1826,7 @@ function BookingPageContent() {
                           setSelectedCenter(null);
                           setLocationStep('city');
                         }}
-                        className="h-11 px-6 rounded-full"
+                        className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current"
                       >
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Cities
                       </Button>
@@ -1872,7 +1874,7 @@ function BookingPageContent() {
                         className={cn(
                           'px-4 py-2.5 text-sm font-medium transition-all rounded-lg border',
                           selectedServiceCategory === null
-                            ? 'bg-cyan-500 text-white border-cyan-500 shadow-sm'
+                            ? 'bg-cyan-500 text-white border-cyan-500'
                             : 'bg-white text-gray-600 border-gray-200 hover:border-cyan-200 hover:bg-cyan-50/50'
                         )}
                       >
@@ -1885,7 +1887,7 @@ function BookingPageContent() {
                           className={cn(
                             'px-4 py-2.5 text-sm font-medium transition-all rounded-lg border',
                             selectedServiceCategory === cat
-                              ? 'bg-cyan-500 text-white border-cyan-500 shadow-sm'
+                              ? 'bg-cyan-500 text-white border-cyan-500'
                               : 'bg-white text-gray-600 border-gray-200 hover:border-cyan-200 hover:bg-cyan-50/50'
                           )}
                         >
@@ -1923,7 +1925,7 @@ function BookingPageContent() {
                         <div
                           key={service.id}
                           className={cn(
-                            'group cursor-pointer p-4 md:p-5 rounded-xl border bg-white transition-all hover:shadow-lg',
+                            'group cursor-pointer p-4 md:p-5 rounded-xl border bg-white transition-all ',
                             selectedService?.id === service.id ? 'border-cyan-500' : 'border-gray-200'
                           )}
                           onClick={() => {
@@ -1954,7 +1956,7 @@ function BookingPageContent() {
                 <div className="flex justify-between mt-10">
                   {/* Hide Back button if this is the first step (location flow skips to service) */}
                   {currentStepIndex > 0 ? (
-                    <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full">
+                    <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current">
                       <ArrowLeft className="mr-2 h-4 w-4" /> Back
                     </Button>
                   ) : (
@@ -1988,7 +1990,7 @@ function BookingPageContent() {
                       <div
                         key={doctor.id}
                         className={cn(
-                          'group cursor-pointer p-4 md:p-5 rounded-xl border bg-white transition-all hover:shadow-lg',
+                          'group cursor-pointer p-4 md:p-5 rounded-xl border bg-white transition-all ',
                           selectedDoctor?.id === doctor.id ? 'border-cyan-500' : 'border-gray-200'
                         )}
                         onClick={() => {
@@ -2025,7 +2027,7 @@ function BookingPageContent() {
                 <div className="flex justify-between mt-10">
                   {/* Hide Back button if this is the first step (service flow skips to doctor) */}
                   {currentStepIndex > 0 ? (
-                    <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full">
+                    <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current">
                       <ArrowLeft className="mr-2 h-4 w-4" /> Back
                     </Button>
                   ) : (
@@ -2043,24 +2045,24 @@ function BookingPageContent() {
               <div className="max-w-4xl mx-auto">
                 {/* Compact Header */}
                 <div className="text-center mb-6">
-                  <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Schedule Appointment</h1>
+                  <h1 className="text-2xl md:text-3xl font-medium text-gray-900 mb-1">Schedule Appointment</h1>
                   <p className="text-sm text-gray-500">with <span className="text-cyan-600 font-medium">{selectedDoctor?.name}</span></p>
                 </div>
 
                 {/* Top Bar - Mode & Duration in one row */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                     {/* Mode Selection - Pill buttons */}
-                    <div className="flex-1">
+                    <div className="lg:flex-1">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Mode</p>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {selectedService?.online_available && selectedDoctor?.offers_online !== false && selectedDoctor?.google_meet_enabled && (
                           <button
                             onClick={() => setSelectedMode('online')}
                             className={cn("flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
                               selectedMode === 'online' 
-                                ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-cyan-500 hover:text-white'
                             )}
                           >
                             <Video className="h-3.5 w-3.5" /> Online
@@ -2071,8 +2073,8 @@ function BookingPageContent() {
                             onClick={() => setSelectedMode('offline')}
                             className={cn("flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
                               selectedMode === 'offline' 
-                                ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-cyan-500 hover:text-white'
                             )}
                           >
                             <Building2 className="h-3.5 w-3.5" /> Clinic
@@ -2083,8 +2085,8 @@ function BookingPageContent() {
                             onClick={() => setSelectedMode('home_visit')}
                             className={cn("flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all",
                               selectedMode === 'home_visit' 
-                                ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-cyan-500 hover:text-white'
                             )}
                           >
                             <Home className="h-3.5 w-3.5" /> Home
@@ -2094,12 +2096,12 @@ function BookingPageContent() {
                     </div>
 
                     {/* Divider */}
-                    <div className="hidden sm:block w-px h-12 bg-gray-200"></div>
+                    <div className="hidden lg:block w-px self-stretch min-h-[3rem] bg-gray-200" />
 
-                    {/* Duration Selection - Horizontal pills */}
-                    <div className="flex-1">
+                    {/* Duration — grid so 60m ₹2400 never clips/breaks */}
+                    <div className="lg:flex-[1.4] min-w-0">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Duration</p>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {slotTypes.length > 0 ? slotTypes.map((slotType) => {
                           const displayPrice = selectedMode === 'online' 
                             ? (slotType.online_price || slotType.price)
@@ -2110,29 +2112,41 @@ function BookingPageContent() {
                           return (
                             <button
                               key={slotType.id}
+                              type="button"
                               onClick={() => {
                                 setSelectedDuration(slotType.duration_minutes);
                                 setSelectedSlotType(slotType);
                               }}
-                              className={cn("flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                              className={cn(
+                                "inline-flex min-w-0 items-center justify-center gap-1 rounded-full px-2.5 py-2 text-xs font-medium transition-all whitespace-nowrap hover:[&_span]:text-white",
                                 selectedDuration === slotType.duration_minutes 
-                                  ? 'bg-cyan-500 text-white shadow-md' 
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  ? 'bg-cyan-500 text-white hover:bg-cyan-600 hover:text-white' 
+                                  : 'bg-gray-100 text-gray-600 hover:bg-cyan-500 hover:text-white'
                               )}
                             >
-                              {slotType.duration_minutes}m
-                              <span className={selectedDuration === slotType.duration_minutes ? 'text-cyan-100' : 'text-gray-400'}>₹{displayPrice}</span>
+                              <span>{slotType.duration_minutes}m</span>
+                              <span
+                                className={
+                                  selectedDuration === slotType.duration_minutes
+                                    ? 'text-white'
+                                    : 'text-gray-500'
+                                }
+                              >
+                                ₹{displayPrice}
+                              </span>
                             </button>
                           );
                         }) : (
                           [15, 30, 45, 60].map((duration) => (
                             <button
                               key={duration}
+                              type="button"
                               onClick={() => setSelectedDuration(duration)}
-                              className={cn("px-3 py-2 rounded-full text-xs font-medium transition-all",
+                              className={cn(
+                                "inline-flex items-center justify-center rounded-full px-2.5 py-2 text-xs font-medium transition-all whitespace-nowrap",
                                 selectedDuration === duration 
-                                  ? 'bg-cyan-500 text-white shadow-md' 
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  ? 'bg-cyan-500 text-white hover:bg-cyan-600 hover:text-white' 
+                                  : 'bg-gray-100 text-gray-600 hover:bg-cyan-500 hover:text-white'
                               )}
                             >
                               {duration}m
@@ -2147,9 +2161,9 @@ function BookingPageContent() {
                 {/* Main Content - Calendar & Time Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Calendar */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-[14px] font-semibold text-gray-900">Select Date</h3>
+                      <h3 className="text-[14px] font-medium text-gray-900">Select Date</h3>
                       {selectedDate && (
                         <span className="text-[13px] bg-cyan-500 text-white px-3 py-1 rounded-full font-medium">
                           {format(selectedDate, 'MMM d, yyyy')}
@@ -2171,10 +2185,10 @@ function BookingPageContent() {
                   </div>
 
                   {/* Time Slots */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-[14px] font-semibold text-gray-900">Available Times</h3>
+                        <h3 className="text-[14px] font-medium text-gray-900">Available Times</h3>
                         <p className="text-[12px] text-gray-400 mt-0.5">
                           {selectedDate ? format(selectedDate, 'EEEE, MMM d') : 'Select a date first'}
                         </p>
@@ -2226,8 +2240,8 @@ function BookingPageContent() {
                                   isDisabled
                                     ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
                                     : selectedTime === slot.time
-                                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md ring-2 ring-cyan-300 ring-offset-1'
-                                      : 'bg-gray-50 text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 border border-gray-100'
+                                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white ring-2 ring-cyan-300 ring-offset-1'
+                                      : 'bg-gray-50 text-gray-700 border border-gray-100 hover:bg-cyan-500 hover:text-white hover:border-cyan-500'
                                 )}
                                 onClick={() => !isDisabled && setSelectedTime(slot.time)}
                               >
@@ -2259,7 +2273,7 @@ function BookingPageContent() {
                              <Building2 className="h-5 w-5 text-cyan-600" />}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-medium text-gray-900">
                               {selectedMode === 'online' ? 'Online' : selectedMode === 'home_visit' ? 'Home Visit' : 'Clinic'} • {selectedDuration} min
                             </p>
                             <p className="text-xs text-gray-500">
@@ -2272,7 +2286,7 @@ function BookingPageContent() {
                     <div className="flex items-center gap-4">
                       {selectedSlotType && (
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-cyan-600">
+                          <p className="text-2xl font-medium text-cyan-600">
                             ₹{selectedMode === 'online' 
                               ? (selectedSlotType.online_price || selectedSlotType.price)
                               : selectedMode === 'home_visit'
@@ -2290,13 +2304,13 @@ function BookingPageContent() {
 
                 {/* Navigation */}
                 <div className="flex justify-between mt-6">
-                  <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full border-gray-200">
+                  <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
                   <Button 
                     onClick={goToNextStep} 
                     disabled={!selectedDate || !selectedTime} 
-                    className="h-11 px-8 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-full disabled:opacity-50 shadow-lg"
+                    className="h-11 px-8 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-full disabled:opacity-50"
                   >
                     Continue <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -2314,12 +2328,14 @@ function BookingPageContent() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="p-4 md:p-6 rounded-xl border border-gray-200 bg-white">
-                    <h3 className="text-[14px] md:text-[16px] font-semibold text-gray-900 mb-4 md:mb-6">Appointment Summary</h3>
+                    <h3 className="mb-4 text-[14px] font-medium text-gray-900 md:mb-6 md:text-[16px]">
+                      Appointment Summary
+                    </h3>
                     <div className="space-y-2 md:space-y-4">
-                      <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                        <span className="text-[12px] md:text-[13px] text-gray-500">Location</span>
+                      <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                        <span className="text-[12px] text-gray-500 md:text-[13px]">Location</span>
                         <div className="text-right">
-                          <span className="text-[13px] md:text-[14px] font-medium text-gray-900 block">
+                          <span className="block text-[13px] font-normal text-gray-900 md:text-[14px]">
                             {selectedMode === 'online' ? 'Online' : selectedLocation?.centerName || selectedLocation?.city}
                           </span>
                           {selectedMode !== 'online' && selectedLocation?.centerName && (
@@ -2327,61 +2343,67 @@ function BookingPageContent() {
                           )}
                         </div>
                       </div>
-                      <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                        <span className="text-[12px] md:text-[13px] text-gray-500">Service</span>
-                        <span className="text-[13px] md:text-[14px] font-medium text-gray-900 text-right max-w-[60%] truncate">{selectedService?.name}</span>
+                      <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                        <span className="text-[12px] text-gray-500 md:text-[13px]">Service</span>
+                        <span className="max-w-[60%] truncate text-right text-[13px] font-normal text-gray-900 md:text-[14px]">
+                          {selectedService?.name}
+                        </span>
                       </div>
-                      <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                        <span className="text-[12px] md:text-[13px] text-gray-500">Doctor</span>
-                        <span className="text-[13px] md:text-[14px] font-medium text-gray-900">{selectedDoctor?.name}</span>
+                      <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                        <span className="text-[12px] text-gray-500 md:text-[13px]">Doctor</span>
+                        <span className="text-[13px] font-normal text-gray-900 md:text-[14px]">{selectedDoctor?.name}</span>
                       </div>
-                      <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                        <span className="text-[12px] md:text-[13px] text-gray-500">Date</span>
-                        <span className="text-[13px] md:text-[14px] font-medium text-gray-900">{selectedDate && format(selectedDate, 'EEE, MMM d')}</span>
+                      <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                        <span className="text-[12px] text-gray-500 md:text-[13px]">Date</span>
+                        <span className="text-[13px] font-normal text-gray-900 md:text-[14px]">
+                          {selectedDate && format(selectedDate, 'EEE, MMM d')}
+                        </span>
                       </div>
-                      <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                        <span className="text-[12px] md:text-[13px] text-gray-500">Time</span>
-                        <span className="text-[13px] md:text-[14px] font-medium text-gray-900">{selectedTime}</span>
+                      <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                        <span className="text-[12px] text-gray-500 md:text-[13px]">Time</span>
+                        <span className="text-[13px] font-normal text-gray-900 md:text-[14px]">{selectedTime}</span>
                       </div>
-                      <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                        <span className="text-[12px] md:text-[13px] text-gray-500">Mode</span>
-                        <span className="text-[13px] md:text-[14px] font-medium text-gray-900 flex items-center gap-1 md:gap-2">
-                          {selectedMode === 'online' && <Video className="h-3 w-3 md:h-4 md:w-4 text-cyan-600" />}
-                          {selectedMode === 'offline' && <Building2 className="h-3 w-3 md:h-4 md:w-4 text-cyan-600" />}
-                          {selectedMode === 'home_visit' && <Home className="h-3 w-3 md:h-4 md:w-4 text-cyan-600" />}
+                      <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                        <span className="text-[12px] text-gray-500 md:text-[13px]">Mode</span>
+                        <span className="flex items-center gap-1 text-[13px] font-normal text-gray-900 md:gap-2 md:text-[14px]">
+                          {selectedMode === 'online' && <Video className="h-3 w-3 text-cyan-600 md:h-4 md:w-4" />}
+                          {selectedMode === 'offline' && <Building2 className="h-3 w-3 text-cyan-600 md:h-4 md:w-4" />}
+                          {selectedMode === 'home_visit' && <Home className="h-3 w-3 text-cyan-600 md:h-4 md:w-4" />}
                           {selectedMode === 'online' ? 'Online' : selectedMode === 'offline' ? 'Clinic' : 'Home'}
                         </span>
                       </div>
-                      {/* Patient Details in Summary */}
                       {patientName && (
-                        <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                          <span className="text-[12px] md:text-[13px] text-gray-500">Patient Name</span>
-                          <span className="text-[13px] md:text-[14px] font-medium text-gray-900">{patientName}</span>
+                        <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                          <span className="text-[12px] text-gray-500 md:text-[13px]">Patient Name</span>
+                          <span className="text-[13px] font-normal text-gray-900 md:text-[14px]">{patientName}</span>
                         </div>
                       )}
                       {patientPhone && (
-                        <div className="flex justify-between py-2 md:py-3 border-b border-gray-100">
-                          <span className="text-[12px] md:text-[13px] text-gray-500">Mobile</span>
-                          <span className="text-[13px] md:text-[14px] font-medium text-gray-900">+91 {patientPhone}</span>
+                        <div className="flex justify-between border-b border-gray-100 py-2 md:py-3">
+                          <span className="text-[12px] text-gray-500 md:text-[13px]">Mobile</span>
+                          <span className="text-[13px] font-normal text-gray-900 md:text-[14px]">+91 {patientPhone}</span>
                         </div>
                       )}
-                      
-                      <div className="flex justify-between py-3 md:py-4 bg-cyan-50 rounded-lg px-3 md:px-4 -mx-2 mt-3 md:mt-4">
-                        <span className="text-[14px] md:text-[15px] font-semibold text-gray-900">Total</span>
-                        <span className="text-[16px] md:text-[18px] font-bold text-cyan-600 flex items-center">
-                          <IndianRupee className="h-3.5 w-3.5 md:h-4 md:w-4" />{calculatePrice()}
+
+                      <div className="-mx-2 mt-3 flex justify-between rounded-lg bg-cyan-50 px-3 py-3 md:mt-4 md:px-4 md:py-4">
+                        <span className="text-[14px] font-medium text-gray-900 md:text-[15px]">Total</span>
+                        <span className="flex items-center text-[16px] font-medium text-cyan-600 md:text-[18px]">
+                          <IndianRupee className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                          {calculatePrice()}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 md:p-6 rounded-xl border border-gray-200 bg-white">
-                    <h3 className="text-[14px] md:text-[16px] font-semibold text-gray-900 mb-2">Patient Details</h3>
-                    <p className="text-[12px] md:text-[13px] text-gray-500 mb-3 md:mb-4">Required for appointment confirmation</p>
-                    
+                  <div className="rounded-xl border border-gray-200 bg-white p-4 md:p-6">
+                    <h3 className="mb-2 text-[14px] font-medium text-gray-900 md:text-[16px]">Patient Details</h3>
+                    <p className="mb-3 text-[12px] font-normal text-gray-500 md:mb-4 md:text-[13px]">
+                      Required for appointment confirmation
+                    </p>
+
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                        <label className="mb-1 block text-[13px] font-normal text-gray-700">
                           Full Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -2395,7 +2417,7 @@ function BookingPageContent() {
                       </div>
                       
                       <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                        <label className="mb-1 block text-[13px] font-normal text-gray-700">
                           Mobile Number <span className="text-red-500">*</span>
                         </label>
                         <div className="flex">
@@ -2426,8 +2448,8 @@ function BookingPageContent() {
                       </div>
                       
                       <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                          Additional Notes <span className="text-gray-400 font-normal">(Optional)</span>
+                        <label className="mb-1 block text-[13px] font-normal text-gray-700">
+                          Additional Notes <span className="font-normal text-gray-400">(Optional)</span>
                         </label>
                         <Textarea
                           placeholder="Describe your symptoms or concerns..."
@@ -2448,7 +2470,7 @@ function BookingPageContent() {
                 )}
 
                 <div className="flex justify-between mt-10">
-                  <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full" disabled={isSubmitting}>
+                  <Button variant="outline" onClick={goToPrevStep} className="h-11 px-6 rounded-full border border-gray-200 bg-white text-gray-700 hover:!bg-cyan-500 hover:!text-white hover:border-cyan-500 [&_svg]:text-current" disabled={isSubmitting}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
                   <Button 

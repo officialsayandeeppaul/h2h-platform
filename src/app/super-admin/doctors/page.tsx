@@ -616,7 +616,7 @@ export default function DoctorsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
           {filteredDoctors.map((doctor) => (
-            <div key={doctor.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-lg transition-shadow min-w-0">
+            <div key={doctor.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 transition-colors min-w-0">
               {/* Header */}
               <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <DoctorAvatar
@@ -725,7 +725,7 @@ export default function DoctorsPage() {
       {/* Modal — responsive padding and scroll */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 shrink-0">
               <h2 className="text-xl font-semibold text-gray-900">

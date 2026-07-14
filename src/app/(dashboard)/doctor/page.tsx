@@ -174,7 +174,7 @@ export default function DoctorDashboard() {
       <div className="mb-8">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Appointment breakdown</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-slate-200 bg-white transition-colors">
             <CardContent className="pt-5 pb-5">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-xl bg-slate-100">
@@ -187,7 +187,7 @@ export default function DoctorDashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-emerald-200 bg-emerald-50/60 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-emerald-200 bg-emerald-50/60 transition-colors">
             <CardContent className="pt-5 pb-5">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-xl bg-emerald-100">
@@ -200,7 +200,7 @@ export default function DoctorDashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-cyan-200 bg-cyan-50/60 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-cyan-200 bg-cyan-50/60 transition-colors">
             <CardContent className="pt-5 pb-5">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-xl bg-cyan-100">
@@ -213,7 +213,7 @@ export default function DoctorDashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-amber-200 bg-amber-50/60 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-amber-200 bg-amber-50/60 transition-colors">
             <CardContent className="pt-5 pb-5">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-xl bg-amber-100">
@@ -226,7 +226,7 @@ export default function DoctorDashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-rose-200 bg-rose-50/60 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-rose-200 bg-rose-50/60 transition-colors">
             <CardContent className="pt-5 pb-5">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-xl bg-rose-100">
@@ -239,7 +239,7 @@ export default function DoctorDashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-slate-200 bg-white transition-colors">
             <CardContent className="pt-5 pb-5">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 rounded-xl bg-indigo-100">
@@ -260,7 +260,7 @@ export default function DoctorDashboard() {
         <div className="space-y-6">
           {/* Services & Prescriptions */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card className="border-gray-200 bg-white shadow-sm">
+            <Card className="border-gray-200 bg-white">
               <CardContent className="pt-4 pb-4 flex items-center gap-3">
                 <Stethoscope className="h-5 w-5 text-gray-500" />
                 <div>
@@ -269,7 +269,7 @@ export default function DoctorDashboard() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-gray-200 bg-white shadow-sm">
+            <Card className="border-gray-200 bg-white">
               <CardContent className="pt-4 pb-4 flex items-center gap-3">
                 <FileText className="h-5 w-5 text-gray-500" />
                 <div>
@@ -282,7 +282,7 @@ export default function DoctorDashboard() {
 
           {/* Main content: Recent Appointments */}
         {/* Recent Appointments */}
-        <Card className="border-gray-200 shadow-sm">
+        <Card className="border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
               <CardTitle className="text-base font-semibold text-gray-900">Recent appointments</CardTitle>
@@ -387,7 +387,7 @@ export default function DoctorDashboard() {
 
         {/* Right sidebar: Week trend, Upcoming, Recent Patients, Quick actions */}
         <div className="space-y-6 lg:min-w-[280px]">
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-gray-200">
             <CardContent className="pt-5 pb-5">
               <p className="text-sm font-medium text-gray-600">This week vs last week</p>
               <p className={`text-2xl font-bold mt-2 tabular-nums ${(stats?.weekTrend ?? 0) >= 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
@@ -399,7 +399,7 @@ export default function DoctorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-gray-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold text-gray-900">Upcoming</CardTitle>
               <CardDescription className="text-xs text-gray-500">{upcoming.length} scheduled</CardDescription>
@@ -425,7 +425,7 @@ export default function DoctorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <div>
                 <CardTitle className="text-base font-semibold text-gray-900">Recent patients</CardTitle>
@@ -467,7 +467,7 @@ export default function DoctorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-gray-200">
             <CardHeader className="pb-4">
               <CardTitle className="text-base font-semibold text-gray-900">Quick actions</CardTitle>
               <CardDescription className="text-xs text-gray-500">Jump to common tasks</CardDescription>

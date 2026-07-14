@@ -1,18 +1,23 @@
 'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Header, Footer } from "@/components/layout";
-import { DotPattern } from "@/components/ui/backgrounds";
-import { Highlighter } from "@/components/ui/highlighter";
-import { ServiceReadyCta } from "@/components/services/ServiceReadyCta";
-import { SERVICE_READY_CTA } from "@/constants/service-pages";
-import { SERVICES_LIST } from "@/components/home/data";
-
-// services list provided by `SERVICES_LIST` in data
+import { useEffect, useState } from 'react';
+import { Header, Footer } from '@/components/layout';
+import { DotPattern } from '@/components/ui/backgrounds';
+import { Highlighter } from '@/components/ui/highlighter';
+import { ServiceReadyCta } from '@/components/services/ServiceReadyCta';
+import { ServiceCard, ServiceCardSkeleton } from '@/components/services/ServiceCard';
+import { SERVICE_READY_CTA } from '@/constants/service-pages';
+import { SERVICES_LIST } from '@/components/home/data';
 
 export default function ServicesPage() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Defer card mount so skeletons paint first; images lazy-load after.
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-[linear-gradient(180deg,#f8fbfd_0%,#ffffff_38%,#f8fbfd_100%)]">
       <Header />
@@ -32,8 +37,7 @@ export default function ServicesPage() {
 
         <section className="relative z-10 py-14 sm:py-16 lg:py-20">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12">
-           <div className="text-center mb-8">
-              {/* <p className="text-[13px] text-cyan-600 font-medium mb-3">Our Services</p> */}
+            <div className="text-center mb-8">
               <h1 className="text-[36px] md:text-[48px] font-medium text-gray-900 tracking-tight leading-tight mb-6">
                 Care that fits{' '}
                 <Highlighter action="highlight" color="#06b6d4" isView>
@@ -41,43 +45,19 @@ export default function ServicesPage() {
                 </Highlighter>
               </h1>
               <p className="text-[15px] text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                From pain relief and advanced rehabilitation to nutrition, mental wellness, yoga, and sports performance—every programme is thoughtfully designed around you.
+                From pain relief and advanced rehabilitation to nutrition, mental wellness, yoga, and
+                sports performance—every programme is thoughtfully designed around you.
               </p>
             </div>
 
             <div className="mt-12 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              {SERVICES_LIST.map((service) => {
-                return (
-                  <article
-                    key={service.id}
-                    className="group flex min-h-[280px] flex-col rounded-md border border-slate-200/80 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(8,47,73,0.10)] sm:p-5"
-                  >
-                    <div className="overflow-hidden rounded-md">
-                      <Image
-                        src={service.image}
-                        alt={service.imageAlt || service.title}
-                        width={800}
-                        height={480}
-                        className="w-full h-40 object-cover"
-                        priority={false}
-                      />
-                    </div>
-                    <h2 className="mt-4 text-lg font-semibold leading-7 tracking-tight text-slate-900">
-                      {service.title}
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-slate-600 flex-grow">
-                      {service.description}
-                    </p>
-                    <Link
-                      href={service.href}
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 transition-colors hover:text-cyan-700"
-                    >
-                      Learn more
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                    </Link>
-                  </article>
-                );
-              })}
+              {!ready
+                ? SERVICES_LIST.map((service) => (
+                    <ServiceCardSkeleton key={`sk-${service.id}`} />
+                  ))
+                : SERVICES_LIST.map((service) => (
+                    <ServiceCard key={service.id} service={service} />
+                  ))}
             </div>
           </div>
         </section>

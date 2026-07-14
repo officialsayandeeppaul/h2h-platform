@@ -36,11 +36,11 @@ export function TrustedBySection() {
       />
       <div className="relative z-10 mx-auto mb-10 max-w-[1200px] px-6 text-center">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-cyan-600 sm:text-[15px]">
+          <p className="text-sm font-medium uppercase tracking-[0.32em] text-cyan-600 sm:text-[15px]">
             Collaborations
           </p>
           <div className="mx-auto mt-3 h-0.5 w-12 rounded-full bg-gradient-to-r from-cyan-400 to-teal-500" />
-            <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-[48px] lg:leading-[1.05]">
+            <h2 className="mt-5 text-balance text-3xl font-medium tracking-tight text-slate-900 sm:text-4xl lg:text-[48px] lg:leading-[1.05]">
             Where We&apos;ve{" "}
             <span className="bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
               Participated

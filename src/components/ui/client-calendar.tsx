@@ -5,6 +5,8 @@ import { Calendar } from "@/components/ui/calendar"
 
 interface ClientCalendarProps {
   className?: string
+  selected?: Date
+  onSelect?: (date: Date | undefined) => void
 }
 
 // Optimistic skeleton – calendar-shaped placeholder, loads fast
@@ -21,9 +23,14 @@ function CalendarSkeleton({ className }: { className?: string }) {
   )
 }
 
-export function ClientCalendar({ className }: ClientCalendarProps) {
-  const [date, setDate] = useState<Date | undefined>(undefined)
+export function ClientCalendar({ className, selected, onSelect }: ClientCalendarProps) {
+  const [internalDate, setInternalDate] = useState<Date | undefined>(undefined)
   const [mounted, setMounted] = useState(false)
+  const date = selected !== undefined ? selected : internalDate
+  const handleSelect = (d: Date | undefined) => {
+    if (onSelect) onSelect(d)
+    else setInternalDate(d)
+  }
   
   useEffect(() => {
     setMounted(true)
@@ -41,7 +48,8 @@ export function ClientCalendar({ className }: ClientCalendarProps) {
     <Calendar 
       mode="single"
       selected={date}
-      onSelect={setDate}
+      onSelect={handleSelect}
+      disabled={{ before: new Date() }}
       className={className}
     />
   )

@@ -200,7 +200,7 @@ export default function PatientRecordsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-        <Card className="border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-cyan-100 transition-all">
+        <Card className="border-gray-200 bg-white hover:border-cyan-100 transition-all">
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-cyan-50">
@@ -213,7 +213,7 @@ export default function PatientRecordsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-purple-100 transition-all">
+        <Card className="border-gray-200 bg-white hover:border-purple-100 transition-all">
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-purple-50">
@@ -226,7 +226,7 @@ export default function PatientRecordsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-orange-100 transition-all">
+        <Card className="border-gray-200 bg-white hover:border-orange-100 transition-all">
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-orange-50">
@@ -239,7 +239,7 @@ export default function PatientRecordsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-gray-200 transition-all">
+        <Card className="border-gray-200 bg-white hover:border-gray-200 transition-all">
           <CardContent className="p-3 md:p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-gray-50">
@@ -263,7 +263,7 @@ export default function PatientRecordsPage() {
             placeholder="Search by doctor, service, title..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
@@ -278,7 +278,7 @@ export default function PatientRecordsPage() {
               variant={filter === f.key ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilter(f.key)}
-                className={`text-xs md:text-sm shrink-0 rounded-lg transition-all ${filter === f.key ? 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-md' : 'hover:border-cyan-300'}`}
+                className={`text-xs md:text-sm shrink-0 rounded-lg transition-all ${filter === f.key ? 'bg-cyan-500 hover:bg-cyan-600 text-white' : 'hover:border-cyan-300'}`}
             >
               {f.label}
             </Button>
@@ -290,7 +290,7 @@ export default function PatientRecordsPage() {
       {loading ? (
         <TableBodySkeleton rows={8} />
       ) : filteredRecords.length === 0 ? (
-        <Card className="border-gray-200 rounded-xl shadow-sm">
+        <Card className="border-gray-200 rounded-xl">
           <CardContent className="py-12 md:py-16 text-center">
             <FileText className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 mb-2 text-sm md:text-base">No records found</p>
@@ -302,7 +302,7 @@ export default function PatientRecordsPage() {
       ) : (
         <>
           {/* Desktop Table */}
-          <Card className="hidden md:block border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+          <Card className="hidden md:block border-gray-200 rounded-xl overflow-hidden bg-white">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -475,7 +475,7 @@ export default function PatientRecordsPage() {
                       </>
                     )}
                     {selectedRecord.fileUrl && (
-                      <Button asChild className="w-full bg-cyan-500 hover:bg-cyan-600 text-white shadow-md">
+                      <Button asChild className="w-full bg-cyan-500 hover:bg-cyan-600 text-white">
                         <a href={selectedRecord.fileUrl} target="_blank" rel="noopener noreferrer">
                           <Download className="h-4 w-4 mr-2" /> Download File
                         </a>
@@ -484,7 +484,7 @@ export default function PatientRecordsPage() {
                     {selectedRecord.type === 'prescription' && (
                       <Button
                         onClick={handlePrintPrescription}
-                        className="w-full bg-cyan-500 hover:bg-cyan-600 text-white shadow-md"
+                        className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
                       >
                         <Printer className="h-4 w-4 mr-2" />
                         {selectedRecord.fileUrl ? 'Print Prescription' : 'Download / Print Prescription'}

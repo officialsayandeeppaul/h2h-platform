@@ -22,6 +22,7 @@ import {
   Menu,
   X,
   CalendarClock,
+  PhoneCall,
   BarChart3,
   MessageCircle,
   Bell
@@ -166,6 +167,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/super-admin/doctors', icon: UserCircle2, label: 'Doctors' },
     { href: '/super-admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/super-admin/appointments', icon: Calendar, label: 'Appointments' },
+    { href: '/super-admin/call-requests', icon: PhoneCall, label: 'Call Requests', superAdminOnly: true },
     { href: '/super-admin/schedule-requests', icon: CalendarClock, label: 'Schedule requests', superAdminOnly: true },
     { href: '/super-admin/payments', icon: CreditCard, label: 'Payments' },
     { href: '/super-admin/users', icon: Users, label: 'Users', superAdminOnly: true },
@@ -201,7 +203,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Sidebar — overlay on mobile (≤85vw), fixed 240px on lg */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[min(240px,85vw)] lg:w-[240px] bg-[#1a2e35] border-r border-white/5 shadow-xl transform transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-[min(240px,85vw)] lg:w-[240px] bg-[#1a2e35] border-r border-white/5 transform transition-transform duration-300 ease-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 flex flex-col`}
       >
@@ -209,7 +211,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="h-16 flex items-center justify-between gap-2 px-4 border-b border-white/10 shrink-0">
           <PortalSidebarBrand
             variant="admin"
-            href="/super-admin"
             onNavigate={() => setSidebarOpen(false)}
             className="min-w-0 flex-1"
           />
@@ -234,7 +235,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   onClick={() => { setSidebarOpen(false); if (item.href === '/super-admin/help-support') setNewMessageCount(0); }}
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors duration-150 ${
                     isActive
-                      ? 'bg-cyan-500 text-white shadow-sm'
+                      ? 'bg-cyan-500 text-white'
                       : 'text-gray-400 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -282,7 +283,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main content — takes remaining width after sidebar */}
       <div className="min-h-screen lg:pl-[240px]">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm h-14 flex items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm h-14 flex items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden shrink-0 p-2.5 -ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"

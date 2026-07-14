@@ -28,6 +28,15 @@ function isTawkRelatedStack(stack: string): boolean {
   return /embed\.tawk\.to|twk-chunk|twk-vendor|\$_Tawk/i.test(stack);
 }
 
+function isBenignWebGlNoise(args: unknown[]): boolean {
+  const text = args
+    .map((a) => (typeof a === 'string' ? a : a instanceof Error ? a.message : ''))
+    .join(' ');
+  return /THREE\.WebGLRenderer|Error creating WebGL context|WebGL context could not be created/i.test(
+    text
+  );
+}
+
 /** Tawk's bundle sometimes calls console.error(true). Next devtools turns that into a full-screen overlay. */
 function installTawkConsoleErrorFilter(): void {
   if (
@@ -43,7 +52,7 @@ function installTawkConsoleErrorFilter(): void {
 
   console.error = (...args: unknown[]) => {
     const stack = new Error().stack ?? '';
-    if (isTawkRelatedStack(stack)) {
+    if (isTawkRelatedStack(stack) || isBenignWebGlNoise(args)) {
       return;
     }
     forward(...args);

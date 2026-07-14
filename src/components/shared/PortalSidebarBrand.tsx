@@ -15,12 +15,8 @@ const PORTAL_LABELS: Record<PortalBrandVariant, string> = {
   'location-admin': 'Clinic Portal',
 };
 
-const PORTAL_HREFS: Record<PortalBrandVariant, string> = {
-  admin: '/super-admin',
-  doctor: '/doctor',
-  patient: '/patient',
-  'location-admin': '/location-admin',
-};
+/** Marketing site home — logo / brand text always goes here, not the portal dashboard. */
+export const PORTAL_BRAND_HOME_HREF = '/';
 
 export function portalVariantFromRole(role?: UserRole): PortalBrandVariant {
   switch (role) {
@@ -61,7 +57,7 @@ export function PortalSidebarBrand({
   onNavigate,
 }: PortalSidebarBrandProps) {
   const label = portalLabel ?? PORTAL_LABELS[variant];
-  const homeHref = href ?? PORTAL_HREFS[variant];
+  const homeHref = href ?? PORTAL_BRAND_HOME_HREF;
 
   return (
     <Link
@@ -72,7 +68,7 @@ export function PortalSidebarBrand({
         collapsed ? 'justify-center' : 'gap-3',
         className
       )}
-      aria-label={`H2H Healthcare — ${label}`}
+      aria-label={`H2H Healthcare home — ${label}`}
     >
       {/* Native img — logo-short.webp is RGBA; no white box (was invisible on light bg) */}
       <img

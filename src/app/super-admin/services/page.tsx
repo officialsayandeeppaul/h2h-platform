@@ -159,7 +159,7 @@ export default function AdminServicesPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
+      <div className="bg-white rounded-xl overflow-x-auto">
         <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50">
             <tr>

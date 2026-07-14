@@ -645,7 +645,7 @@ export function AnimatedListItem({
   time: string;
 }) {
   return (
-    <div className="relative mx-auto min-h-fit w-full max-w-[400px] cursor-pointer overflow-hidden rounded-2xl p-4 transition-all duration-200 ease-in-out hover:scale-[103%] bg-white shadow-lg border border-gray-100">
+    <div className="relative mx-auto min-h-fit w-full max-w-[400px] cursor-pointer overflow-hidden rounded-2xl p-4 transition-all duration-200 ease-in-out hover:scale-[103%] bg-white border border-gray-100">
       <div className="flex flex-row items-center gap-3">
         <div
           className={cn(
@@ -708,8 +708,8 @@ export function BentoCard({
     <div
       className={cn(
         'group relative col-span-3 flex flex-col justify-between overflow-hidden rounded-xl',
-        'bg-white border border-gray-100 shadow-lg',
-        'transform-gpu transition-all duration-300 hover:shadow-2xl hover:-translate-y-1',
+        'bg-white border border-gray-100',
+        'transform-gpu transition-all duration-300 hover:-translate-y-1',
         className
       )}
     >
@@ -774,7 +774,7 @@ export function IconCloud({
           return (
             <div
               key={index}
-              className="absolute flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-lg border border-gray-100 transition-transform duration-500 hover:scale-110"
+              className="absolute flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-gray-100 transition-transform duration-500 hover:scale-110"
               style={{
                 transform: `translate3d(${x}px, ${y}px, ${z}px)`,
                 animation: `float 3s ease-in-out ${delay}s infinite`,
@@ -821,7 +821,7 @@ export function Globe({ className }: { className?: string }) {
           ].map((pos, i) => (
             <div
               key={i}
-              className="absolute h-2 w-2 rounded-full bg-blue-500 shadow-lg animate-pulse"
+              className="absolute h-2 w-2 rounded-full bg-blue-500 animate-pulse"
               style={{ top: pos.top, left: pos.left, animationDelay: `${i * 0.3}s` }}
             />
           ))}
@@ -937,7 +937,7 @@ export function Dock({
   return (
     <div
       className={cn(
-        'flex items-end gap-2 rounded-2xl bg-white/80 backdrop-blur-xl border border-gray-200 p-2 shadow-xl',
+        'flex items-end gap-2 rounded-2xl bg-white/80 backdrop-blur-xl border border-gray-200 p-2',
         className
       )}
     >
@@ -950,7 +950,7 @@ export function Dock({
           <span className="absolute -top-8 scale-0 rounded-lg bg-gray-900 px-2 py-1 text-xs text-white transition-transform group-hover:scale-100">
             {item.label}
           </span>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-200 hover:scale-125 hover:-translate-y-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 transition-all duration-200 hover:scale-125 hover:-translate-y-2">
             {item.icon}
           </div>
         </a>

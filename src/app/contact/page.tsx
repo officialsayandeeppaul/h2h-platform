@@ -2,15 +2,12 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Header, Footer } from '@/components/layout';
 import { Highlighter } from '@/components/ui/highlighter';
 import { ContactMessageForm } from '@/components/shared/ContactMessageForm';
 import { APP_CONFIG, BOOKING_RULES } from '@/constants/config';
 import { Clock, MapPin, Phone, Mail, ChevronDown, MessageCircle, ArrowRight } from 'lucide-react';
-
-const Silk = dynamic(() => import('@/components/ui/silk'), { ssr: false });
 
 const phoneTel = `tel:${APP_CONFIG.phoneE164}`;
 
@@ -116,7 +113,7 @@ export default function ContactPage() {
             {/* Right - Contact Cards Grid */}
             <div className="grid grid-cols-2 gap-4">
               {/* Office Hours */}
-              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center transition-colors">
                 <div className="h-12 w-12 bg-cyan-100 rounded-full flex items-center justify-center mb-4">
                   <Clock className="h-5 w-5 text-cyan-600" />
                 </div>
@@ -127,7 +124,7 @@ export default function ContactPage() {
               </div>
 
               {/* Our Address */}
-              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center transition-colors">
                 <div className="h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center mb-4">
                   <MapPin className="h-5 w-5 text-teal-600" />
                 </div>
@@ -140,7 +137,7 @@ export default function ContactPage() {
               </div>
 
               {/* Email */}
-              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center transition-colors">
                 <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                   <Mail className="h-5 w-5 text-purple-600" />
                 </div>
@@ -155,7 +152,7 @@ export default function ContactPage() {
               </div>
 
               {/* Phone */}
-              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+              <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center text-center transition-colors">
                 <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                   <Phone className="h-5 w-5 text-orange-600" />
                 </div>
@@ -232,29 +229,23 @@ export default function ContactPage() {
         </div>
       </main>
 
-      {/* Silk Background CTA Section */}
-      <section className="relative h-[400px] overflow-hidden">
-        <div className="absolute inset-0">
-          <Silk 
-            speed={3} 
-            scale={1.2} 
-            color="#0891b2" 
-            noiseIntensity={1.2} 
-            rotation={0} 
-          />
-        </div>
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <h2 className="text-[28px] md:text-[40px] font-medium text-white tracking-tight mb-4">
+      {/* CTA — same bright cyan→teal family as locations */}
+      <section className="relative overflow-hidden py-24 bg-gradient-to-br from-cyan-500 to-teal-500 text-white">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff10_1px,transparent_1px),linear-gradient(to_bottom,#ffffff10_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="pointer-events-none absolute top-20 left-20 h-64 w-64 rounded-full bg-white/10 blur-[100px]" />
+        <div className="pointer-events-none absolute bottom-20 right-20 h-80 w-80 rounded-full bg-white/10 blur-[100px]" />
+
+        <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-6 text-center">
+          <h2 className="mb-4 text-[28px] font-medium tracking-tight text-white md:text-[40px]">
             Ready to Start Your{' '}
-            <span className="text-cyan-300">Recovery Journey?</span>
+            <span className="text-white/95">Recovery Journey?</span>
           </h2>
-          <p className="text-[15px] text-white/80 max-w-xl mb-8">
+          <p className="mb-10 max-w-xl text-[15px] leading-relaxed text-white/90">
             Book sports rehab, physio, or pain care in a few clicks—or call {APP_CONFIG.phone} if you prefer talking first.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              className="h-12 px-8 text-[14px] font-medium bg-white hover:bg-gray-100 text-gray-900 rounded-full"
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <Button
+              className="h-12 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 hover:bg-gray-100 hover:!text-gray-900 [&_svg]:text-gray-900"
               asChild
             >
               <Link href="/booking">
@@ -262,13 +253,12 @@ export default function ContactPage() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button 
-              className="h-12 px-8 text-[14px] font-medium bg-transparent border border-white/50 text-white hover:bg-white/10 rounded-full"
+            <Button
+              variant="outline"
+              className="h-12 rounded-full border-2 border-white bg-transparent px-8 text-[14px] font-medium text-white shadow-none hover:bg-white/15 hover:!text-white"
               asChild
             >
-              <Link href={phoneTel}>
-                Call {APP_CONFIG.phone}
-              </Link>
+              <Link href={phoneTel}>Call {APP_CONFIG.phone}</Link>
             </Button>
           </div>
         </div>

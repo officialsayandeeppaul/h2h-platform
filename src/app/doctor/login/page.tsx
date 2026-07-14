@@ -202,7 +202,7 @@ export default function DoctorLoginPage() {
                   type="button"
                   onClick={() => { setLoginMode('password'); setError(''); }}
                   className={`flex-1 py-2 text-[13px] font-medium rounded-md transition-colors ${
-                    loginMode === 'password' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                    loginMode === 'password' ? 'bg-white text-gray-900' : 'text-gray-500'
                   }`}
                 >
                   Password
@@ -211,7 +211,7 @@ export default function DoctorLoginPage() {
                   type="button"
                   onClick={() => { setLoginMode('otp'); setError(''); }}
                   className={`flex-1 py-2 text-[13px] font-medium rounded-md transition-colors ${
-                    loginMode === 'otp' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                    loginMode === 'otp' ? 'bg-white text-gray-900' : 'text-gray-500'
                   }`}
                 >
                   Email code

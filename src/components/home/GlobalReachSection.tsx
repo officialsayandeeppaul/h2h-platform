@@ -23,7 +23,7 @@ export function GlobalReachSection() {
           </p>
         </div>
 
-        <div className="relative h-[420px] md:h-[500px] rounded-3xl overflow-hidden border border-gray-800 bg-gradient-to-br from-gray-900 via-cyan-950/15 to-gray-950 shadow-xl shadow-black/40">
+        <div className="relative h-[420px] md:h-[500px] rounded-3xl overflow-hidden border border-gray-800 bg-gradient-to-br from-gray-900 via-cyan-950/15 to-gray-950 shadow-black/40">
           {/* Always-visible base so the panel never reads as an empty box while the SVG paints */}
           <div
             className="absolute inset-0 opacity-90"

@@ -116,14 +116,14 @@ export function HeroVideoDialog({
             alt={thumbnailAlt}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300 group-hover:shadow-3xl"
+            className="object-cover rounded-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300 group-hover:shadow-3xl"
             priority
             unoptimized={primaryThumb.includes("ytimg.com")}
             onError={handleThumbError}
           />
         ) : (
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 via-blue-900 to-cyan-900 shadow-2xl border border-gray-700/50 flex items-center justify-center"
+            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 via-blue-900 to-cyan-900 border border-gray-700/50 flex items-center justify-center"
             aria-hidden
           >
             <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_30%_20%,rgba(56,189,248,0.35),transparent_50%),radial-gradient(ellipse_at_70%_80%,rgba(59,130,246,0.25),transparent_45%)]" />
@@ -133,7 +133,7 @@ export function HeroVideoDialog({
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 shadow-2xl shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300 ring-4 ring-white/20">
+          <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300 ring-4 ring-white/20">
             <Play className="w-8 h-8 md:w-10 md:h-10 text-white fill-white ml-1" />
           </div>
         </div>
@@ -163,7 +163,7 @@ export function HeroVideoDialog({
               >
                 <X className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
-              <div className="w-full h-full rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl bg-black">
+              <div className="w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-black">
                 {mp4Src ? (
                   <video
                     src={mp4Src}

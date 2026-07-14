@@ -30,7 +30,7 @@ export function StatsSection() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {stats.map((stat, index) => (
             <div key={stat.label} className="stat-card text-center group">
-              <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${gradients[index]} flex items-center justify-center shadow-xl ${shadows[index]} group-hover:scale-110 group-hover:shadow-2xl transition-all duration-500`}>
+              <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${gradients[index]} flex items-center justify-center group-hover:scale-110 group-transition-all duration-500`}>
                 <stat.icon className="h-9 w-9 text-white" strokeWidth={2.5} />
               </div>
               <p className="text-[48px] lg:text-[56px] font-light text-gray-900 mb-2 leading-none tracking-tight">

@@ -5,7 +5,7 @@
 
 const LOCAL_APP_URL = 'http://localhost:3000';
 
-/** Use in Route Handlers — always the host that hit /auth/callback (localhost vs beta). */
+/** Use in Route Handlers — always the host that hit /auth/callback (localhost vs production). */
 export function getRequestOrigin(request: Request): string {
   return new URL(request.url).origin;
 }
@@ -30,7 +30,7 @@ export async function getAppBaseUrl(): Promise<string> {
   return (
     process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}` : '') ||
-    'https://beta.healtohealth.in'
+    'https://healtohealth.in'
   );
 }
 

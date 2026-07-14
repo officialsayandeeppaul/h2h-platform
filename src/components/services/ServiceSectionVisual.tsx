@@ -24,7 +24,7 @@ function PanelFrame({
   return (
     <div
       className={cn(
-        'relative flex w-full items-center justify-center rounded-2xl bg-gradient-to-br p-6 sm:p-8 shadow-inner ring-1 ring-black/5 lg:h-full',
+        'relative flex w-full items-center justify-center rounded-2xl bg-gradient-to-br p-6 sm:p-8 ring-1 ring-black/5 lg:h-full',
         minClass,
         className
       )}
@@ -47,7 +47,7 @@ function PainVisual({ title }: { title: string }) {
   ];
   return (
     <PanelFrame className="from-gray-100 via-cyan-50/40 to-gray-100">
-      <div className="w-full max-w-[340px] rounded-xl bg-white p-6 shadow-lg">
+      <div className="w-full max-w-[340px] rounded-xl bg-white p-6">
         <div className="mb-5 flex items-start justify-between gap-2">
           <span className="text-[13px] font-medium leading-snug text-gray-900 line-clamp-2">{title}</span>
           <span className="shrink-0 text-[11px] text-gray-400">H2H Healthcare</span>
@@ -116,7 +116,7 @@ function RehabVisual({ title }: { title: string }) {
           {phases.map((p, i) => (
             <div key={p.n} className="flex items-center">
               <div className="flex flex-col items-center px-1 sm:px-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-blue-400 bg-white text-[15px] font-bold text-blue-600 shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-blue-400 bg-white text-[15px] font-bold text-blue-600">
                   {p.n}
                 </div>
                 <span className="mt-2 text-[11px] font-semibold text-gray-800">{p.label}</span>
@@ -131,7 +131,7 @@ function RehabVisual({ title }: { title: string }) {
             </div>
           ))}
         </div>
-        <div className="mt-8 rounded-2xl border border-blue-100 bg-white/95 p-4 shadow-md backdrop-blur-sm">
+        <div className="mt-8 rounded-2xl border border-blue-100 bg-white/95 p-4 backdrop-blur-sm">
           <div className="text-[10px] font-medium uppercase tracking-wide text-blue-600">This week</div>
           <div className="mt-1 text-[13px] font-medium text-gray-800">Gait &amp; balance blocks · 3 sessions</div>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-blue-100">
@@ -154,12 +154,12 @@ function RecoveryVisual({ title }: { title: string }) {
 
   return (
     <PanelFrame className="from-rose-50/90 via-fuchsia-50/70 to-pink-50/40">
-      <div className="w-full max-w-[380px] rounded-3xl border border-white/90 bg-white/90 p-6 shadow-xl">
+      <div className="w-full max-w-[380px] rounded-3xl border border-white/90 bg-white/90 p-6">
         <p className="mb-6 text-center text-[12px] font-semibold uppercase tracking-[0.18em] text-fuchsia-700">{title}</p>
         <div className="grid gap-3">
           {steps.map((step, index) => (
-            <div key={step} className="flex items-center gap-3 rounded-2xl bg-pink-50/90 p-3 shadow-sm ring-1 ring-pink-100">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-fuchsia-500 text-[13px] font-semibold text-white shadow-sm">
+            <div key={step} className="flex items-center gap-3 rounded-2xl bg-pink-50/90 p-3 ring-1 ring-pink-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-fuchsia-500 text-[13px] font-semibold text-white">
                 {index + 1}
               </div>
               <span className="text-[13px] font-medium text-fuchsia-900">{step}</span>
@@ -181,7 +181,7 @@ function NutritionVisual({ title }: { title: string }) {
       <div className="flex w-full max-w-[360px] flex-col items-center">
         <p className="mb-5 text-center text-[12px] font-medium text-emerald-900/90 line-clamp-2">{title}</p>
         <div className="relative h-52 w-52 sm:h-56 sm:w-56">
-          <div className="absolute inset-0 rounded-full border-[5px] border-dashed border-emerald-300/90 bg-white/60 shadow-inner" />
+          <div className="absolute inset-0 rounded-full border-[5px] border-dashed border-emerald-300/90 bg-white/60" />
           <div className="grid h-full w-full grid-cols-2 grid-rows-2 overflow-hidden rounded-full">
             <div className="flex items-center justify-center bg-lime-100/90 text-[11px] font-medium text-emerald-900">
               Veg
@@ -201,7 +201,7 @@ function NutritionVisual({ title }: { title: string }) {
           {['Balanced', 'No crash diet', 'Your kitchen'].map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[10px] font-medium text-emerald-800 shadow-sm"
+              className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[10px] font-medium text-emerald-800"
             >
               {tag}
             </span>
@@ -220,15 +220,15 @@ function MentalVisual({ title }: { title: string }) {
       <div className="flex w-full max-w-[340px] flex-col items-center">
         <p className="mb-6 text-center text-[12px] font-medium text-violet-950/90 line-clamp-2">{title}</p>
         <div className="flex gap-6">
-          <div className="relative h-44 w-10 overflow-hidden rounded-full bg-gradient-to-t from-violet-600 via-violet-300 to-violet-100 shadow-inner">
-            <div className="absolute bottom-6 left-1/2 h-7 w-7 -translate-x-1/2 rounded-full border-2 border-white bg-violet-500 shadow-lg ring-2 ring-violet-200" />
+          <div className="relative h-44 w-10 overflow-hidden rounded-full bg-gradient-to-t from-violet-600 via-violet-300 to-violet-100">
+            <div className="absolute bottom-6 left-1/2 h-7 w-7 -translate-x-1/2 rounded-full border-2 border-white bg-violet-500 ring-2 ring-violet-200" />
           </div>
           <div className="flex flex-col justify-center gap-3 text-[11px]">
-            <div className="rounded-lg bg-white/90 px-3 py-2 shadow-md ring-1 ring-violet-100">
+            <div className="rounded-lg bg-white/90 px-3 py-2 ring-1 ring-violet-100">
               <span className="text-gray-400">This week · </span>
               <span className="font-medium text-violet-800">lighter load</span>
             </div>
-            <div className="rounded-lg bg-white/90 px-3 py-2 shadow-md ring-1 ring-violet-100">
+            <div className="rounded-lg bg-white/90 px-3 py-2 ring-1 ring-violet-100">
               <span className="text-gray-400">Focus · </span>
               <span className="font-medium text-violet-800">sleep &amp; breath</span>
             </div>
@@ -250,7 +250,7 @@ function YogaVisual({ title }: { title: string }) {
       className="from-teal-50/90 via-cyan-50/40 to-slate-50 lg:h-auto"
     >
       <div
-        className="flex w-full max-w-[400px] flex-col items-stretch rounded-2xl bg-white/95 p-6 shadow-lg ring-1 ring-teal-100/90 sm:p-7"
+        className="flex w-full max-w-[400px] flex-col items-stretch rounded-2xl bg-white/95 p-6 ring-1 ring-teal-100/90 sm:p-7"
         role="img"
         aria-label={title}
       >
@@ -296,7 +296,7 @@ function SportsVisual({ title }: { title: string }) {
       className="from-orange-50/90 via-amber-50/50 to-yellow-50/40 lg:h-auto"
     >
       <div
-        className="w-full max-w-[400px] overflow-hidden rounded-2xl bg-white/95 shadow-lg ring-1 ring-orange-100/90"
+        className="w-full max-w-[400px] overflow-hidden rounded-2xl bg-white/95 ring-1 ring-orange-100/90"
         role="img"
         aria-label={title}
       >
@@ -307,10 +307,10 @@ function SportsVisual({ title }: { title: string }) {
           <div className="mt-5 flex h-44 items-end justify-center gap-5 sm:gap-7">
             {metrics.map((m) => (
               <div key={m.label} className="flex w-[4.5rem] flex-col items-center gap-3 sm:w-20">
-                <div className="relative flex h-36 w-full items-end justify-center rounded-t-xl bg-white/70 shadow-inner ring-1 ring-orange-100/80">
+                <div className="relative flex h-36 w-full items-end justify-center rounded-t-xl bg-white/70 ring-1 ring-orange-100/80">
                   <div
                     className={cn(
-                      'w-[70%] max-w-[52px] rounded-t-lg bg-gradient-to-t shadow-sm',
+                      'w-[70%] max-w-[52px] rounded-t-lg bg-gradient-to-t',
                       m.barClass,
                       m.c
                     )}
@@ -344,18 +344,18 @@ function DigitalVisual({ title }: { title: string }) {
         <p className="mb-5 max-w-[280px] text-center text-[12px] font-medium text-slate-800 line-clamp-2">
           {title}
         </p>
-        <div className="w-[min(260px,85vw)] rounded-[1.75rem] border-[10px] border-slate-800 bg-slate-900 p-2 shadow-2xl">
+        <div className="w-[min(260px,85vw)] rounded-[1.75rem] border-[10px] border-slate-800 bg-slate-900 p-2">
           <div className="mb-2 flex justify-center">
             <div className="h-1 w-12 rounded-full bg-slate-700" />
           </div>
           <div className="space-y-2 rounded-xl bg-slate-50 p-3">
-            <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-[10px] leading-relaxed text-gray-700 shadow-sm">
+            <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-[10px] leading-relaxed text-gray-700">
               Hi! Your physio will join the video in 2 min.
             </div>
-            <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-sky-500 px-3 py-2 text-[10px] leading-relaxed text-white shadow-sm">
+            <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-sky-500 px-3 py-2 text-[10px] leading-relaxed text-white">
               Ok — I&apos;m ready with my exercise list.
             </div>
-            <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-[10px] leading-relaxed text-gray-700 shadow-sm">
+            <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-[10px] leading-relaxed text-gray-700">
               Great — we&apos;ll review your home plan today.
             </div>
           </div>

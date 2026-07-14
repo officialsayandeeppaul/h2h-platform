@@ -36,11 +36,11 @@ export function GridMotionSection() {
 
       <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none px-4">
         <div className="text-center">
-          <h2 className="text-[32px] sm:text-[48px] md:text-[64px] font-medium text-white mb-4 md:mb-6 tracking-tight drop-shadow-2xl">
+          <h2 className="text-[32px] sm:text-[48px] md:text-[64px] font-medium text-white mb-4 md:mb-6 tracking-tight drop-">
             Experience{' '}
             <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Excellence</span>
           </h2>
-          <p className="text-[14px] sm:text-[16px] md:text-[18px] text-white/80 max-w-2xl mx-auto drop-shadow-lg">
+          <p className="text-[14px] sm:text-[16px] md:text-[18px] text-white/80 max-w-2xl mx-auto drop-">
             Elite teams, national camps, and the moments we are proud to support
           </p>
         </div>

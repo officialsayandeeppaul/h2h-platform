@@ -67,10 +67,10 @@ export function HowItWorksSection() {
               {CARE_STEPS.map(({ n, title, desc, Icon, gradient, shadow }) => (
                 <div key={n} className="flex items-start gap-4 group">
                   <div
-                    className={`relative w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg ${shadow} group-hover:scale-105 transition-transform duration-300`}
+                    className={`relative w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white ${shadow} group-hover:scale-105 transition-transform duration-300`}
                   >
                     <Icon className="w-5 h-5" strokeWidth={2} aria-hidden />
-                    <span className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white/95 px-1 text-[10px] font-bold text-gray-800 shadow-sm">
+                    <span className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white/95 px-1 text-[10px] font-bold text-gray-800">
                       {n}
                     </span>
                   </div>

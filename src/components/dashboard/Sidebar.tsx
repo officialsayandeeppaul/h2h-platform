@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { ROLES, ROLE_DASHBOARDS, ROLE_LABELS, type UserRole } from '@/lib/auth/roles';
+import { ROLES, ROLE_LABELS, type UserRole } from '@/lib/auth/roles';
 import {
   PortalSidebarBrand,
   portalVariantFromPath,
@@ -105,7 +105,6 @@ function SidebarContent({
   collapsed = false,
   user,
   brandVariant,
-  brandHref,
 }: { 
   navItems: NavItem[]; 
   pathname: string;
@@ -113,17 +112,12 @@ function SidebarContent({
   collapsed?: boolean;
   user?: UserData;
   brandVariant: PortalBrandVariant;
-  brandHref: string;
 }) {
   return (
     <div className="flex flex-col h-full bg-[#1a2e35]">
       {/* Logo */}
       <div className={cn("h-16 flex items-center shrink-0 border-b border-white/5", collapsed ? "px-3 justify-center" : "px-4")}>
-        <PortalSidebarBrand
-          href={brandHref}
-          variant={brandVariant}
-          collapsed={collapsed}
-        />
+        <PortalSidebarBrand variant={brandVariant} collapsed={collapsed} />
       </div>
 
       {/* Navigation */}
@@ -237,19 +231,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
 
   const navItems = getNavItems();
   const brandVariant = user ? portalVariantFromRole(user.role) : portalVariantFromPath(pathname);
-  const brandHref = pathname.startsWith('/super-admin')
-    ? '/super-admin'
-    : pathname.startsWith('/admin')
-      ? '/admin'
-      : pathname.startsWith('/location-admin')
-        ? '/location-admin'
-        : pathname.startsWith('/doctor')
-          ? '/doctor'
-          : pathname.startsWith('/patient')
-            ? '/patient'
-            : user
-              ? ROLE_DASHBOARDS[user.role]
-              : '/patient';
 
   return (
     <>
@@ -259,7 +240,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden fixed top-3 left-3 z-40 h-10 w-10 bg-white shadow-md border border-gray-200 rounded-xl hover:bg-gray-50"
+            className="lg:hidden fixed top-3 left-3 z-40 h-10 w-10 bg-white border border-gray-200 rounded-xl hover:bg-gray-50"
           >
             <Menu className="h-5 w-5 text-gray-700" />
           </Button>
@@ -274,7 +255,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             onLogout={handleLogout}
             user={user}
             brandVariant={brandVariant}
-            brandHref={brandHref}
           />
         </SheetContent>
       </Sheet>
@@ -282,7 +262,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       {/* Desktop Sidebar - Fixed h-screen */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col h-screen sticky top-0 bg-[#1a2e35] transition-all duration-300 relative shadow-xl overflow-visible',
+          'hidden lg:flex flex-col h-screen sticky top-0 bg-[#1a2e35] transition-all duration-300 relative overflow-visible',
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
@@ -294,14 +274,13 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             collapsed={collapsed}
             user={user}
             brandVariant={brandVariant}
-            brandHref={brandHref}
           />
         </div>
         {/* Collapse Toggle Button - fully visible, high z-index */}
         <Button
           variant="outline"
           size="icon"
-          className="absolute -right-3 top-20 h-8 w-8 rounded-full border-gray-200 bg-white shadow-lg hover:bg-gray-50 hover:shadow-xl z-[100] transition-all"
+          className="absolute -right-3 top-20 h-8 w-8 rounded-full border-gray-200 bg-white hover:bg-gray-50 z-[100] transition-all"
           onClick={() => setCollapsed(!collapsed)}
         >
           <ChevronLeft className={cn("h-4 w-4 text-gray-600 transition-transform duration-200", collapsed && "rotate-180")} />

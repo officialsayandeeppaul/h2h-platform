@@ -84,15 +84,15 @@ export function VideoSection() {
                 mp4Src="https://videos.pexels.com/video-files/5319980/5319980-sd_540_960_25fps.mp4"
                 thumbnailSrc={MARKETING_IMAGES.videoIntro}
                 thumbnailAlt="Physiotherapy and rehabilitation care at H2H Healthcare"
-                className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg"
+                className="rounded-2xl sm:rounded-3xl overflow-hidden"
               />
               
               {/* Floating stats - visible on all screens */}
-              <div className="absolute -bottom-4 -left-2 sm:-bottom-6 sm:-left-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10 max-w-[130px]">
+              <div className="absolute -bottom-4 -left-2 sm:-bottom-6 sm:-left-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-gray-100 z-10 max-w-[130px]">
                 <p className="text-[11px] sm:text-xs font-semibold text-gray-900 leading-snug">Your plan, your pace</p>
                 <p className="text-[10px] text-emerald-600 mt-1">No confusing jargon</p>
               </div>
-              <div className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 border border-gray-100 z-10 max-w-[130px]">
+              <div className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-gray-100 z-10 max-w-[130px]">
                 <p className="text-[11px] sm:text-xs font-semibold text-gray-900 leading-snug">Specialist network</p>
                 <p className="text-[10px] text-blue-600 mt-1">Physios &amp; doctors</p>
               </div>

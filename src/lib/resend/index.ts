@@ -22,7 +22,7 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
   const isProduction = process.env.NODE_ENV === 'production';
-  const fromEmail = process.env.EMAIL_FROM || 'H2H Healthcare <noreply@beta.healtohealth.in>';
+  const fromEmail = process.env.EMAIL_FROM || 'H2H Healthcare <noreply@healtohealth.in>';
 
   console.log('Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
   console.log('Sending email from:', fromEmail);
@@ -143,8 +143,8 @@ export const emailTemplates = {
   <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
     <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} H2H Healthcare. All rights reserved.</p>
     <p style="margin: 10px 0 0; color: #999; font-size: 12px;">
-      <a href="https://beta.healtohealth.in" style="color: #0066cc;">Website</a> | 
-      <a href="mailto:support@beta.healtohealth.in" style="color: #0066cc;">Support</a>
+      <a href="https://healtohealth.in" style="color: #0066cc;">Website</a> | 
+      <a href="mailto:support@healtohealth.in" style="color: #0066cc;">Support</a>
     </p>
   </div>
 </body>

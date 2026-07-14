@@ -46,7 +46,7 @@ export function ServiceReadyCta({
         </p>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button
-            className="h-12 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 hover:bg-gray-100"
+            className="h-12 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 hover:bg-gray-100 hover:!text-gray-900 [&_svg]:text-gray-900"
             asChild
           >
             <Link href={bookingHref}>
@@ -55,7 +55,8 @@ export function ServiceReadyCta({
             </Link>
           </Button>
           <Button
-            className="h-12 rounded-full border border-white/50 bg-transparent px-8 text-[14px] font-medium text-white hover:bg-white/10"
+            variant="outline"
+            className="h-12 rounded-full border border-white/50 bg-transparent px-8 text-[14px] font-medium text-white shadow-none hover:bg-white/15 hover:!text-white hover:border-white"
             asChild
           >
             <Link href={contactHref}>{contactLabel}</Link>

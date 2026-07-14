@@ -639,7 +639,7 @@ export default function AppointmentsPage() {
                                             !slot.available
                                               ? 'bg-gray-100 text-gray-300 cursor-not-allowed line-through'
                                               : selectedSlot?.time === slot.time
-                                                ? 'bg-cyan-500 text-white ring-2 ring-cyan-300 shadow-sm'
+                                                ? 'bg-cyan-500 text-white ring-2 ring-cyan-300'
                                                 : 'bg-white border border-gray-200 text-gray-700 hover:border-cyan-400 hover:bg-cyan-50'
                                           }`}
                                         >

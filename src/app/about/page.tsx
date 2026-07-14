@@ -79,18 +79,17 @@ export default function AboutPage() {
               </p>
 
               <p className="text-[13px] text-gray-600 mb-8 max-w-md leading-relaxed">
-                Led by founder{' '}
-                <span className="font-medium text-gray-900">Dr. Sukdeb Mahanta</span> and a network of specialists with
+                Led by founder Dr. Sukdeb Mahanta and a network of specialists with
                 national-level sport and hospital experience.
               </p>
 
               {/* Feature Tags */}
               <div className="flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-full">
+                <span className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-normal px-4 py-2 rounded-full">
                   <CheckCircle2 className="h-4 w-4 text-cyan-500" />
                   Expert Care
                 </span>
-                <span className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-full">
+                <span className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-normal px-4 py-2 rounded-full">
                   <CheckCircle2 className="h-4 w-4 text-cyan-500" />
                   Home Visits
                 </span>
@@ -139,10 +138,10 @@ export default function AboutPage() {
             <div className="md:col-span-4 flex flex-col gap-4">
               {/* Stat Card 1 */}
               <div className="flex-1 bg-cyan-50 rounded-2xl p-6 flex flex-col justify-center">
-                <p className="text-[20px] md:text-[22px] font-semibold text-gray-900 tracking-tight mb-2">
+                <p className="text-[20px] md:text-[22px] font-medium text-gray-900 tracking-tight mb-2">
                   Evidence-led care
                 </p>
-                <p className="text-[14px] font-medium text-gray-900 mb-2">
+                <p className="text-[14px] font-normal text-gray-800 mb-2">
                   Plans you can follow
                 </p>
                 <p className="text-[13px] text-gray-500 leading-relaxed">
@@ -151,10 +150,10 @@ export default function AboutPage() {
               </div>
 
               <div className="flex-1 bg-gray-50 rounded-2xl p-6 flex flex-col justify-center">
-                <p className="text-[20px] md:text-[22px] font-semibold text-gray-900 tracking-tight mb-2">
+                <p className="text-[20px] md:text-[22px] font-medium text-gray-900 tracking-tight mb-2">
                   Nationwide network
                 </p>
-                <p className="text-[14px] font-medium text-gray-900 mb-2">
+                <p className="text-[14px] font-normal text-gray-800 mb-2">
                   Major cities &amp; growing
                 </p>
                 <p className="text-[13px] text-gray-500 leading-relaxed">
@@ -243,7 +242,7 @@ export default function AboutPage() {
               {leadershipTeam.map((member) => (
                 <article
                   key={member.name}
-                  className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:border-cyan-100 transition-all duration-300"
+                  className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-cyan-100 transition-all duration-300"
                 >
                   <div className="relative aspect-[4/5] w-full bg-gray-100">
                     <Image
@@ -261,11 +260,13 @@ export default function AboutPage() {
                     <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
                   </div>
                   <div className="flex flex-col flex-1 p-5 pt-6">
-                    <h3 className="text-[15px] font-semibold text-gray-900 leading-snug">{member.name}</h3>
-                    <p className="text-[13px] font-medium text-cyan-700 mt-1">{member.role}</p>
-                    <ul className="mt-4 space-y-2.5 flex-1">
+                    <h3 className="text-[15px] font-medium tracking-tight text-gray-900 leading-snug">
+                      {member.name}
+                    </h3>
+                    <p className="mt-1 text-[12px] font-normal text-cyan-700">{member.role}</p>
+                    <ul className="mt-4 flex-1 space-y-2.5">
                       {member.highlights.map((line) => (
-                        <li key={line} className="flex gap-2 text-[12px] text-gray-600 leading-relaxed">
+                        <li key={line} className="flex gap-2 text-[12px] font-normal leading-relaxed text-gray-500">
                           <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-cyan-500" aria-hidden />
                           <span>{line}</span>
                         </li>

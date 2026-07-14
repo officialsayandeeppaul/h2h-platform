@@ -56,7 +56,7 @@ export function DigitalHealthServiceDetail() {
 
             <div className="mt-5 flex items-start gap-4">
               <div className="mt-1 h-12 w-1 shrink-0 rounded-full bg-gradient-to-b from-cyan-500 to-teal-500" />
-              <h1 className="text-[1.85rem] font-semibold leading-[1.18] tracking-tight text-gray-900 sm:text-[2.15rem] md:text-[2.45rem]">
+              <h1 className="text-[1.85rem] font-medium leading-[1.18] tracking-tight text-gray-900 sm:text-[2.15rem] md:text-[2.45rem]">
                 We ship software for teams who know what they need built
               </h1>
             </div>
@@ -73,7 +73,7 @@ export function DigitalHealthServiceDetail() {
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
                 href={`mailto:${CONTACT_EMAIL}?subject=Project%20inquiry`}
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-cyan-500 px-8 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-cyan-600"
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-cyan-500 px-8 text-[14px] font-medium text-white transition-colors hover:bg-cyan-600"
               >
                 <Mail className="h-4 w-4" />
                 Business inquiry
@@ -101,7 +101,7 @@ export function DigitalHealthServiceDetail() {
           <div className="mx-auto max-w-[920px] px-6">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-cyan-500" />
-              <h2 className="text-[22px] font-semibold text-gray-900 sm:text-[26px]">Who we are</h2>
+              <h2 className="text-[22px] font-medium text-gray-900 sm:text-[26px]">Who we are</h2>
             </div>
             <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-gray-600">
               We&apos;re a tight freelance unit—three engineers, one lead on scope and delivery. We&apos;ve shipped in
@@ -116,7 +116,7 @@ export function DigitalHealthServiceDetail() {
           <div className="mx-auto max-w-[1000px] px-6">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-cyan-500" />
-              <h2 className="text-[22px] font-semibold text-gray-900 sm:text-[26px]">Lead</h2>
+              <h2 className="text-[22px] font-medium text-gray-900 sm:text-[26px]">Lead</h2>
             </div>
             <p className="mt-2 text-[14px] text-gray-600">
               I&apos;m who you ping when something actually has to get decided—not routed through three layers of maybe.
@@ -136,7 +136,7 @@ export function DigitalHealthServiceDetail() {
                   />
                 </div>
                 <div className="flex flex-col justify-center p-8 sm:p-10 lg:p-12">
-                  <h3 className="text-[1.35rem] font-semibold text-gray-900 sm:text-[1.5rem]">{SAYANDEEP.name}</h3>
+                  <h3 className="text-[1.35rem] font-medium text-gray-900 sm:text-[1.5rem]">{SAYANDEEP.name}</h3>
                   <p className="mt-1 text-[13px] font-medium text-cyan-700">{SAYANDEEP.role}</p>
                   <div className="mt-6 space-y-4 text-[15px] leading-[1.75] text-gray-700">
                     <p>
@@ -170,7 +170,7 @@ export function DigitalHealthServiceDetail() {
           <div className="mx-auto max-w-[1000px] px-6">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-cyan-500" />
-              <h2 className="text-[22px] font-semibold text-gray-900 sm:text-[26px]">Engineering</h2>
+              <h2 className="text-[22px] font-medium text-gray-900 sm:text-[26px]">Engineering</h2>
             </div>
             <p className="mt-2 text-[14px] text-gray-600">
               Same crew, same bar—backend and frontend in their own words.
@@ -180,7 +180,7 @@ export function DigitalHealthServiceDetail() {
               {TEAM_SECONDARY.map((m) => (
                 <article
                   key={m.name}
-                  className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm ring-1 ring-cyan-50"
+                  className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white ring-1 ring-cyan-50"
                 >
                   <div className="relative aspect-[16/11] w-full">
                     <Image
@@ -192,7 +192,7 @@ export function DigitalHealthServiceDetail() {
                     />
                   </div>
                   <div className="flex flex-1 flex-col bg-gradient-to-b from-white to-cyan-50/30 p-6">
-                    <h3 className="text-[16px] font-semibold text-gray-900">{m.name}</h3>
+                    <h3 className="text-[16px] font-medium text-gray-900">{m.name}</h3>
                     <p className="mt-0.5 text-[12px] font-medium text-cyan-700">{m.role}</p>
                     <p className="mt-3 text-[14px] leading-relaxed text-gray-600">{m.line}</p>
                   </div>
@@ -206,7 +206,7 @@ export function DigitalHealthServiceDetail() {
           <div className="mx-auto max-w-[640px] px-6">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-cyan-500" />
-              <h2 className="text-[22px] font-semibold text-gray-900 sm:text-[26px]">What we take on</h2>
+              <h2 className="text-[22px] font-medium text-gray-900 sm:text-[26px]">What we take on</h2>
             </div>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-gray-700">
               <li className="flex gap-3">
@@ -234,7 +234,7 @@ export function DigitalHealthServiceDetail() {
             <div className="mb-10 text-center sm:text-left">
               <div className="mx-auto flex items-center justify-center gap-3 sm:mx-0 sm:justify-start">
                 <div className="h-8 w-1 rounded-full bg-cyan-500" />
-                <h2 className="text-[22px] font-semibold text-gray-900 sm:text-[26px]">How engagements run</h2>
+                <h2 className="text-[22px] font-medium text-gray-900 sm:text-[26px]">How engagements run</h2>
               </div>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -262,10 +262,10 @@ export function DigitalHealthServiceDetail() {
               ].map((s) => (
                 <div
                   key={s.n}
-                  className="rounded-xl border border-cyan-100/60 bg-gradient-to-b from-white to-cyan-50/40 p-5 shadow-sm"
+                  className="rounded-xl border border-cyan-100/60 bg-gradient-to-b from-white to-cyan-50/40 p-5"
                 >
-                  <span className="font-mono text-[12px] font-semibold text-cyan-600">{s.n}</span>
-                  <h3 className="mt-2 text-[15px] font-semibold text-gray-900">{s.t}</h3>
+                  <span className="font-mono text-[12px] font-medium text-cyan-600">{s.n}</span>
+                  <h3 className="mt-2 text-[15px] font-medium text-gray-900">{s.t}</h3>
                   <p className="mt-2 text-[13px] leading-relaxed text-gray-600">{s.d}</p>
                 </div>
               ))}
@@ -295,7 +295,7 @@ export function DigitalHealthServiceDetail() {
             </p>
             <a
               href={`mailto:${CONTACT_EMAIL}?subject=Project%20inquiry`}
-              className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 shadow-md transition-colors hover:bg-gray-50"
+              className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 transition-colors hover:bg-gray-50"
             >
               <Mail className="h-4 w-4 text-cyan-600" />
               {CONTACT_EMAIL}

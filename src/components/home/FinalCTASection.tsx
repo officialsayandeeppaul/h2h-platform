@@ -23,13 +23,13 @@ export function FinalCTASection() {
           Book sports rehab, physio, or pain care in a few clicks—or call us if you prefer a human on the line first.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="h-14 px-10 text-base font-bold bg-white text-blue-600 hover:bg-gray-100 shadow-xl shadow-black/10 font-[family-name:var(--font-poppins)]" asChild>
+          <Button size="lg" className="h-14 px-10 text-base font-medium bg-white text-blue-600 hover:bg-gray-100 hover:!text-blue-600 shadow-black/10 font-[family-name:var(--font-poppins)] [&_svg]:text-blue-600" asChild>
             <Link href="/booking">
               Book Appointment
               <ArrowUpRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-          <Button size="lg" variant="outline" className="h-14 px-10 text-base font-bold bg-transparent text-white border-2 border-white/50 hover:bg-white/10 hover:border-white font-[family-name:var(--font-poppins)]" asChild>
+          <Button size="lg" variant="outline" className="h-14 px-10 text-base font-medium bg-transparent text-white border-2 border-white/50 shadow-none hover:bg-white/15 hover:!text-white hover:border-white font-[family-name:var(--font-poppins)] [&_svg]:text-white" asChild>
             <Link href={`tel:${APP_CONFIG.phoneE164}`}>
               <Phone className="mr-2 h-5 w-5" />
               {APP_CONFIG.phone}

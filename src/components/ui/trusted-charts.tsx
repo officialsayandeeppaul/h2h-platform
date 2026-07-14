@@ -70,7 +70,7 @@ export function TrustedByThousandsSection() {
         {/* Charts Grid */}
         <div className="grid md:grid-cols-2 gap-6 mb-10">
           {/* Patient Growth Chart */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white rounded-xl border border-gray-100 p-6 transition-colors">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[13px] text-gray-500">Patient Growth</p>
@@ -131,7 +131,7 @@ export function TrustedByThousandsSection() {
           </div>
           
           {/* Recovery Time Chart */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white rounded-xl border border-gray-100 p-6 transition-colors">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[13px] text-gray-500">Recovery Time</p>
@@ -195,27 +195,27 @@ export function TrustedByThousandsSection() {
         
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 duration-300">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center transition-colors hover:-translate-y-1 duration-300">
             <p className="text-[24px] font-light text-gray-900 mb-1">50+</p>
             <p className="text-[11px] text-gray-500">Expert Doctors</p>
           </div>
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 duration-300">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center transition-colors hover:-translate-y-1 duration-300">
             <p className="text-[24px] font-light text-gray-900 mb-1">98%</p>
             <p className="text-[11px] text-gray-500">Success Rate</p>
           </div>
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 duration-300">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center transition-colors hover:-translate-y-1 duration-300">
             <p className="text-[24px] font-light text-gray-900 mb-1">8+</p>
             <p className="text-[11px] text-gray-500">Cities</p>
           </div>
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 duration-300">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center transition-colors hover:-translate-y-1 duration-300">
             <p className="text-[24px] font-light text-gray-900 mb-1">24/7</p>
             <p className="text-[11px] text-gray-500">Support</p>
           </div>
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 duration-300">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center transition-colors hover:-translate-y-1 duration-300">
             <p className="text-[24px] font-light text-gray-900 mb-1">15+</p>
             <p className="text-[11px] text-gray-500">Years Experience</p>
           </div>
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 duration-300">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 text-center transition-colors hover:-translate-y-1 duration-300">
             <p className="text-[24px] font-light text-gray-900 mb-1">5K+</p>
             <p className="text-[11px] text-gray-500">Home Visits</p>
           </div>

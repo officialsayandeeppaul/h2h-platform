@@ -150,7 +150,7 @@ export function AnimatedLineChart({ direction, title, value, subtitle, className
 
   if (!mounted) {
     return (
-      <div className={cn("bg-white rounded-3xl p-8 border border-gray-100 shadow-xl", className)}>
+      <div className={cn("bg-white rounded-3xl p-8 border border-gray-100", className)}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-sm font-semibold text-gray-500 font-[family-name:var(--font-poppins)]">{title}</h3>
         </div>
@@ -165,10 +165,10 @@ export function AnimatedLineChart({ direction, title, value, subtitle, className
     <div 
       ref={containerRef}
       className={cn(
-        "relative bg-white rounded-3xl p-8 border border-gray-100 shadow-xl overflow-hidden transition-all duration-500 cursor-pointer",
+        "relative bg-white rounded-3xl p-8 border border-gray-100 overflow-hidden transition-all duration-500 cursor-pointer",
         isHovered && (direction === 'up' 
-          ? "shadow-2xl shadow-emerald-500/20 border-emerald-200 scale-[1.02]" 
-          : "shadow-2xl shadow-blue-500/20 border-blue-200 scale-[1.02]"),
+          ? " shadow-emerald-500/20 border-emerald-200 scale-[1.02]" 
+          : " shadow-blue-500/20 border-blue-200 scale-[1.02]"),
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
@@ -299,8 +299,8 @@ export function ServiceBarChart({ title, className }: BarChartProps) {
   return (
     <div 
       className={cn(
-        "bg-white rounded-3xl p-6 border border-gray-100 shadow-xl transition-all duration-500",
-        isHovered && "shadow-2xl scale-[1.02]",
+        "bg-white rounded-3xl p-6 border border-gray-100 transition-all duration-500",
+        isHovered && " scale-[1.02]",
         className
       )}
       onMouseEnter={() => setIsHovered(true)}

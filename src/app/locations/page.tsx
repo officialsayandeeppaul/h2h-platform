@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useState, useCallback, useEffect } from 'react';
-import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { Header, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,22 @@ import { SERVICE_CATEGORIES } from "@/constants/services";
 import { CLINIC_CENTER_IMAGES, CLINIC_IMAGES } from "@/constants/marketing-images";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+
+const LocationsLeafletMap = dynamic(
+  () =>
+    import('@/components/locations/LocationsLeafletMap').then((m) => m.LocationsLeafletMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-cyan-500" />
+          <p className="text-[14px] text-gray-600">Loading map...</p>
+        </div>
+      </div>
+    ),
+  }
+);
 
 const CARE_VERTICALS = Object.keys(SERVICE_CATEGORIES).length;
 const CLINIC_DAYS_PER_WEEK = 6;
@@ -69,8 +84,6 @@ export default function LocationsPage() {
   const [clinicCenters, setClinicCenters] = useState<ClinicCenter[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<ClinicCenter | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState(false);
   const [viewState, setViewState] = useState({
     longitude: 78.9629,
     latitude: 20.5937,
@@ -210,122 +223,22 @@ export default function LocationsPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-              <div className="h-[600px] relative">
-                {/* Loading State */}
-                {!mapLoaded && !mapError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                    <div className="text-center">
-                      <Loader2 className="w-10 h-10 text-cyan-500 animate-spin mx-auto mb-4" />
-                      <p className="text-[14px] text-gray-600">Loading map...</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Error State */}
-                {mapError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                    <div className="text-center max-w-md px-6">
-                      <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-[18px] font-medium text-gray-900 mb-2">Map unavailable</h3>
-                      <p className="text-[14px] text-gray-600 mb-4">
-                        Unable to load the interactive map. Please check your connection or browse our locations below.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {MAPBOX_TOKEN && (
-                  <Map
-                    {...viewState}
-                    onMove={evt => setViewState(evt.viewState)}
-                    onLoad={() => setMapLoaded(true)}
-                    onError={() => setMapError(true)}
-                    mapStyle="mapbox://styles/mapbox/light-v11"
-                    mapboxAccessToken={MAPBOX_TOKEN}
-                    style={{ width: '100%', height: '100%' }}
-                  >
-                    <NavigationControl position="top-right" />
-                    <GeolocateControl position="top-right" />
-
-                    {clinicCenters.map((center) => {
-                      const coords = getCenterCoords(center);
-                      const tier = center.location?.tier || 2;
-                      return (
-                        <Marker
-                          key={center.id}
-                          longitude={coords.lng}
-                          latitude={coords.lat}
-                          anchor="bottom"
-                          onClick={e => {
-                            e.originalEvent.stopPropagation();
-                            handleMarkerClick(center);
-                          }}
-                        >
-                          <div className="cursor-pointer group">
-                            <div className={`w-10 h-10 rounded-full ${tier === 1 ? 'bg-cyan-500' : 'bg-teal-500'} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white`}>
-                              <MapPin className="w-5 h-5 text-white" />
-                            </div>
-                          </div>
-                        </Marker>
-                      );
-                    })}
-
-                    {selectedLocation && (() => {
-                      const coords = getCenterCoords(selectedLocation);
-                      const tier = selectedLocation.location?.tier || 2;
-                      return (
-                        <Popup
-                          longitude={coords.lng}
-                          latitude={coords.lat}
-                          anchor="top"
-                          onClose={() => setSelectedLocation(null)}
-                          closeButton={true}
-                          closeOnClick={false}
-                          className="location-popup"
-                          offset={15}
-                          maxWidth="400px"
-                        >
-                          <div className="p-5 w-[340px]">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className={`w-1 h-6 ${tier === 1 ? 'bg-cyan-500' : 'bg-teal-500'} rounded-full`} />
-                              <h3 className="font-medium text-[15px] text-gray-900">{selectedLocation.name}</h3>
-                            </div>
-                            <p className="text-[13px] text-gray-600 mb-3 leading-relaxed">{selectedLocation.address}</p>
-                            <div className="space-y-2.5 mb-4">
-                              {selectedLocation.phone && (
-                                <div className="flex items-center gap-2.5 text-[13px] text-gray-700">
-                                  <Phone className="w-4 h-4 text-cyan-600 flex-shrink-0" />
-                                  <a href={phoneTel(selectedLocation.phone)} className="hover:text-cyan-600">
-                                    {selectedLocation.phone}
-                                  </a>
-                                </div>
-                              )}
-                              <div className="flex items-start gap-2.5 text-[13px] text-gray-700">
-                                <Clock className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
-                                <span className="text-[12px] leading-relaxed">Mon-Sat: 8:00 AM - 8:00 PM</span>
-                              </div>
-                            </div>
-                            {selectedLocation.facilities?.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mb-4">
-                                {selectedLocation.facilities.slice(0, 2).map((facility: string) => (
-                                  <Badge key={facility} variant="secondary" className="text-[10px] bg-cyan-50 text-cyan-700">
-                                    {facility}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            <Button size="sm" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" asChild>
-                              <Link href={`/booking?location=${selectedLocation.slug}`}>
-                                Book Appointment
-                              </Link>
-                            </Button>
-                          </div>
-                        </Popup>
-                      );
-                    })()}
-                  </Map>
-                )}
+            <div className="bg-white rounded-2xl overflow-hidden border border-gray-200">
+              <div className="h-[600px] relative [&_.leaflet-container]:h-full [&_.leaflet-container]:w-full [&_.leaflet-container]:font-sans">
+                <LocationsLeafletMap
+                  centers={clinicCenters}
+                  getCoords={getCenterCoords}
+                  selectedId={selectedLocation?.id ?? null}
+                  onSelect={(center) => {
+                    if (!center) {
+                      setSelectedLocation(null);
+                      return;
+                    }
+                    handleMarkerClick(center);
+                  }}
+                  view={viewState}
+                  mapboxToken={MAPBOX_TOKEN}
+                />
               </div>
 
               {/* Map Legend */}
@@ -569,13 +482,20 @@ export default function LocationsPage() {
               .
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="h-12 px-8 text-[14px] font-medium bg-white hover:bg-gray-100 text-gray-900 rounded-full" asChild>
+              <Button
+                className="h-12 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 hover:bg-gray-100 hover:!text-gray-900 [&_svg]:text-gray-900"
+                asChild
+              >
                 <Link href="/booking?mode=online">
                   <Video className="mr-2 h-4 w-4" />
                   Book Online Consultation
                 </Link>
               </Button>
-              <Button className="h-12 px-8 text-[14px] font-medium bg-transparent border-2 border-white text-white hover:bg-white/10 rounded-full" asChild>
+              <Button
+                variant="outline"
+                className="h-12 rounded-full border-2 border-white bg-transparent px-8 text-[14px] font-medium text-white shadow-none hover:bg-white/15 hover:!text-white [&_svg]:text-white"
+                asChild
+              >
                 <Link href="/booking">
                   <Building2 className="mr-2 h-4 w-4" />
                   Visit a Center

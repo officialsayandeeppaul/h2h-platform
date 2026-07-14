@@ -249,7 +249,7 @@ function ConfirmationContent() {
             {/* LEFT: Appointment Details (3 cols) */}
             <div className="lg:col-span-3 space-y-5">
               {/* Main Card */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                 {/* Card Header */}
                 <div className="bg-gradient-to-r from-cyan-500 to-teal-500 px-6 py-5 text-white">
                   <div className="flex items-center justify-between mb-3">
@@ -353,7 +353,7 @@ function ConfirmationContent() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl hover:from-green-100 hover:to-emerald-100 hover:border-green-300 transition-all"
                       >
-                        <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center flex-shrink-0">
                           <Video className="h-6 w-6 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -372,7 +372,7 @@ function ConfirmationContent() {
             {/* RIGHT: Actions & What's Next (2 cols) */}
             <div className="lg:col-span-2 space-y-5">
               {/* Add to Calendar Card */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="text-[14px] font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-cyan-500" />
                   Add to Calendar
@@ -386,7 +386,7 @@ function ConfirmationContent() {
               </div>
 
               {/* Quick Actions Card */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="text-[14px] font-bold text-gray-900 mb-4">Quick Actions</h3>
                 <div className="space-y-3">
                   <Button
@@ -420,7 +420,7 @@ function ConfirmationContent() {
               </div>
 
               {/* What's Next Card */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="text-[14px] font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-500" />
                   What&apos;s Next?
