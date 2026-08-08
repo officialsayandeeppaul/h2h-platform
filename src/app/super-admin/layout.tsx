@@ -8,7 +8,6 @@ import { AdminBookingNotifications } from '@/components/admin/AdminBookingNotifi
 import { AdminNotificationDrawer } from '@/components/admin/AdminNotificationDrawer';
 import { PortalSidebarBrand } from '@/components/shared/PortalSidebarBrand';
 import { AdminLayoutSkeleton } from '@/components/admin/AdminSkeletons';
-import { AdminProfilePhotoDialog } from '@/components/admin/AdminProfilePhotoDialog';
 import { 
   LayoutDashboard, 
   Settings, 
@@ -25,7 +24,8 @@ import {
   PhoneCall,
   BarChart3,
   MessageCircle,
-  Bell
+  Bell,
+  Camera
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -255,20 +255,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Footer — user + logout */}
         <div className="p-3 border-t border-white/10 shrink-0 space-y-2">
           <div className="rounded-lg bg-white/5 px-3 py-2.5">
-            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">Logged in as</p>
-            <p className="text-xs font-medium text-white truncate">{user?.email}</p>
-            <span className="inline-block mt-1.5 px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 text-[11px] font-medium capitalize">
-              {user?.role?.replace('_', ' ')}
-            </span>
-            {user?.id && (
-              <AdminProfilePhotoDialog
-                userId={user.id}
-                email={user.email}
-                fullName={user.full_name}
-                avatarUrl={user.avatar_url}
-                onSaved={(url) => setUser((prev: typeof user) => (prev ? { ...prev, avatar_url: url } : prev))}
-              />
-            )}
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-cyan-500/40 bg-white/10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={
+                    user?.avatar_url ||
+                    `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(
+                      user?.full_name || user?.email || 'admin'
+                    )}&backgroundColor=b6e3f4,c0aede,d1d4f9`
+                  }
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-white truncate">
+                  {user?.full_name || user?.email}
+                </p>
+                <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 text-[10px] font-medium capitalize">
+                  {user?.role?.replace('_', ' ')}
+                </span>
+              </div>
+            </div>
+            <Link
+              href="/super-admin/settings"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] text-cyan-400/90 hover:text-cyan-300 hover:bg-white/5 transition-colors"
+            >
+              <Camera className="h-3.5 w-3.5 shrink-0" />
+              Profile & settings
+            </Link>
           </div>
           <button
             onClick={handleLogout}
@@ -316,9 +333,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </button>
           )}
           <div className="flex-1 min-w-0" />
-          <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[140px] sm:max-w-none" title={user?.full_name || user?.email}>
-            {user?.full_name || user?.email}
-          </span>
+          <Link
+            href="/super-admin/settings"
+            className="flex items-center gap-2 min-w-0 max-w-[200px] sm:max-w-none rounded-lg px-2 py-1.5 hover:bg-gray-100 transition-colors"
+            title="Open settings"
+          >
+            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-100 ring-1 ring-gray-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={
+                  user?.avatar_url ||
+                  `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(
+                    user?.full_name || user?.email || 'admin'
+                  )}&backgroundColor=b6e3f4,c0aede,d1d4f9`
+                }
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <span className="text-xs sm:text-sm text-gray-700 truncate hidden xs:inline sm:inline">
+              {user?.full_name || user?.email}
+            </span>
+          </Link>
         </header>
 
         {/* Page content */}

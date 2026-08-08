@@ -16,6 +16,8 @@ type ProfilePhotoPickerProps = {
   email?: string | null;
   userId?: string;
   className?: string;
+  /** Override the helper copy under the preview */
+  description?: string;
 };
 
 function avatarSeed(name: string, email?: string | null) {
@@ -38,6 +40,7 @@ export function ProfilePhotoPicker({
   email,
   userId,
   className,
+  description = 'Upload a real photo or generate a unique avatar from your name.',
 }: ProfilePhotoPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -90,7 +93,7 @@ export function ProfilePhotoPicker({
         <div className="flex-1 min-w-0 space-y-1">
           <p className="text-sm font-medium text-gray-900">Profile photo</p>
           <p className="text-xs text-gray-500">
-            Upload a real photo or generate a unique avatar from the doctor&apos;s name.
+            {description}
           </p>
         </div>
       </div>
