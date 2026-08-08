@@ -224,7 +224,7 @@ export default function LocationsPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Locations & Clinic Centers</h1>
+          <h1 className="text-lg sm:text-2xl font-semibold text-gray-900">Locations & Clinic Centers</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage {locations.length} locations and {clinicCenters.length} clinic centers</p>
         </div>
         <div className="flex gap-2 shrink-0">
@@ -267,25 +267,25 @@ export default function LocationsPage() {
         <div className="p-4 bg-white rounded-xl border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-cyan-100 rounded-lg"><MapPin className="h-5 w-5 text-cyan-600" /></div>
-            <div><p className="text-2xl font-bold text-gray-900">{locations.length}</p><p className="text-sm text-gray-500">Locations</p></div>
+            <div><p className="text-2xl font-semibold text-gray-900">{locations.length}</p><p className="text-sm text-gray-500">Locations</p></div>
           </div>
         </div>
         <div className="p-4 bg-white rounded-xl border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-teal-100 rounded-lg"><Building2 className="h-5 w-5 text-teal-600" /></div>
-            <div><p className="text-2xl font-bold text-gray-900">{clinicCenters.length}</p><p className="text-sm text-gray-500">Clinic Centers</p></div>
+            <div><p className="text-2xl font-semibold text-gray-900">{clinicCenters.length}</p><p className="text-sm text-gray-500">Clinic Centers</p></div>
           </div>
         </div>
         <div className="p-4 bg-white rounded-xl border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-100 rounded-lg"><Star className="h-5 w-5 text-amber-600" /></div>
-            <div><p className="text-2xl font-bold text-gray-900">{clinicCenters.filter(c => c.is_featured).length}</p><p className="text-sm text-gray-500">Featured</p></div>
+            <div><p className="text-2xl font-semibold text-gray-900">{clinicCenters.filter(c => c.is_featured).length}</p><p className="text-sm text-gray-500">Featured</p></div>
           </div>
         </div>
         <div className="p-4 bg-white rounded-xl border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg"><Check className="h-5 w-5 text-green-600" /></div>
-            <div><p className="text-2xl font-bold text-gray-900">{clinicCenters.filter(c => c.is_active).length}</p><p className="text-sm text-gray-500">Active</p></div>
+            <div><p className="text-2xl font-semibold text-gray-900">{clinicCenters.filter(c => c.is_active).length}</p><p className="text-sm text-gray-500">Active</p></div>
           </div>
         </div>
       </div>

@@ -130,7 +130,7 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Payments</h1>
+          <h1 className="text-lg sm:text-2xl font-semibold text-gray-900">Payments</h1>
           <p className="text-sm text-gray-500 mt-0.5">Track and manage all payment transactions</p>
         </div>
         <Button onClick={fetchPayments} variant="outline" size="sm" className="shrink-0 w-full sm:w-auto">
@@ -153,7 +153,7 @@ export default function PaymentsPage() {
             </div>
             <span className="text-sm text-gray-500">Total Revenue</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900 flex items-center">
+          <p className="text-2xl font-semibold text-gray-900 flex items-center">
             <IndianRupee className="h-5 w-5" />{stats.totalRevenue.toLocaleString()}
           </p>
           <div className="flex items-center gap-1 mt-1 text-sm">
@@ -172,19 +172,19 @@ export default function PaymentsPage() {
           </div>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
           <p className="text-sm text-gray-500">Total Transactions</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-green-600">{stats.paid}</p>
+          <p className="text-2xl font-semibold text-green-600">{stats.paid}</p>
           <p className="text-sm text-gray-500">Successful</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+          <p className="text-2xl font-semibold text-yellow-600">{stats.pending}</p>
           <p className="text-sm text-gray-500">Pending</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-purple-600">{stats.refunded}</p>
+          <p className="text-2xl font-semibold text-purple-600">{stats.refunded}</p>
           <p className="text-sm text-gray-500">Refunded</p>
         </div>
       </div>

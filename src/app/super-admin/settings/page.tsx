@@ -94,9 +94,9 @@ export default function SuperAdminSettingsPage() {
   if (loading) return <AdminContentSkeleton />;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 w-full">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
           <Settings className="h-7 w-7 text-cyan-700" />
           Settings
         </h1>

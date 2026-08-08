@@ -242,7 +242,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <item.icon size={18} className="shrink-0" />
                   <span className="truncate">{item.label}</span>
                   {item.href === '/super-admin/help-support' && newMessageCount > 0 && (
-                    <span className="ml-auto min-w-[18px] h-[18px] rounded-full bg-cyan-400 text-[#1a2e35] text-[11px] font-bold flex items-center justify-center">
+                    <span className="ml-auto min-w-[18px] h-[18px] rounded-full bg-cyan-400 text-[#1a2e35] text-[11px] font-semibold flex items-center justify-center">
                       {newMessageCount > 99 ? '99+' : newMessageCount}
                     </span>
                   )}
@@ -326,7 +326,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             >
               <Bell size={20} className="shrink-0" />
               {(newMessageCount + unseenBookingCount) > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-white z-10">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] font-semibold flex items-center justify-center ring-2 ring-white z-10">
                   {newMessageCount + unseenBookingCount > 99 ? '99+' : newMessageCount + unseenBookingCount}
                 </span>
               )}
@@ -357,9 +357,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Link>
         </header>
 
-        {/* Page content */}
-        <main className="p-3 sm:p-6 lg:p-8 min-h-[calc(100vh-3.5rem)]">
-          <div className="w-full max-w-full overflow-x-hidden">
+        {/* Page content — full width of main column */}
+        <main className="w-full p-3 sm:p-5 lg:p-6 min-h-[calc(100vh-3.5rem)]">
+          <div className="w-full overflow-x-hidden">
             {children}
           </div>
         </main>

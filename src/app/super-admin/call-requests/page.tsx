@@ -81,7 +81,7 @@ export default function SuperAdminCallRequestsPage() {
   const newCount = requests.filter((r) => r.status === 'new').length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Call &amp; calendar requests</h1>

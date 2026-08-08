@@ -582,7 +582,7 @@ export default function DoctorsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Doctor Management</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">Doctor Management</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage doctors, services, and availability</p>
         </div>
         <Button onClick={openCreateModal} className="bg-cyan-500 hover:bg-cyan-600 text-white shrink-0 w-full sm:w-auto">
@@ -995,7 +995,7 @@ export default function DoctorsPage() {
                         </div>
                         <div className="flex items-center justify-center">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600">{formData.home_visit_radius_km} km</div>
+                            <div className="text-2xl font-semibold text-orange-600">{formData.home_visit_radius_km} km</div>
                             <div className="text-xs text-gray-500">coverage area</div>
                           </div>
                         </div>
@@ -1179,7 +1179,7 @@ export default function DoctorsPage() {
                               }}
                               className="h-4 w-4 text-cyan-500 rounded"
                             />
-                            <span className="text-sm font-bold text-gray-900">{slotType.duration_minutes} min</span>
+                            <span className="text-sm font-semibold text-gray-900">{slotType.duration_minutes} min</span>
                           </label>
                           <Input
                             placeholder="Label"
@@ -1315,7 +1315,7 @@ export default function DoctorsPage() {
                               }}
                               className="h-4 w-4 text-cyan-500 rounded cursor-pointer"
                             />
-                            <span className="text-sm font-bold text-gray-900">{day}</span>
+                            <span className="text-sm font-semibold text-gray-900">{day}</span>
                           </label>
                           {dayAvail?.is_available && (
                             <button

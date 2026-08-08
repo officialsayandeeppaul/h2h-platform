@@ -116,7 +116,7 @@ export default function AdminLoginPage() {
               className="h-14 sm:h-16 w-auto object-contain drop-shadow-lg"
             />
           </Link>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Admin Portal</h1>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Admin Portal</h1>
           <p className="text-cyan-100/70 mt-2 text-sm">
             {needsSetup ? 'First-time setup required' : 'Sign in to manage H2H Healthcare'}
           </p>

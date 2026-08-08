@@ -119,7 +119,7 @@ export default function ScheduleRequestsPage() {
     <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Schedule change requests</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Schedule change requests</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Doctors request to mark days unavailable. Approve to update their schedule.
           </p>

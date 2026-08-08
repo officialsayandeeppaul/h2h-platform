@@ -368,7 +368,7 @@ export default function AppointmentsPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Appointments</h1>
+          <h1 className="text-lg sm:text-2xl font-semibold text-gray-900">Appointments</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage all patient appointments</p>
         </div>
         <Button onClick={fetchAppointments} variant="outline" size="sm" className="shrink-0 w-full sm:w-auto">
@@ -400,7 +400,7 @@ export default function AppointmentsPage() {
           <CalendarClock className="h-4 w-4" />
           Reschedule Requests
           {pendingCount > 0 && (
-            <span className="bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="bg-amber-500 text-white text-[10px] font-semibold rounded-full w-5 h-5 flex items-center justify-center">
               {pendingCount}
             </span>
           )}
@@ -455,7 +455,7 @@ export default function AppointmentsPage() {
                     'bg-red-50 border-b border-red-100'
                   }`}>
                     <div className="flex items-center gap-3">
-                      <Badge className={`text-xs font-bold capitalize ${
+                      <Badge className={`text-xs font-semibold capitalize ${
                         req.requestStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
                         req.requestStatus === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                         'bg-red-100 text-red-700'
@@ -486,13 +486,13 @@ export default function AppointmentsPage() {
                     <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
                       <div className="flex-1 text-center">
                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Current</p>
-                        <p className="text-sm font-bold text-gray-900">{format(parseISO(req.currentDate), 'dd MMM yyyy')}</p>
+                        <p className="text-sm font-semibold text-gray-900">{format(parseISO(req.currentDate), 'dd MMM yyyy')}</p>
                         <p className="text-xs text-gray-500">{req.currentStartTime}</p>
                       </div>
                       <ArrowRight className="h-5 w-5 text-amber-500 shrink-0" />
                       <div className="flex-1 text-center">
                         <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-1">Requested</p>
-                        <p className="text-sm font-bold text-amber-700">{format(parseISO(req.requestedDate), 'dd MMM yyyy')}</p>
+                        <p className="text-sm font-semibold text-amber-700">{format(parseISO(req.requestedDate), 'dd MMM yyyy')}</p>
                         <p className="text-xs text-amber-600">{req.requestedStartTime}</p>
                       </div>
                     </div>
@@ -655,7 +655,7 @@ export default function AppointmentsPage() {
                                       <div className="flex items-center justify-between mb-3">
                                         <div>
                                           <p className="text-xs text-gray-500">New Time</p>
-                                          <p className="text-sm font-bold text-cyan-700">
+                                          <p className="text-sm font-semibold text-cyan-700">
                                             {slotPickerDate && format(parseISO(slotPickerDate), 'dd MMM yyyy')} &bull; {selectedSlot.time} - {selectedSlot.endTime}
                                           </p>
                                         </div>
@@ -695,27 +695,27 @@ export default function AppointmentsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
           <p className="text-sm text-gray-500">Total</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-cyan-600">{stats.today}</p>
+          <p className="text-2xl font-semibold text-cyan-600">{stats.today}</p>
           <p className="text-sm text-gray-500">Today</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+          <p className="text-2xl font-semibold text-yellow-600">{stats.pending}</p>
           <p className="text-sm text-gray-500">Pending</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-blue-600">{stats.confirmed}</p>
+          <p className="text-2xl font-semibold text-blue-600">{stats.confirmed}</p>
           <p className="text-sm text-gray-500">Confirmed</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+          <p className="text-2xl font-semibold text-green-600">{stats.completed}</p>
           <p className="text-sm text-gray-500">Completed</p>
         </div>
         <div className="p-4 bg-white rounded-xl border">
-          <p className="text-2xl font-bold text-teal-600 flex items-center"><IndianRupee className="h-5 w-5" />{stats.revenue.toLocaleString()}</p>
+          <p className="text-2xl font-semibold text-teal-600 flex items-center"><IndianRupee className="h-5 w-5" />{stats.revenue.toLocaleString()}</p>
           <p className="text-sm text-gray-500">Revenue</p>
         </div>
       </div>
@@ -782,7 +782,7 @@ export default function AppointmentsPage() {
                 <div className="p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedId(isExpanded ? null : apt.id)}>
                   {/* Date/Time */}
                   <div className="w-24 text-center">
-                    <p className="text-lg font-bold text-gray-900">{format(parseISO(apt.appointment_date), 'dd MMM')}</p>
+                    <p className="text-lg font-semibold text-gray-900">{format(parseISO(apt.appointment_date), 'dd MMM')}</p>
                     <p className="text-sm text-gray-500">{apt.start_time}</p>
                     {isToday(parseISO(apt.appointment_date)) && <Badge className="bg-cyan-500 text-white text-[10px] mt-1">Today</Badge>}
                   </div>

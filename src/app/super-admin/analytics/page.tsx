@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Detailed Analytics</h1>
+        <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Detailed Analytics</h1>
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={days}
@@ -154,32 +154,32 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           <div className="bg-white/80 rounded-lg p-3 border border-cyan-100">
             <p className="text-[10px] uppercase tracking-wider text-gray-500">New patients</p>
-            <p className="text-lg font-bold text-gray-900">{s.newPatients ?? 0}</p>
+            <p className="text-lg font-semibold text-gray-900">{s.newPatients ?? 0}</p>
             <p className="text-[10px] text-gray-500">signed up in period</p>
           </div>
           <div className="bg-white/80 rounded-lg p-3 border border-cyan-100">
             <p className="text-[10px] uppercase tracking-wider text-gray-500">Booked → Paid</p>
-            <p className="text-lg font-bold text-emerald-600">{s.bookToPaidRate ?? 0}%</p>
+            <p className="text-lg font-semibold text-emerald-600">{s.bookToPaidRate ?? 0}%</p>
             <p className="text-[10px] text-gray-500">conversion rate</p>
           </div>
           <div className="bg-white/80 rounded-lg p-3 border border-cyan-100">
             <p className="text-[10px] uppercase tracking-wider text-gray-500">Paid → Done</p>
-            <p className="text-lg font-bold text-teal-600">{s.paidToCompletedRate ?? 0}%</p>
+            <p className="text-lg font-semibold text-teal-600">{s.paidToCompletedRate ?? 0}%</p>
             <p className="text-[10px] text-gray-500">fulfillment rate</p>
           </div>
           <div className="bg-white/80 rounded-lg p-3 border border-cyan-100">
             <p className="text-[10px] uppercase tracking-wider text-gray-500">Avg order</p>
-            <p className="text-lg font-bold text-gray-900">₹{s.avgOrderValue?.toLocaleString() ?? 0}</p>
+            <p className="text-lg font-semibold text-gray-900">₹{s.avgOrderValue?.toLocaleString() ?? 0}</p>
             <p className="text-[10px] text-gray-500">per paid appointment</p>
           </div>
           <div className="bg-white/80 rounded-lg p-3 border border-amber-100">
             <p className="text-[10px] uppercase tracking-wider text-gray-500">Cancellation</p>
-            <p className="text-lg font-bold text-amber-600">{s.cancellationRate ?? 0}%</p>
+            <p className="text-lg font-semibold text-amber-600">{s.cancellationRate ?? 0}%</p>
             <p className="text-[10px] text-gray-500">rate</p>
           </div>
           <div className="bg-white/80 rounded-lg p-3 border border-red-100">
             <p className="text-[10px] uppercase tracking-wider text-gray-500">No-show</p>
-            <p className="text-lg font-bold text-red-600">{s.noShowRate ?? 0}%</p>
+            <p className="text-lg font-semibold text-red-600">{s.noShowRate ?? 0}%</p>
             <p className="text-[10px] text-gray-500">rate</p>
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
             <UserPlus className="h-4 w-4 text-blue-500" />
             <span className="text-xs text-gray-500">New patients</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{(s.newPatients ?? 0).toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">{(s.newPatients ?? 0).toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">in last {s.days} days</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
             <Users className="h-4 w-4 text-cyan-500" />
             <span className="text-xs text-gray-500">Active patients</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{(s.activePatientsInPeriod ?? 0).toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">{(s.activePatientsInPeriod ?? 0).toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">had appointment in period</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
             <Repeat className="h-4 w-4 text-emerald-500" />
             <span className="text-xs text-gray-500">Repeat customers</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{(s.repeatPatients ?? 0).toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">{(s.repeatPatients ?? 0).toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">2+ appointments</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
             <Percent className="h-4 w-4 text-violet-500" />
             <span className="text-xs text-gray-500">Book → Paid</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{(s.bookToPaidRate ?? 0)}%</p>
+          <p className="text-xl font-semibold text-gray-900">{(s.bookToPaidRate ?? 0)}%</p>
           <p className="text-[11px] text-gray-400 mt-0.5">conversion</p>
         </div>
       </div>
@@ -246,7 +246,7 @@ export default function AnalyticsPage() {
             <Stethoscope className="h-4 w-4 text-cyan-500" />
             <span className="text-xs text-gray-500">Appointments</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{summary.totalAppointments.toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">{summary.totalAppointments.toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">in last {summary.days} days</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -254,7 +254,7 @@ export default function AnalyticsPage() {
             <IndianRupee className="h-4 w-4 text-emerald-500" />
             <span className="text-xs text-gray-500">Revenue</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">₹{summary.totalRevenue.toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">₹{summary.totalRevenue.toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">paid appointments</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -262,7 +262,7 @@ export default function AnalyticsPage() {
             <TrendingUp className="h-4 w-4 text-green-500" />
             <span className="text-xs text-gray-500">Completed</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{summary.completedCount.toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">{summary.completedCount.toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">
             {summary.totalAppointments > 0
               ? Math.round((summary.completedCount / summary.totalAppointments) * 100)
@@ -275,7 +275,7 @@ export default function AnalyticsPage() {
             <Video className="h-4 w-4 text-blue-500" />
             <span className="text-xs text-gray-500">Online</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{summary.onlineCount.toLocaleString()}</p>
+          <p className="text-xl font-semibold text-gray-900">{summary.onlineCount.toLocaleString()}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">
             {summary.totalAppointments > 0
               ? Math.round((summary.onlineCount / summary.totalAppointments) * 100)
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
             <Users className="h-4 w-4 text-orange-500" />
             <span className="text-xs text-gray-500">Top Doctors</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{topDoctors.length}</p>
+          <p className="text-xl font-semibold text-gray-900">{topDoctors.length}</p>
           <p className="text-[11px] text-gray-400 mt-0.5">by appointment count</p>
         </div>
       </div>

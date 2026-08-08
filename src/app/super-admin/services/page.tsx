@@ -149,7 +149,7 @@ export default function AdminServicesPage() {
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Services</h1>
+        <h1 className="text-lg sm:text-2xl font-semibold text-gray-900">Services</h1>
         <button
           onClick={openCreateModal}
           className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm shrink-0"

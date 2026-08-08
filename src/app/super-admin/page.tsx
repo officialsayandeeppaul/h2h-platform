@@ -89,7 +89,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900">Dashboard</h1>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={fetchDashboard} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 touch-manipulation">
             <RefreshCw className="h-4 w-4" /> Refresh
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-[11px] sm:text-xs text-gray-500 truncate">{stat.label}</p>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mt-0.5 truncate">{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mt-0.5 truncate">{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</p>
               </div>
               <div className={`${stat.color} p-2 sm:p-2.5 rounded-lg shrink-0`}>
                 <stat.icon className="text-white h-4 w-4 sm:h-5 sm:w-5" />

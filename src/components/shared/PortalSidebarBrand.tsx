@@ -84,7 +84,7 @@ export function PortalSidebarBrand({
       />
       {!collapsed && (
         <div className="min-w-0 flex flex-col leading-none">
-          <span className="font-bold text-[15px] text-white tracking-tight truncate">
+          <span className="font-semibold text-[15px] text-white tracking-tight truncate">
             H2H Healthcare
           </span>
           <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-400/90 truncate">

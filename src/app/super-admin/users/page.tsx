@@ -102,7 +102,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Users Management</h1>
+        <h1 className="text-lg sm:text-2xl font-semibold text-gray-900">Users Management</h1>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
