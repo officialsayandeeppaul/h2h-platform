@@ -85,13 +85,16 @@ export async function POST(request: NextRequest) {
           html: wrapH2HEmail({
             preview: 'Your doctor portal login code',
             title: 'Doctor Login OTP | H2H Healthcare',
+            headerTitle: 'Login verification',
             bodyRowsHtml: [
               emailParagraph('Hello,'),
-              emailParagraph('Your one-time login code for the doctor portal is:'),
+              emailParagraph(
+                "We've received a request to sign in to the H2H doctor portal. Use this one-time code:"
+              ),
               emailCodeBlock(otp),
               emailParagraph('This code expires in 5 minutes. Do not share it with anyone.'),
             ].join(''),
-            tip: "If you didn't request this, please ignore this email.",
+            tip: "If you didn't request this login, ignore this email and ensure your account email is secure.",
           }),
         });
         console.log(`✅ OTP email sent to ${email}`);

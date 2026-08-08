@@ -51,16 +51,17 @@ export async function sendSuperAdminCreationOtp(params: {
     html: wrapH2HEmail({
       preview: 'Your 6-digit super admin verification code',
       title: 'Super Admin verification | H2H Healthcare',
+      headerTitle: 'Security verification',
       bodyRowsHtml: [
         emailParagraph('Hello,'),
         emailParagraph(
-          `A request was made to grant <strong>super admin</strong> access to <strong>${escapeEmailHtml(params.candidateEmail)}</strong>${nameBit}.`
+          `We've received a request to grant <strong>super admin</strong> access to <strong>${escapeEmailHtml(params.candidateEmail)}</strong>${nameBit}.`
         ),
-        emailParagraph('Your 6-digit verification code:'),
+        emailParagraph('You can approve this by entering the code below:'),
         emailCodeBlock(otp),
         emailParagraph('This code expires in 10 minutes.'),
       ].join(''),
-      tip: 'If you did not request this, ignore this email and secure your admin secret key.',
+      tip: 'If you did not request this, ignore this email and secure your admin secret key immediately.',
     }),
   });
 

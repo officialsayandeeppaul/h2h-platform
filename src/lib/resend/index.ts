@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import {
   emailDetailsTable,
   emailParagraph,
+  emailSummaryTable,
   escapeEmailHtml,
   wrapH2HEmail,
 } from '@/lib/email-layout';
@@ -78,6 +79,8 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   }
 }
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in';
+
 export const emailTemplates = {
   bookingConfirmation: (data: {
     patientName: string;
@@ -91,27 +94,39 @@ export const emailTemplates = {
   }) => ({
     subject: `Booking Confirmed - ${data.serviceName} | H2H Healthcare`,
     html: wrapH2HEmail({
-      preview: `Your ${data.serviceName} booking is confirmed`,
+      preview: `Complete payment to confirm your ${data.serviceName} booking`,
       title: 'Booking Confirmed | H2H Healthcare',
+      headerTitle: 'Booking received',
       bodyRowsHtml: [
         emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
         emailParagraph(
-          'Your appointment has been successfully booked. Please review the details below and complete payment to confirm your slot.'
+          'Your appointment request is saved. Please complete payment to lock your slot — slots are held only after successful payment.'
         ),
         emailDetailsTable([
           { label: 'Service', value: escapeEmailHtml(data.serviceName) },
           { label: 'Doctor', value: escapeEmailHtml(data.doctorName) },
           { label: 'Date', value: escapeEmailHtml(data.date) },
           { label: 'Time', value: escapeEmailHtml(data.time) },
-          { label: 'Location', value: escapeEmailHtml(data.location) },
-          { label: 'Amount', value: `₹${data.amount}` },
+          { label: 'Centre / mode', value: escapeEmailHtml(data.location) },
         ]),
+        emailSummaryTable({
+          title: 'Amount due',
+          items: [
+            {
+              name: escapeEmailHtml(data.serviceName),
+              meta: '1',
+              amount: `₹${data.amount.toLocaleString('en-IN')}`,
+            },
+          ],
+          totalLabel: 'Payable',
+          totalAmount: `₹${data.amount.toLocaleString('en-IN')}`,
+        }),
         emailParagraph(
-          'Complete payment to lock your appointment. If you have any questions, reply to support or call us.'
+          'Pay securely with UPI, debit/credit card, or net banking via Razorpay.'
         ),
       ].join(''),
-      cta: { label: 'Complete Payment', href: data.paymentLink },
-      tip: 'If you did not make this booking, please contact us immediately so we can secure your account.',
+      cta: { label: 'Complete payment', href: data.paymentLink },
+      tip: `If you did not request this booking, contact us at once at <a href="mailto:support@healtohealth.in" style="color:#0891b2;text-decoration:none;">support@healtohealth.in</a> or +91 62916 15560.`,
     }),
   }),
 
@@ -130,26 +145,34 @@ export const emailTemplates = {
     html: wrapH2HEmail({
       preview: `Payment of ₹${data.amount} received — appointment confirmed`,
       title: 'Payment Successful | H2H Healthcare',
+      headerTitle: 'Payment successful',
       bodyRowsHtml: [
         emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
         emailParagraph(
-          `Great news! Your payment of <strong>₹${data.amount}</strong> has been received and your appointment is confirmed.`
+          `Great news! Your payment of <strong>₹${data.amount.toLocaleString('en-IN')}</strong> has been received and your appointment is confirmed.`
         ),
         emailDetailsTable([
           { label: 'Service', value: escapeEmailHtml(data.serviceName) },
           { label: 'Doctor', value: escapeEmailHtml(data.doctorName) },
           { label: 'Date', value: escapeEmailHtml(data.date) },
           { label: 'Time', value: escapeEmailHtml(data.time) },
-          { label: 'Location', value: escapeEmailHtml(data.location) },
+          { label: 'Centre / mode', value: escapeEmailHtml(data.location) },
         ]),
+        emailSummaryTable({
+          title: 'Payment summary',
+          items: [
+            {
+              name: escapeEmailHtml(data.serviceName),
+              meta: '1',
+              amount: `₹${data.amount.toLocaleString('en-IN')}`,
+            },
+          ],
+          totalLabel: 'Total paid',
+          totalAmount: `₹${data.amount.toLocaleString('en-IN')}`,
+        }),
         data.meetLink
           ? emailParagraph(
-              `Online consultation link: <a href="${escapeEmailHtml(data.meetLink)}" style="color:#0891b2;">${escapeEmailHtml(data.meetLink)}</a>`
-            )
-          : '',
-        data.receiptUrl
-          ? emailParagraph(
-              `<a href="${escapeEmailHtml(data.receiptUrl)}" style="color:#0891b2;">Download receipt</a>`
+              `Online consultation link: <a href="${escapeEmailHtml(data.meetLink)}" style="color:#0891b2;text-decoration:none;">Join video call</a>`
             )
           : '',
         emailParagraph(
@@ -157,9 +180,12 @@ export const emailTemplates = {
         ),
       ].join(''),
       cta: data.meetLink
-        ? { label: 'Join Video Call', href: data.meetLink }
-        : { label: 'Open Patient Dashboard', href: `${process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in'}/patient/appointments` },
-      tip: 'Arrive 10 minutes early for clinic visits. For video calls, use a stable internet connection.',
+        ? { label: 'Join video call', href: data.meetLink }
+        : { label: 'View appointment', href: `${APP_URL}/patient/appointments` },
+      secondaryCta: data.receiptUrl
+        ? { label: 'Download receipt', href: data.receiptUrl }
+        : { label: 'Open dashboard', href: `${APP_URL}/patient/appointments` },
+      tip: `You're receiving this because you made a booking at H2H Healthcare. Questions? <a href="mailto:support@healtohealth.in" style="color:#0891b2;text-decoration:none;">support@healtohealth.in</a>`,
     }),
   }),
 
@@ -176,26 +202,27 @@ export const emailTemplates = {
     html: wrapH2HEmail({
       preview: `Reminder: ${data.serviceName} tomorrow at ${data.time}`,
       title: 'Appointment Reminder | H2H Healthcare',
+      headerTitle: 'Appointment tomorrow',
       bodyRowsHtml: [
         emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
         emailParagraph(
-          'This is a friendly reminder that you have an appointment scheduled for <strong>tomorrow</strong>.'
+          'Friendly reminder — you have an appointment scheduled for <strong>tomorrow</strong>.'
         ),
         emailDetailsTable([
           { label: 'Service', value: escapeEmailHtml(data.serviceName) },
           { label: 'Doctor', value: escapeEmailHtml(data.doctorName) },
           { label: 'Date', value: escapeEmailHtml(data.date) },
           { label: 'Time', value: escapeEmailHtml(data.time) },
-          { label: 'Location', value: escapeEmailHtml(data.location) },
+          { label: 'Centre / mode', value: escapeEmailHtml(data.location) },
         ]),
         emailParagraph(
-          'Please arrive 10 minutes early for in-person appointments. For online consultations, ensure you have a stable internet connection.'
+          'Please reach 10 minutes early for clinic visits. For video consultations, use a stable internet connection and keep reports handy.'
         ),
       ].join(''),
       cta: data.meetLink
-        ? { label: 'Join Video Call', href: data.meetLink }
-        : undefined,
-      tip: 'Need to reschedule? Contact us as soon as possible so we can help.',
+        ? { label: 'Join video call', href: data.meetLink }
+        : { label: 'View appointment', href: `${APP_URL}/patient/appointments` },
+      tip: 'Need to reschedule? Contact us as soon as possible so we can help — ideally 24 hours in advance.',
     }),
   }),
 };

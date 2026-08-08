@@ -151,10 +151,11 @@ export async function sendDoctorWelcomeEmail(params: {
       html: wrapH2HEmail({
         preview: 'Your doctor portal account is ready',
         title: 'Doctor Portal Account | H2H Healthcare',
+        headerTitle: 'Welcome to the doctor portal',
         bodyRowsHtml: [
           emailParagraph(`Hello ${escapeEmailHtml(fullName)},`),
           emailParagraph(
-            'A super admin has created your doctor account. Use the credentials below to sign in. You can also request a one-time code from the same login page.'
+            'Your H2H doctor account is ready. Use the credentials below to sign in. You can also request a one-time code from the same login page.'
           ),
           emailDetailsTable([
             { label: 'Email', value: escapeEmailHtml(email) },
@@ -162,11 +163,11 @@ export async function sendDoctorWelcomeEmail(params: {
           emailParagraph('Temporary password:'),
           emailCodeBlock(temporaryPassword),
           emailParagraph(
-            'Please change this password after your first login when that option is available. Do not share these details.'
+            'Please change this password after your first login when that option is available. Do not share these details with anyone.'
           ),
         ].join(''),
-        cta: { label: 'Open Doctor Portal', href: loginUrl },
-        tip: 'If you did not expect this email, contact your clinic administrator.',
+        cta: { label: 'Open doctor portal', href: loginUrl },
+        tip: 'If you did not expect this email, contact your clinic administrator or support@healtohealth.in.',
       }),
     });
     console.log(`Doctor welcome email sent to ${email}`);

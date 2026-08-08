@@ -10,6 +10,7 @@ import {
   emailDetailsTable,
   emailParagraph,
   emailRawBlock,
+  emailSummaryTable,
   escapeEmailHtml,
   wrapH2HEmail,
 } from '@/lib/email-layout';
@@ -90,22 +91,27 @@ function getModeLabel(mode: string): string {
 
 function buildPatientEmailHTML(data: AppointmentEmailData): string {
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in'}/patient/appointments`;
+  const locationLine =
+    data.locationName && data.mode !== 'online'
+      ? `${data.locationName}${data.locationCity ? ', ' + data.locationCity : ''}`
+      : getModeLabel(data.mode);
+
   const detailRows = [
     { label: 'Service', value: escapeEmailHtml(data.serviceName) },
     { label: 'Doctor', value: `Dr. ${escapeEmailHtml(data.doctorName)}` },
     { label: 'Date', value: escapeEmailHtml(formatDate(data.appointmentDate)) },
-    { label: 'Time', value: `${escapeEmailHtml(formatTime(data.startTime))} - ${escapeEmailHtml(formatTime(data.endTime))}` },
+    {
+      label: 'Time',
+      value: `${escapeEmailHtml(formatTime(data.startTime))} – ${escapeEmailHtml(formatTime(data.endTime))}`,
+    },
     { label: 'Mode', value: escapeEmailHtml(getModeLabel(data.mode)) },
   ];
   if (data.locationName && data.mode !== 'online') {
     detailRows.push({
-      label: 'Location',
-      value: escapeEmailHtml(
-        `${data.locationName}${data.locationCity ? ', ' + data.locationCity : ''}`
-      ),
+      label: 'Centre',
+      value: escapeEmailHtml(locationLine),
     });
   }
-  detailRows.push({ label: 'Amount Paid', value: escapeEmailHtml(formatCurrency(data.amount)) });
   if (data.razorpayPaymentId) {
     detailRows.push({
       label: 'Payment ID',
@@ -114,32 +120,48 @@ function buildPatientEmailHTML(data: AppointmentEmailData): string {
   }
 
   return wrapH2HEmail({
-    preview: `Payment successful — ${data.serviceName} confirmed`,
+    preview: `Payment of ${formatCurrency(data.amount)} received — appointment confirmed`,
     title: 'Payment Successful | H2H Healthcare',
+    headerTitle: 'Payment successful',
     bodyRowsHtml: [
       emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
       emailParagraph(
-        `Your payment of <strong>${escapeEmailHtml(formatCurrency(data.amount))}</strong> has been received and your appointment is confirmed.`
+        `Your payment of <strong>${escapeEmailHtml(formatCurrency(data.amount))}</strong> has been received. Your appointment is confirmed — here are the details.`
       ),
       emailDetailsTable(detailRows),
+      emailSummaryTable({
+        title: 'Payment summary',
+        items: [
+          {
+            name: escapeEmailHtml(data.serviceName),
+            meta: '1',
+            amount: escapeEmailHtml(formatCurrency(data.amount)),
+          },
+        ],
+        totalLabel: 'Total paid',
+        totalAmount: escapeEmailHtml(formatCurrency(data.amount)),
+      }),
       data.googleMeetLink
         ? emailParagraph(
-            `Video consultation link: <a href="${escapeEmailHtml(data.googleMeetLink)}" style="color:#0891b2;">${escapeEmailHtml(data.googleMeetLink)}</a>`
+            `Join your video consultation here: <a href="${escapeEmailHtml(data.googleMeetLink)}" style="color:#0891b2;text-decoration:none;">Open meeting link</a>`
           )
         : '',
       data.invoicePayload
         ? emailRawBlock(
-            `<p style="margin:0 0 12px;font-size:15px;font-weight:500;color:#0c4a6e;font-family:Poppins,Helvetica,Arial,sans-serif;">Your tax invoice</p>${buildInvoiceEmailSection(data.invoicePayload)}`
+            `<p style="margin:0 0 12px;font-size:15px;font-weight:500;color:#003366;font-family:Poppins,Helvetica,Arial,sans-serif;">Your tax invoice (GST)</p>${buildInvoiceEmailSection(data.invoicePayload)}`
           )
         : '',
       emailParagraph(
-        `You can view this appointment anytime in your <a href="${escapeEmailHtml(dashboardUrl)}" style="color:#0891b2;">patient dashboard</a>.`
+        `You can review this booking anytime in your <a href="${escapeEmailHtml(dashboardUrl)}" style="color:#0891b2;text-decoration:none;">patient dashboard</a>.`
       ),
     ].join(''),
     cta: data.googleMeetLink
-      ? { label: 'Join Video Call', href: data.googleMeetLink }
-      : { label: 'View in Dashboard', href: dashboardUrl },
-    tip: 'This is an automated confirmation email. Please do not reply directly to this message.',
+      ? { label: 'Join video call', href: data.googleMeetLink }
+      : { label: 'View appointment', href: dashboardUrl },
+    secondaryCta: data.googleMeetLink
+      ? { label: 'Open dashboard', href: dashboardUrl }
+      : undefined,
+    tip: `You're receiving this because you booked with H2H Healthcare. Need help? Write to <a href="mailto:support@healtohealth.in" style="color:#0891b2;text-decoration:none;">support@healtohealth.in</a> or call +91 62916 15560.`,
   });
 }
 
@@ -163,27 +185,28 @@ function buildDoctorEmailHTML(data: AppointmentEmailData): string {
   detailRows.push({ label: 'Fee', value: escapeEmailHtml(formatCurrency(data.amount)) });
 
   return wrapH2HEmail({
-    preview: `New appointment: ${data.patientName} — ${data.serviceName}`,
+    preview: `New booking: ${data.patientName} — ${data.serviceName}`,
     title: 'New Appointment | H2H Healthcare',
+    headerTitle: 'New appointment booked',
     bodyRowsHtml: [
       emailParagraph(`Hello Dr. ${escapeEmailHtml(data.doctorName)},`),
       emailParagraph(
-        'A new appointment has been confirmed. Here are the patient and session details:'
+        'A patient has confirmed a new appointment. Please review the session details below.'
       ),
       emailDetailsTable(detailRows),
       data.googleMeetLink
         ? emailParagraph(
-            `Video link: <a href="${escapeEmailHtml(data.googleMeetLink)}" style="color:#0891b2;">${escapeEmailHtml(data.googleMeetLink)}</a>`
+            `Video link: <a href="${escapeEmailHtml(data.googleMeetLink)}" style="color:#0891b2;text-decoration:none;">Join consultation</a>`
           )
         : '',
     ].join(''),
     cta: data.googleMeetLink
-      ? { label: 'Join Video Call', href: data.googleMeetLink }
+      ? { label: 'Join video call', href: data.googleMeetLink }
       : {
-          label: 'Open Doctor Portal',
+          label: 'Open doctor portal',
           href: `${process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in'}/doctor`,
         },
-    tip: 'This is an automated doctor notification. Please do not reply to this email.',
+    tip: 'This is an automated clinic notification from H2H Healthcare. Please do not reply to this email.',
   });
 }
 
@@ -217,10 +240,11 @@ function buildReminderEmailHTML(data: ReminderEmailData): string {
   return wrapH2HEmail({
     preview: `Your appointment starts in ${label}`,
     title: 'Appointment Reminder | H2H Healthcare',
+    headerTitle: `Starts in ${label}`,
     bodyRowsHtml: [
       emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
       emailParagraph(
-        `This is a friendly reminder that your appointment starts in <strong>${escapeEmailHtml(label)}</strong>. Please be ready for your consultation.`
+        `Friendly reminder — your consultation begins in <strong>${escapeEmailHtml(label)}</strong>. Please join on time.`
       ),
       emailDetailsTable([
         { label: 'Service', value: escapeEmailHtml(data.serviceName) },
@@ -228,15 +252,15 @@ function buildReminderEmailHTML(data: ReminderEmailData): string {
         { label: 'Date', value: escapeEmailHtml(formatDate(data.appointmentDate)) },
         {
           label: 'Time',
-          value: `${escapeEmailHtml(formatTime(data.startTime))} - ${escapeEmailHtml(formatTime(data.endTime))}`,
+          value: `${escapeEmailHtml(formatTime(data.startTime))} – ${escapeEmailHtml(formatTime(data.endTime))}`,
         },
       ]),
       emailParagraph(
-        'Quick tips: use a stable internet connection, test your camera/mic, find a quiet well-lit space, and keep any reports handy.'
+        'Quick tips: use a stable internet connection, test your camera and mic, sit in a quiet well-lit space, and keep any medical reports ready.'
       ),
     ].join(''),
-    cta: { label: 'Join Video Consultation', href: data.googleMeetLink },
-    tip: 'This is an automated reminder. Please do not reply to this email.',
+    cta: { label: 'Join video consultation', href: data.googleMeetLink },
+    tip: 'This is an automated reminder from H2H Healthcare. Please do not reply to this email.',
   });
 }
 
