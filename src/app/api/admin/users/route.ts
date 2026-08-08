@@ -1,10 +1,17 @@
 /**
  * Admin Users API - Manage admin users and approvals
  * Only accessible by super_admin
+ * Promoting to super_admin always requires OTP emailed to SUPER_ADMIN_OTP_EMAIL
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import {
+  getSuperAdminOtpEmail,
+  maskEmail,
+  sendSuperAdminCreationOtp,
+  verifySuperAdminCreationOtp,
+} from '@/lib/super-admin-otp';
 
 async function checkSuperAdmin(): Promise<{ isSuperAdmin: boolean; adminClient: any }> {
   const supabase = await createClient();
@@ -64,10 +71,52 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userId, role, is_active } = body;
+    const { userId, role, is_active, otp } = body as {
+      userId?: string;
+      role?: string;
+      is_active?: boolean;
+      otp?: string;
+    };
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    if (role === 'super_admin') {
+      const { data: target, error: targetError } = await adminClient
+        .from('users')
+        .select('id, email, full_name, role')
+        .eq('id', userId)
+        .single();
+
+      if (targetError || !target) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      if ((target as any).role === 'super_admin') {
+        return NextResponse.json({ success: true, data: target });
+      }
+
+      if (!otp) {
+        const sent = await sendSuperAdminCreationOtp({
+          candidateEmail: (target as any).email,
+          candidateName: (target as any).full_name,
+        });
+        if (!sent.success) {
+          return NextResponse.json({ error: sent.error || 'Failed to send OTP' }, { status: 500 });
+        }
+        return NextResponse.json({
+          success: false,
+          requiresOtp: true,
+          message: `Enter the 6-digit code sent to ${maskEmail(getSuperAdminOtpEmail())}`,
+          maskedOtpEmail: maskEmail(getSuperAdminOtpEmail()),
+        }, { status: 403 });
+      }
+
+      const verified = verifySuperAdminCreationOtp((target as any).email, String(otp));
+      if (!verified.ok) {
+        return NextResponse.json({ error: verified.error }, { status: 403 });
+      }
     }
 
     const updates: any = {};

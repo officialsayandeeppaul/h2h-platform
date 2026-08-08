@@ -46,21 +46,36 @@ export default function AdminUsersPage() {
     }
   }
 
-  async function updateUserRole(userId: string, role: string) {
+  async function updateUserRole(userId: string, role: string, otp?: string) {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, role }),
+        body: JSON.stringify({ userId, role, otp }),
       });
       const data = await res.json();
+
+      if (data.requiresOtp) {
+        const code = window.prompt(
+          data.message || 'Enter the 6-digit code sent to the security email'
+        );
+        if (!code) {
+          fetchUsers();
+          return;
+        }
+        await updateUserRole(userId, role, code.trim());
+        return;
+      }
+
       if (data.success) {
         fetchUsers();
       } else {
         alert(data.error || 'Failed to update user');
+        fetchUsers();
       }
-    } catch (error) {
+    } catch {
       alert('Failed to update user');
+      fetchUsers();
     }
   }
 

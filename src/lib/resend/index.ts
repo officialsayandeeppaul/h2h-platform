@@ -1,7 +1,13 @@
 import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+function getResend() {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY || 're_missing');
+  }
+  return resendClient;
+}
 
 // Nodemailer transporter for development (using Gmail or any SMTP)
 const devTransporter = nodemailer.createTransport({
@@ -32,7 +38,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   try {
     if (isProduction) {
       // Use Resend in production
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await getResend().emails.send({
         from: fromEmail,
         to,
         subject,
