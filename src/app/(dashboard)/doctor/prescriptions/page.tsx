@@ -332,8 +332,8 @@ export default function DoctorPrescriptionsPage() {
 
       <Card className="border-gray-200">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-5 w-5" /> Prescription records
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-gray-500" /> Prescription records
           </CardTitle>
         </CardHeader>
         <CardContent>

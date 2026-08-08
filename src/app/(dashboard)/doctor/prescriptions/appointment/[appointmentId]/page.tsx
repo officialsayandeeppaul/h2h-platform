@@ -280,8 +280,8 @@ export default function AppointmentPrescriptionsPage() {
 
       <Card className="border-gray-200 mb-6">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Calendar className="h-5 w-5" /> Appointment
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-gray-500" /> Appointment
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -299,8 +299,8 @@ export default function AppointmentPrescriptionsPage() {
 
       <Card className="border-gray-200">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-5 w-5" /> Prescriptions for this appointment
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-gray-500" /> Prescriptions for this appointment
           </CardTitle>
           {!showCreateForm && (
             <Button size="sm" className="bg-cyan-600 hover:bg-cyan-700" onClick={() => setShowCreateForm(true)}>

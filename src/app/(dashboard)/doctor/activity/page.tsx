@@ -85,8 +85,8 @@ export default function DoctorActivityPage() {
 
       <Card className="border-gray-200">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-5 w-5" /> Recent activity
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-gray-500" /> Recent activity
           </CardTitle>
         </CardHeader>
         <CardContent>

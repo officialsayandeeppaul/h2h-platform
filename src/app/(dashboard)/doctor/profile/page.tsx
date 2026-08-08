@@ -168,8 +168,8 @@ export default function DoctorProfilePage() {
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="border-gray-200">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <User className="h-5 w-5" /> Account
+            <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <User className="h-5 w-5 text-gray-500" /> Account
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -214,8 +214,8 @@ export default function DoctorProfilePage() {
 
         <Card className="border-gray-200">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Briefcase className="h-5 w-5" /> Professional
+            <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-gray-500" /> Professional
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -294,8 +294,8 @@ export default function DoctorProfilePage() {
 
       <Card className="mt-6 border-gray-200">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-5 w-5" /> Bio
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-gray-500" /> Bio
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -311,7 +311,7 @@ export default function DoctorProfilePage() {
       {profile && (profile.location || profile.services?.length) && (
         <Card className="mt-6 border-gray-200">
           <CardHeader>
-            <CardTitle className="text-base">Read-only info</CardTitle>
+            <CardTitle className="text-base font-semibold text-gray-900">Read-only info</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-gray-600 space-y-2">
             {profile.location && (

@@ -245,7 +245,11 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             <Menu className="h-5 w-5 text-gray-700" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-72">
+        <SheetContent
+          side="left"
+          className="p-0 w-72 bg-[#1a2e35] border-r border-white/10"
+          closeClassName="text-white opacity-90 hover:opacity-100 hover:bg-white/10 data-[state=open]:bg-white/10"
+        >
           <VisuallyHidden>
             <SheetTitle>Navigation Menu</SheetTitle>
           </VisuallyHidden>

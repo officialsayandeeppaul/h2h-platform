@@ -250,7 +250,7 @@ export default function DoctorAppointmentsPage() {
         {/* List */}
         <Card className="border-gray-200 md:col-span-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-700">List</CardTitle>
+            <CardTitle className="text-sm font-semibold text-gray-700">List</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {appointments.length === 0 ? (
@@ -318,7 +318,7 @@ export default function DoctorAppointmentsPage() {
         {/* Detail - fixed height, scrollable inner content */}
         <Card className="border-gray-200 md:col-span-2 flex flex-col h-[min(520px,calc(100vh-11rem))] min-h-[320px]">
           <CardHeader className="pb-2 shrink-0">
-            <CardTitle className="text-sm font-medium text-gray-700">Details</CardTitle>
+            <CardTitle className="text-sm font-semibold text-gray-700">Details</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col min-h-0 p-0 flex-1">
             {!selected ? (
