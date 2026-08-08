@@ -301,7 +301,7 @@ export function BookingScheduleDialog({
       >
         <div
           className={cn(
-            'booking-schedule-shell relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100',
+            'booking-schedule-shell relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-xl',
             !isDone && 'max-h-[90vh]'
           )}
         >
@@ -331,7 +331,7 @@ export function BookingScheduleDialog({
               'space-y-3 min-h-0',
               isDone
                 ? 'px-5 sm:px-6 py-5'
-                : 'overflow-y-auto thin-scrollbar px-5 sm:px-6 py-4'
+                : 'overflow-y-auto hide-scrollbar px-5 sm:px-6 py-4'
             )}
           >
             {step === 'contact' && (

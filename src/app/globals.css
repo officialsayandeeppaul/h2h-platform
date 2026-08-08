@@ -215,6 +215,22 @@
 
 .booking-schedule-shell {
   font-family: var(--font-poppins), system-ui, sans-serif !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35) !important;
+}
+
+.booking-schedule-shell .hide-scrollbar,
+.booking-schedule-dialog .hide-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.booking-schedule-shell .hide-scrollbar::-webkit-scrollbar,
+.booking-schedule-dialog .hide-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .booking-schedule-shell button:not(:disabled),
