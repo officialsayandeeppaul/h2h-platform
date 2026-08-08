@@ -54,7 +54,7 @@ export function TrustedBySection() {
       </div>
       <div className="relative z-10 mx-auto max-w-[100vw]">
         <div className="overflow-hidden py-3">
-          <div className="flex w-max animate-marquee-seamless [--marquee-duration:48s] motion-reduce:animate-none group-hover:[animation-play-state:paused]">
+          <div className="flex w-max animate-marquee-seamless [--marquee-duration:36s] motion-reduce:animate-none group-hover:[animation-play-state:paused]">
             <div className="flex items-center gap-10 md:gap-16 lg:gap-20 pr-10 md:pr-16">
               <LogoStrip />
             </div>

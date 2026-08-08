@@ -38,6 +38,12 @@ function HeroSectionComponent() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [displayText, setDisplayText] = useState(animatedWords[0]);
   const [isTyping, setIsTyping] = useState(true);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
     const currentWord = animatedWords[currentWordIndex];
@@ -50,9 +56,9 @@ function HeroSectionComponent() {
           charIndex++;
         } else {
           clearInterval(typeInterval);
-          setTimeout(() => setIsTyping(false), 1200);
+          setTimeout(() => setIsTyping(false), 900);
         }
-      }, 60);
+      }, 42);
       return () => clearInterval(typeInterval);
     }
     let eraseIndex = currentWord.length;
@@ -65,7 +71,7 @@ function HeroSectionComponent() {
         setCurrentWordIndex((prev) => (prev + 1) % animatedWords.length);
         setIsTyping(true);
       }
-    }, 40);
+    }, 28);
     return () => clearInterval(eraseInterval);
   }, [currentWordIndex, isTyping]);
 
@@ -92,7 +98,9 @@ function HeroSectionComponent() {
       </div>
 
       <div
-        className="relative z-10 mx-auto flex h-full w-full max-w-[1200px] flex-col justify-center px-4 sm:px-6 lg:px-12"
+        className={`relative z-10 mx-auto flex h-full w-full max-w-[1200px] flex-col justify-center px-4 sm:px-6 lg:px-12 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          ready ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}
         style={{
           paddingTop: HEADER_OFFSET,
           paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
@@ -112,7 +120,7 @@ function HeroSectionComponent() {
           </div>
 
           <div className="min-w-0 space-y-0">
-            <h1 className="text-[clamp(1.5rem,5.5vw,3.75rem)] font-bold leading-[1.1] tracking-tight text-gray-900 drop-">
+            <h1 className="text-[clamp(1.5rem,5.5vw,3.75rem)] font-bold leading-[1.1] tracking-tight text-gray-900">
               Elevate Your
             </h1>
             <p
@@ -120,7 +128,7 @@ function HeroSectionComponent() {
               aria-label={`Elevate Your ${animatedWords[currentWordIndex]}`}
             >
               <span
-                className="inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent drop-"
+                className="inline-block bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent"
                 suppressHydrationWarning
               >
                 {displayText}
@@ -129,7 +137,7 @@ function HeroSectionComponent() {
                 </span>
               </span>
             </p>
-            <p className="text-[clamp(1.25rem,4.2vw,3rem)] font-semibold leading-[1.15] text-gray-800 drop-">
+            <p className="text-[clamp(1.25rem,4.2vw,3rem)] font-semibold leading-[1.15] text-gray-800">
               &{" "}
               <span className="relative inline-block">
                 <span className="relative z-10">Recovery</span>
@@ -150,10 +158,10 @@ function HeroSectionComponent() {
           <div className="flex flex-col gap-2.5 pt-0.5 sm:flex-row sm:gap-4 sm:pt-1">
             <Button
               size="lg"
-              className="h-11 border-0 bg-blue-600 px-6 text-sm font-semibold shadow-blue-600/25 hover:bg-blue-700 sm:h-12 md:h-14 md:px-8"
+              className="h-11 border-0 bg-blue-600 px-6 text-sm font-semibold shadow-blue-600/25 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] sm:h-12 md:h-14 md:px-8"
               asChild
             >
-              <Link href="/booking">
+              <Link href="/booking" prefetch>
                 Book Appointment
                 <ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
@@ -161,10 +169,10 @@ function HeroSectionComponent() {
             <Button
               size="lg"
               variant="outline"
-              className="h-11 border-2 border-gray-200/90 bg-white/80 px-6 text-sm font-semibold text-gray-700 backdrop-blur-sm hover:bg-white sm:h-12 md:h-14 md:px-8"
+              className="h-11 border-2 border-gray-200/90 bg-white/80 px-6 text-sm font-semibold text-gray-700 backdrop-blur-sm hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] sm:h-12 md:h-14 md:px-8"
               asChild
             >
-              <Link href="/services">View Services</Link>
+              <Link href="/services" prefetch>View Services</Link>
             </Button>
           </div>
 

@@ -2224,7 +2224,7 @@ function BookingPageContent() {
                             <p className="text-xs text-amber-600">All slots for this date are booked or have passed. Try another date.</p>
                           </div>
                         )}
-                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 max-h-[280px] overflow-y-auto p-1">
+                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 p-1">
                           {timeSlots.map((slot) => {
                             const isTodaySelected = selectedDate && isSameDay(selectedDate, new Date());
                             const [h, m] = slot.time.split(':').map(Number);

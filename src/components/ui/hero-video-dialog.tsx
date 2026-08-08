@@ -134,7 +134,7 @@ export function HeroVideoDialog({
         >
           <motion.div
             {...selectedAnimation}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            transition={{ type: "spring", damping: 34, stiffness: 420, mass: 0.8 }}
             className="relative w-full max-w-5xl flex flex-col"
             style={{
               maxHeight: `calc(100dvh - 2 * ${VIEW_PAD})`,

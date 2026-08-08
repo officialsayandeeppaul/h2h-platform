@@ -14,6 +14,7 @@
     "db:delete-user": "npx tsx scripts/delete-user.ts",
     "db:seed": "npx tsx scripts/seed-production.ts",
     "db:seed:demo": "npx tsx scripts/seed-data.ts",
+    "db:clean": "npx tsx scripts/clean-operational-data.ts",
     "optimize-images": "python scripts/optimize_images_to_webp.py --update-code",
     "optimize-images:full": "python scripts/optimize_images_to_webp.py --update-code --prune-originals --force",
     "assets:reorganize": "python scripts/reorganize_public_assets.py",

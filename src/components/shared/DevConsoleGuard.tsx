@@ -3,9 +3,8 @@
 import { useEffect } from 'react';
 
 /**
- * Next.js dev overlay treats console.error as a blocking "runtime error".
- * GPU/WebGL failures on some Windows setups are non-fatal for the app UI —
- * suppress only those known benign messages in development.
+ * Next.js dev overlay treats console.error / some window errors as blocking.
+ * Suppress known non-fatal third-party noise (Tawk i18next, WebGL).
  */
 export function DevConsoleGuard() {
   useEffect(() => {
@@ -17,7 +16,7 @@ export function DevConsoleGuard() {
         .map((a) => (typeof a === 'string' ? a : a instanceof Error ? a.message : String(a ?? '')))
         .join(' ');
       if (
-        /THREE\.WebGLRenderer|Error creating WebGL context|WebGL context could not be created|BindToCurrentSequence failed/i.test(
+        /THREE\.WebGLRenderer|Error creating WebGL context|WebGL context could not be created|BindToCurrentSequence failed|\$_Tawk|i18next is not a function|embed\.tawk\.to|twk-chunk/i.test(
           text
         )
       ) {
@@ -26,8 +25,35 @@ export function DevConsoleGuard() {
       forward(...args);
     };
 
+    const onError = (event: ErrorEvent) => {
+      const msg = `${event.message ?? ''} ${event.filename ?? ''}`;
+      if (/\$_Tawk|i18next is not a function|embed\.tawk\.to|twk-chunk/i.test(msg)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+
+    const onRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      const msg =
+        typeof reason === 'string'
+          ? reason
+          : reason instanceof Error
+            ? reason.message
+            : String(reason ?? '');
+      if (/\$_Tawk|i18next is not a function|embed\.tawk\.to/i.test(msg)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+
+    window.addEventListener('error', onError, true);
+    window.addEventListener('unhandledrejection', onRejection, true);
+
     return () => {
       console.error = forward;
+      window.removeEventListener('error', onError, true);
+      window.removeEventListener('unhandledrejection', onRejection, true);
     };
   }, []);
 

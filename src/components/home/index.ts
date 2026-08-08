@@ -23,7 +23,13 @@ export { FinalCTASection } from './FinalCTASection';
 export { DownloadAppSection } from './DownloadAppSection';
 export { HealToHealthSection } from './HealToHealthSection';
 
+export { BelowFoldSections } from './BelowFoldSections';
+export { HomeMotionRuntime } from './HomeMotionRuntime';
+export { HomeScrollRuntime } from './HomeScrollRuntime';
+export { DeferredSections } from './DeferredSections';
+
 // Shared utilities
 export { Counter } from './shared/Counter';
 export { LazySection } from './shared/LazySection';
+export { SectionShell } from './shared/SectionShell';
 export * from './data';

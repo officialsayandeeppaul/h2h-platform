@@ -115,7 +115,7 @@ function TestimonialCard({ testimonial, className }: { testimonial: Testimonial;
   return (
     <div className={cn(
       "group relative bg-gray-800/80 rounded-2xl p-5 border border-gray-700/40",
-      "hover:border-cyan-500/40 transition-all duration-300",
+      "hover:border-cyan-500/40 transition-colors duration-150",
       "cursor-default select-none",
       className
     )}>

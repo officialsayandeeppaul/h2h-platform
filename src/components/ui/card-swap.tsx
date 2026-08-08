@@ -92,11 +92,11 @@ const CardSwap: React.FC<CardSwapProps> = ({
         }
       : {
           ease: 'power1.inOut',
-          durDrop: 0.5,
-          durMove: 0.5,
-          durReturn: 0.5,
-          promoteOverlap: 0.6,
-          returnDelay: 0.15
+          durDrop: 0.32,
+          durMove: 0.32,
+          durReturn: 0.32,
+          promoteOverlap: 0.55,
+          returnDelay: 0.08
         };
 
   const childArr = useMemo(() => Children.toArray(children) as ReactElement<CardProps>[], [children]);

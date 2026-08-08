@@ -15,7 +15,7 @@ export function AnimatedSection({
   className = '',
   animation = 'fadeUp',
   delay = 0,
-  duration = 0.8,
+  duration = 0.45,
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -36,12 +36,12 @@ export function AnimatedSection({
       gsapInstance.registerPlugin(ScrollTriggerPlugin);
 
       const animations: Record<string, gsap.TweenVars> = {
-        fadeUp: { y: 60, opacity: 0 },
+        fadeUp: { y: 28, opacity: 0 },
         fadeIn: { opacity: 0 },
-        slideLeft: { x: -100, opacity: 0 },
-        slideRight: { x: 100, opacity: 0 },
-        scale: { scale: 0.8, opacity: 0 },
-        stagger: { y: 40, opacity: 0 },
+        slideLeft: { x: -40, opacity: 0 },
+        slideRight: { x: 40, opacity: 0 },
+        scale: { scale: 0.94, opacity: 0 },
+        stagger: { y: 20, opacity: 0 },
       };
 
       gsapInstance.set(element, animations[animation]);
@@ -53,11 +53,12 @@ export function AnimatedSection({
         opacity: 1,
         duration,
         delay,
-        ease: 'power3.out',
+        ease: 'power2.out',
+        force3D: true,
         scrollTrigger: {
           trigger: element,
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
+          start: 'top 88%',
+          toggleActions: 'play none none none',
         },
       });
     };
@@ -102,12 +103,13 @@ export function AnimatedText({
 
       gsapInstance.fromTo(
         element,
-        { y: 30, opacity: 0 },
+        { y: 16, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.8,
-          ease: 'power3.out',
+          duration: 0.4,
+          ease: 'power2.out',
+          force3D: true,
           scrollTrigger: {
             trigger: element,
             start: 'top 90%',
@@ -152,16 +154,17 @@ export function StaggerChildren({
 
       gsapInstance.fromTo(
         childElements,
-        { y: 40, opacity: 0 },
+        { y: 20, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.6,
-          stagger: staggerDelay,
-          ease: 'power3.out',
+          duration: 0.35,
+          stagger: Math.min(staggerDelay, 0.06),
+          ease: 'power2.out',
+          force3D: true,
           scrollTrigger: {
             trigger: element,
-            start: 'top 80%',
+            start: 'top 85%',
           },
         }
       );

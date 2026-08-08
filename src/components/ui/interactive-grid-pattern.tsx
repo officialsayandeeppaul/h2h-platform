@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useId, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
@@ -8,6 +8,8 @@ interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
   height?: number
   squares?: [number, number]
   squaresClassName?: string
+  /** Stable SVG pattern id — unique per page instance */
+  patternId?: string
 }
 
 export function InteractiveGridPattern({
@@ -16,9 +18,9 @@ export function InteractiveGridPattern({
   squares = [24, 24],
   squaresClassName,
   className,
+  patternId = "h2h-interactive-grid",
   ...props
 }: InteractiveGridPatternProps) {
-  const id = useId()
   const containerRef = useRef<SVGSVGElement>(null)
   const [hoveredSquare, setHoveredSquare] = useState<number | null>(null)
 
@@ -60,7 +62,7 @@ export function InteractiveGridPattern({
     >
       <defs>
         <pattern
-          id={id}
+          id={patternId}
           width={width}
           height={height}
           patternUnits="userSpaceOnUse"
@@ -74,7 +76,7 @@ export function InteractiveGridPattern({
           />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill={`url(#${id})`} />
+      <rect width="100%" height="100%" fill={`url(#${patternId})`} />
       {Array.from({ length: squares[0] * squares[1] }).map((_, index) => {
         const x = (index % squares[0]) * width
         const y = Math.floor(index / squares[0]) * height
@@ -93,7 +95,7 @@ export function InteractiveGridPattern({
             width={width}
             height={height}
             className={cn(
-              "transition-all duration-300 ease-out",
+              "transition-all duration-200 ease-out",
               squaresClassName
             )}
             fill="currentColor"

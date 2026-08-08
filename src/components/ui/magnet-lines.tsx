@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, CSSProperties } from 'react';
+import React, { useRef, useEffect, useState, CSSProperties } from 'react';
 
 interface MagnetLinesProps {
   rows?: number;
@@ -26,58 +26,112 @@ const MagnetLines: React.FC<MagnetLinesProps> = ({
   style = {}
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const centersRef = useRef<{ x: number; y: number }[]>([]);
+  const itemsRef = useRef<HTMLSpanElement[]>([]);
+  const rafRef = useRef<number | null>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const activeRef = useRef(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const onChange = () => setReducedMotion(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || reducedMotion) return;
 
-    const items = container.querySelectorAll<HTMLSpanElement>('span');
+    const items = Array.from(container.querySelectorAll<HTMLSpanElement>('span'));
+    itemsRef.current = items;
 
-    const onPointerMove = (pointer: { x: number; y: number }) => {
-      items.forEach(item => {
+    const cacheCenters = () => {
+      centersRef.current = items.map((item) => {
         const rect = item.getBoundingClientRect();
-        const centerX = rect.x + rect.width / 2;
-        const centerY = rect.y + rect.height / 2;
-
-        const b = pointer.x - centerX;
-        const a = pointer.y - centerY;
-        const c = Math.sqrt(a * a + b * b) || 1;
-        const r = ((Math.acos(b / c) * 180) / Math.PI) * (pointer.y > centerY ? 1 : -1);
-
-        item.style.setProperty('--rotate', `${r}deg`);
+        return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
       });
     };
 
-    const handlePointerMove = (e: PointerEvent) => {
-      onPointerMove({ x: e.x, y: e.y });
+    cacheCenters();
+
+    const applyRotations = () => {
+      rafRef.current = null;
+      if (!activeRef.current) return;
+
+      const { x: px, y: py } = pointerRef.current;
+      const centers = centersRef.current;
+
+      for (let i = 0; i < items.length; i++) {
+        const center = centers[i];
+        if (!center) continue;
+        const b = px - center.x;
+        const a = py - center.y;
+        const c = Math.sqrt(a * a + b * b) || 1;
+        const r = ((Math.acos(b / c) * 180) / Math.PI) * (py > center.y ? 1 : -1);
+        items[i].style.setProperty('--rotate', `${r}deg`);
+      }
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
+    const schedule = () => {
+      if (rafRef.current != null || !activeRef.current) return;
+      rafRef.current = requestAnimationFrame(applyRotations);
+    };
 
+    const handlePointerMove = (e: PointerEvent) => {
+      pointerRef.current = { x: e.clientX, y: e.clientY };
+      schedule();
+    };
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        activeRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          cacheCenters();
+          schedule();
+        }
+      },
+      { rootMargin: '100px' }
+    );
+    visibilityObserver.observe(container);
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('scroll', cacheCenters, { passive: true });
+    window.addEventListener('resize', cacheCenters, { passive: true });
+
+    // Seed toward center of grid
     if (items.length) {
-      const middleIndex = Math.floor(items.length / 2);
-      const rect = items[middleIndex].getBoundingClientRect();
-      onPointerMove({ x: rect.x, y: rect.y });
+      const mid = Math.floor(items.length / 2);
+      const rect = items[mid].getBoundingClientRect();
+      pointerRef.current = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+      applyRotations();
     }
 
     return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('scroll', cacheCenters);
+      window.removeEventListener('resize', cacheCenters);
+      visibilityObserver.disconnect();
     };
-  }, []);
+  }, [reducedMotion, rows, columns]);
 
   const total = rows * columns;
   const spans = Array.from({ length: total }, (_, i) => (
     <span
       key={i}
-      className="block origin-center transition-transform duration-150"
+      className="block origin-center"
       style={{
         backgroundColor: lineColor,
         width: lineWidth,
         height: lineHeight,
-        // @ts-ignore
+        // @ts-expect-error CSS custom prop
         '--rotate': `${baseAngle}deg`,
         transform: 'rotate(var(--rotate))',
-        willChange: 'transform',
+        transition: reducedMotion ? undefined : 'transform 80ms linear',
+        willChange: reducedMotion ? undefined : 'transform',
         borderRadius: '2px',
       }}
     />

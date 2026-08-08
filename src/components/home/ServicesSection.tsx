@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Highlighter } from "@/components/ui/highlighter";
 import { DotPattern } from "@/components/ui/backgrounds";
 import { FEATURED_SERVICE_CARDS } from "@/constants/marketing-images";
 
@@ -55,9 +54,7 @@ export function ServicesSection() {
         <div className="text-center mb-16">
           <h2 className="text-[32px] md:text-[40px] font-medium text-gray-900 mb-4 leading-tight tracking-tight">
             Comprehensive{' '}
-            <Highlighter action="box" color="#06b6d4" strokeWidth={2} animationDuration={1000} isView>
-              <span className="text-cyan-600">Services</span>
-            </Highlighter>
+            <span className="text-cyan-600">Services</span>
           </h2>
           <p className="text-[15px] text-gray-500 max-w-2xl mx-auto">
             Quality healthcare services designed around your needs
@@ -65,19 +62,22 @@ export function ServicesSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 md:items-stretch gap-6 md:gap-8">
-          {CARDS.map((card) => (
+          {CARDS.map((card, i) => (
             <div
               key={card.href}
-              className="group relative flex h-full min-h-[300px] w-full flex-col overflow-hidden rounded-2xl bg-gray-50 transition-all duration-300 md:min-h-[280px] md:flex-row"
+              data-reveal-child
+              style={{ ['--reveal-i' as string]: i }}
+              className="group relative flex h-full min-h-[300px] w-full flex-col overflow-hidden rounded-2xl bg-gray-50 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:min-h-[280px] md:flex-row hover:bg-white hover:-translate-y-0.5"
             >
               {/* Same-width strip; height follows card so every card matches */}
-              <div className="relative h-[200px] w-full shrink-0 md:h-full md:w-[44%] md:shrink-0">
+              <div className="relative h-[200px] w-full shrink-0 overflow-hidden md:h-full md:w-[44%] md:shrink-0">
                 <Image
                   src={card.image}
                   alt={card.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 260px"
-                  className="object-cover object-center"
+                  className="object-cover object-center transform-gpu transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                  quality={60}
                   priority={false}
                 />
                 <div
@@ -102,7 +102,7 @@ export function ServicesSection() {
                 </div>
                 <Link
                   href={card.href}
-                  className={`mt-4 inline-flex shrink-0 items-center gap-1 text-[14px] font-medium transition-all group-hover:gap-2 ${
+                  className={`mt-4 inline-flex shrink-0 items-center gap-1 text-[14px] font-medium transition-[gap,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:gap-2.5 ${
                     card.accent === "cyan"
                       ? "text-cyan-600 hover:text-cyan-700"
                       : "text-teal-600 hover:text-teal-700"

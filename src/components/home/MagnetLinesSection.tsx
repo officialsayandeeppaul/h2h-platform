@@ -43,11 +43,11 @@ export function MagnetLinesSection() {
               We help academies and teams run structured programmes—so training loads, medical cover, and return-to-play decisions stay aligned instead of improvised.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-900/60 backdrop-blur rounded-xl p-5 border border-gray-700/50 hover:border-cyan-500/30 transition-colors">
+              <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50 hover:border-cyan-500/30 transition-colors duration-150">
                 <p className="text-[20px] font-medium text-cyan-400 mb-1">Screening</p>
                 <p className="text-[13px] text-gray-500 leading-snug">MSK, psychological & nutritional profiling and programme management</p>
               </div>
-              <div className="bg-gray-900/60 backdrop-blur rounded-xl p-5 border border-gray-700/50 hover:border-teal-500/30 transition-colors">
+              <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50 hover:border-teal-500/30 transition-colors duration-150">
                 <p className="text-[20px] font-medium text-teal-400 mb-1">On-field</p>
                 <p className="text-[13px] text-gray-500 leading-snug">Medical support, posture, emergency care & quarterly fitness profiling</p>
               </div>

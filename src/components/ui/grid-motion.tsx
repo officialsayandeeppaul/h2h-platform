@@ -22,6 +22,7 @@ const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }
   const gridRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const mouseXRef = useRef<number>(typeof window !== 'undefined' ? window.innerWidth / 2 : 500);
+  const activeRef = useRef(true);
 
   const totalItems = 28;
   const defaultItems = Array.from({ length: totalItems }, (_, index) => `Item ${index + 1}`);
@@ -33,6 +34,9 @@ const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
+    const root = gridRef.current;
+    if (!root) return;
+
     gsap.ticker.lagSmoothing(0);
 
     const handleMouseMove = (e: MouseEvent): void => {
@@ -40,16 +44,17 @@ const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }
     };
 
     let frame = 0;
-    const targetFps = 30;
+    const targetFps = 24;
     const frameSkip = Math.max(1, Math.round(gsap.ticker.fps / targetFps));
 
     const updateMotion = (): void => {
+      if (!activeRef.current) return;
       frame += 1;
       if (frame % frameSkip !== 0) return;
 
-      const maxMoveAmount = 300;
-      const baseDuration = 0.18;
-      const inertiaFactors = [0.06, 0.04, 0.03, 0.02];
+      const maxMoveAmount = 240;
+      const baseDuration = 0.14;
+      const inertiaFactors = [0.05, 0.035, 0.025, 0.015];
 
       rowRefs.current.forEach((row, index) => {
         if (!row) return;
@@ -67,12 +72,21 @@ const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }
       });
     };
 
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        activeRef.current = entry.isIntersecting;
+      },
+      { rootMargin: '80px' }
+    );
+    visibilityObserver.observe(root);
+
     const removeAnimationLoop = gsap.ticker.add(updateMotion);
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       removeAnimationLoop();
+      visibilityObserver.disconnect();
     };
   }, []);
 
@@ -81,7 +95,7 @@ const GridMotion: FC<GridMotionProps> = ({ items = [], gradientColor = 'black' }
       <section
         className="w-full h-screen overflow-hidden relative flex items-center justify-center"
         style={{
-          background: `radial-gradient(circle, ${gradientColor} 0%, transparent 100%)` 
+          background: `radial-gradient(circle, ${gradientColor} 0%, transparent 100%)`
         }}
       >
         <div className="absolute inset-0 pointer-events-none z-[4] bg-[length:250px]"></div>

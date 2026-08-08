@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useId, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 // Flickering Grid Background
@@ -102,37 +102,37 @@ export function RetroGrid({ className, angle = 65, cellSize = 60 }: { className?
   );
 }
 
-// Dot Pattern Background
+// Dot Pattern Background — CSS only (no useId) to avoid SSR/client hydration mismatches
 export function DotPattern({
   className,
   cx = 1,
   cy = 1,
   cr = 1,
   color = '#94a3b8',
+  patternId: _patternId,
 }: {
   className?: string;
   cx?: number;
   cy?: number;
   cr?: number;
   color?: string;
+  /** @deprecated unused — kept for call-site compatibility */
+  patternId?: string;
 }) {
-  const id = useId();
-  
+  void cx;
+  void cy;
+  void _patternId;
+
   return (
-    <svg className={cn('absolute inset-0 h-full w-full', className)}>
-      <defs>
-        <pattern
-          id={id}
-          width="16"
-          height="16"
-          patternUnits="userSpaceOnUse"
-          patternContentUnits="userSpaceOnUse"
-        >
-          <circle cx={cx} cy={cy} r={cr} fill={color} />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill={`url(#${id})`} />
-    </svg>
+    <div
+      aria-hidden
+      className={cn('pointer-events-none absolute inset-0 h-full w-full', className)}
+      style={{
+        backgroundImage: `radial-gradient(circle, ${color} ${cr}px, transparent ${cr + 0.5}px)`,
+        backgroundSize: '16px 16px',
+        backgroundPosition: '0 0',
+      }}
+    />
   );
 }
 
@@ -181,7 +181,7 @@ export function Ripple({
   );
 }
 
-// Grid Pattern Background
+// Grid Pattern Background — CSS only, hydration-safe
 export function GridPattern({
   className,
   width = 40,
@@ -195,27 +195,18 @@ export function GridPattern({
   strokeColor?: string;
   strokeWidth?: number;
 }) {
-  const id = useId();
-  
   return (
-    <svg className={cn('absolute inset-0 h-full w-full', className)}>
-      <defs>
-        <pattern
-          id={id}
-          width={width}
-          height={height}
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d={`M ${width} 0 L 0 0 0 ${height}`}
-            fill="none"
-            stroke={strokeColor}
-            strokeWidth={strokeWidth}
-          />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill={`url(#${id})`} />
-    </svg>
+    <div
+      aria-hidden
+      className={cn('pointer-events-none absolute inset-0 h-full w-full', className)}
+      style={{
+        backgroundImage: `
+          linear-gradient(to right, ${strokeColor} ${strokeWidth}px, transparent ${strokeWidth}px),
+          linear-gradient(to bottom, ${strokeColor} ${strokeWidth}px, transparent ${strokeWidth}px)
+        `,
+        backgroundSize: `${width}px ${height}px`,
+      }}
+    />
   );
 }
 
@@ -226,17 +217,20 @@ export function AnimatedGridPattern({
   maxOpacity = 0.5,
   duration = 3,
   color = '#6366f1',
+  patternId = 'h2h-animated-grid',
 }: {
   className?: string;
   numSquares?: number;
   maxOpacity?: number;
   duration?: number;
   color?: string;
+  patternId?: string;
 }) {
-  const patternId = useId();
   const [squares, setSquares] = useState<Array<{ id: number; pos: [number, number]; opacity: number; delay: number }>>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setSquares(
       Array.from({ length: numSquares }, (_, i) => ({
         id: i,
@@ -248,7 +242,7 @@ export function AnimatedGridPattern({
   }, [numSquares, maxOpacity, duration]);
 
   return (
-    <svg className={cn('absolute inset-0 h-full w-full', className)}>
+    <svg className={cn('absolute inset-0 h-full w-full', className)} suppressHydrationWarning>
       <defs>
         <pattern
           id={patternId}
@@ -266,23 +260,24 @@ export function AnimatedGridPattern({
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill={`url(#${patternId})`} />
-      {squares.map(({ id, pos, opacity, delay }) => (
-        <rect
-          key={id}
-          width="39"
-          height="39"
-          x={pos[0] * 40 + 1}
-          y={pos[1] * 40 + 1}
-          fill={color}
-          strokeWidth="0"
-          className="animate-pulse"
-          style={{
-            opacity,
-            animationDelay: `${delay}s`,
-            animationDuration: `${duration}s`,
-          }}
-        />
-      ))}
+      {mounted &&
+        squares.map(({ id, pos, opacity, delay }) => (
+          <rect
+            key={id}
+            width="39"
+            height="39"
+            x={pos[0] * 40 + 1}
+            y={pos[1] * 40 + 1}
+            fill={color}
+            strokeWidth="0"
+            className="animate-pulse"
+            style={{
+              opacity,
+              animationDelay: `${delay}s`,
+              animationDuration: `${duration}s`,
+            }}
+          />
+        ))}
     </svg>
   );
 }

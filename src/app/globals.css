@@ -775,6 +775,107 @@
   animation: fadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Snappier reveal for homepage deferred sections */
+@keyframes fadeInFast {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-fade-in-fast {
+  animation: fadeInFast 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Homepage below-fold frame */
+.home-section-frame {
+  /* no content-visibility here — it fights smooth reveal transforms */
+}
+
+/*
+ * 144Hz-feel section motion
+ * transform + opacity only, expo-out ease, GPU layer during flight
+ */
+.home-reveal {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.home-reveal.home-in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+/* Staggered children inside revealed sections */
+.home-reveal.home-in [data-reveal-child] {
+  animation: homeChildIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--reveal-i, 0) * 30ms);
+}
+
+@keyframes homeChildIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Soft header glass settle */
+.home-page header {
+  transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s ease;
+}
+
+/* Micro-interactions — buttons / links on marketing pages */
+#main-content a,
+#main-content button {
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+#main-content a:active,
+#main-content button:active {
+  transform: scale(0.985);
+}
+
+/* Pause decorative loops while offscreen — keeps scroll buttery */
+.home-offscreen .animate-marquee-seamless,
+.home-offscreen .animate-marquee-up,
+.home-offscreen .animate-marquee-up-reverse,
+.home-offscreen .animate-scroll-left,
+.home-offscreen .animate-scroll-right,
+.home-offscreen .animate-scroll-left-slow,
+.home-offscreen .animate-orbit,
+.home-offscreen .animate-grid {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 
 /* Mapbox Popup Styling */
 .mapboxgl-popup {

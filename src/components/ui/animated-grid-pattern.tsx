@@ -4,7 +4,6 @@ import {
   ComponentPropsWithoutRef,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react"
@@ -22,6 +21,7 @@ export interface AnimatedGridPatternProps extends ComponentPropsWithoutRef<"svg"
   maxOpacity?: number
   duration?: number
   repeatDelay?: number
+  patternId?: string
 }
 
 type Square = {
@@ -41,9 +41,10 @@ export function AnimatedGridPattern({
   maxOpacity = 0.5,
   duration = 4,
   repeatDelay = 0.5,
+  patternId = "h2h-animated-grid-pattern",
   ...props
 }: AnimatedGridPatternProps) {
-  const id = useId()
+  const id = patternId
   const containerRef = useRef<SVGSVGElement | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const [squares, setSquares] = useState<Array<Square>>([])

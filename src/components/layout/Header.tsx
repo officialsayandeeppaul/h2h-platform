@@ -13,8 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { APP_CONFIG } from '@/constants/config';
 import { SERVICE_CATEGORIES } from '@/constants/services';
-import { Marquee } from '@/components/ui/magic-components';
-import { createClient } from '@/lib/supabase/client';
+import { Marquee } from '@/components/ui/marquee';
 import type { User } from '@supabase/supabase-js';
 
 const phoneTel = `tel:${APP_CONFIG.phoneE164}`;
@@ -50,19 +49,33 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
-    
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const bootAuth = async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      if (cancelled) return;
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled) setUser(user);
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+      unsubscribe = () => subscription.unsubscribe();
+    };
 
-    return () => subscription.unsubscribe();
+    const idle =
+      window.requestIdleCallback?.(() => { void bootAuth(); }, { timeout: 4000 }) ??
+      window.setTimeout(() => { void bootAuth(); }, 2500);
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+      if (typeof idle === 'number') {
+        window.cancelIdleCallback?.(idle);
+        clearTimeout(idle);
+      }
+    };
   }, []);
 
   return (
@@ -81,7 +94,7 @@ export function Header() {
         </Marquee>
       </div>
 
-      <header className={`fixed top-[30px] left-0 right-0 z-50 transition-[background-color,box-shadow] duration-200 ease-out ${
+      <header className={`fixed top-[30px] left-0 right-0 z-50 transition-[background-color,backdrop-filter] duration-150 ease-out ${
         scrolled 
           ? 'bg-white/95 backdrop-blur-xl border-b border-gray-100' 
           : 'bg-white/80 backdrop-blur-sm'

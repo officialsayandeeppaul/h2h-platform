@@ -166,7 +166,7 @@ export function BookingDoctorSkeleton() {
 /** Right column only — while availability slots are fetching */
 export function BookingTimeSlotGridSkeleton() {
   return (
-    <div className="grid max-h-[280px] animate-in fade-in grid-cols-4 gap-2 overflow-y-auto p-1 duration-300 sm:grid-cols-5 md:grid-cols-6">
+    <div className="grid animate-in fade-in grid-cols-4 gap-2 p-1 duration-300 sm:grid-cols-5 md:grid-cols-6">
       {Array.from({ length: 18 }).map((_, i) => (
         <Skeleton key={i} className="h-12 rounded-lg bg-gray-100" />
       ))}

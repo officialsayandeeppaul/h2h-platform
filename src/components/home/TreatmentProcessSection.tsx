@@ -38,6 +38,7 @@ export function TreatmentProcessSection() {
   return (
     <section className="relative py-24 bg-white overflow-hidden">
       <InteractiveGridPattern
+        patternId="treatment-process-grid"
         className="text-cyan-400/20 [mask-image:radial-gradient(800px_circle_at_center,white,transparent)]"
         width={60}
         height={60}

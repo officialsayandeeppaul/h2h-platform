@@ -20,50 +20,52 @@ declare global {
   }
 }
 
-const TAWK_DEFER_MS = 5000;
+/** Load only after engagement — never on idle (keeps Lighthouse clean). */
+const TAWK_AFTER_INTERACT_MS = 2000;
 
-let tawkConsoleFilterInstalled = false;
-
-function isTawkRelatedStack(stack: string): boolean {
-  return /embed\.tawk\.to|twk-chunk|twk-vendor|\$_Tawk/i.test(stack);
+function isTawkNoise(text: string): boolean {
+  return /embed\.tawk\.to|twk-chunk|twk-vendor|\$_Tawk|i18next is not a function/i.test(text);
 }
 
-function isBenignWebGlNoise(args: unknown[]): boolean {
-  const text = args
-    .map((a) => (typeof a === 'string' ? a : a instanceof Error ? a.message : ''))
-    .join(' ');
+function isBenignWebGlNoise(text: string): boolean {
   return /THREE\.WebGLRenderer|Error creating WebGL context|WebGL context could not be created/i.test(
     text
   );
 }
 
-/** Tawk's bundle sometimes calls console.error(true). Next devtools turns that into a full-screen overlay. */
-function installTawkConsoleErrorFilter(): void {
-  if (
-    tawkConsoleFilterInstalled ||
-    typeof window === 'undefined' ||
-    process.env.NODE_ENV !== 'development'
-  ) {
-    return;
-  }
-
-  tawkConsoleFilterInstalled = true;
-  const forward = console.error.bind(console);
-
-  console.error = (...args: unknown[]) => {
-    const stack = new Error().stack ?? '';
-    if (isTawkRelatedStack(stack) || isBenignWebGlNoise(args)) {
-      return;
+/** Swallow Tawk/WebGL noise before Next.js turns it into a full-screen overlay. */
+function installGlobalNoiseFilters(): () => void {
+  const onError = (event: ErrorEvent) => {
+    const msg = `${event.message ?? ''} ${event.filename ?? ''}`;
+    if (isTawkNoise(msg) || isBenignWebGlNoise(msg)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
     }
-    forward(...args);
+  };
+
+  const onRejection = (event: PromiseRejectionEvent) => {
+    const reason = event.reason;
+    const msg =
+      typeof reason === 'string'
+        ? reason
+        : reason instanceof Error
+          ? `${reason.message} ${reason.stack ?? ''}`
+          : String(reason ?? '');
+    if (isTawkNoise(msg) || isBenignWebGlNoise(msg)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
+
+  window.addEventListener('error', onError, true);
+  window.addEventListener('unhandledrejection', onRejection, true);
+
+  return () => {
+    window.removeEventListener('error', onError, true);
+    window.removeEventListener('unhandledrejection', onRejection, true);
   };
 }
 
-function isTawkEmbedUrl(url: string | undefined): boolean {
-  return !!url && url.includes('embed.tawk.to');
-}
-
-/** Official pattern: `var Tawk_API=Tawk_API||{}` — merge into existing, never replace mid-flight. */
 function ensureTawkApiPreload(): void {
   window.Tawk_API = window.Tawk_API ?? {};
   window.Tawk_API.customStyle = {
@@ -80,71 +82,65 @@ interface TawkToChatProps {
   widgetId?: string;
 }
 
-export function TawkToChat({ 
+export function TawkToChat({
   propertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID,
-  widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID 
+  widgetId = process.env.NEXT_PUBLIC_TAWK_WIDGET_ID,
 }: TawkToChatProps) {
   const injectedRef = useRef(false);
 
   useEffect(() => {
-    if (!propertyId || !widgetId) {
-      console.warn('Tawk.to: Missing propertyId or widgetId');
-      return;
+    const removeFilters = installGlobalNoiseFilters();
+
+    // Tawk's bundle throws $_Tawk.i18next in some Next/React/dev setups — skip embed locally.
+    if (process.env.NODE_ENV === 'development') {
+      return () => removeFilters();
     }
 
-    installTawkConsoleErrorFilter();
+    if (!propertyId || !widgetId) return () => removeFilters();
 
     const embedSrc = `https://embed.tawk.to/${propertyId}/${widgetId}`;
 
-    // Avoid Next dev overlay on rare third-party runtime errors inside Tawk's bundle.
-    const onError = (event: ErrorEvent) => {
-      const msg = event.message ?? '';
-      const fromTawk =
-        isTawkEmbedUrl(event.filename) ||
-        /\$_Tawk|embed\.tawk\.to/i.test(msg);
-      if (fromTawk) {
-        event.stopImmediatePropagation();
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Tawk.to: suppressed script error (non-fatal)', msg);
-        }
-      }
-    };
-    window.addEventListener('error', onError, true);
-
-    const timer = window.setTimeout(() => {
-      if (typeof window === 'undefined') return;
-
+    const inject = () => {
       if (injectedRef.current || document.querySelector(`script[src="${embedSrc}"]`)) {
         injectedRef.current = true;
         return;
       }
-
       try {
         ensureTawkApiPreload();
-
         const script = document.createElement('script');
         script.async = true;
+        script.defer = true;
         script.src = embedSrc;
         script.charset = 'UTF-8';
         script.setAttribute('crossorigin', '*');
-
         script.onerror = () => {
-          console.warn('Tawk.to: Failed to load script');
+          /* network failure — non-fatal */
         };
-
-        const firstScript = document.getElementsByTagName('script')[0];
-        firstScript.parentNode?.insertBefore(script, firstScript);
+        document.body.appendChild(script);
         injectedRef.current = true;
-      } catch (e) {
-        console.warn('Tawk.to: Failed to inject script', e);
+      } catch {
+        /* ignore */
       }
-    }, TAWK_DEFER_MS);
+    };
+
+    const onInteract = () => {
+      cleanupTriggers();
+      window.setTimeout(inject, TAWK_AFTER_INTERACT_MS);
+    };
+
+    const cleanupTriggers = () => {
+      window.removeEventListener('pointerdown', onInteract);
+      window.removeEventListener('keydown', onInteract);
+      window.removeEventListener('scroll', onInteract);
+    };
+
+    window.addEventListener('pointerdown', onInteract, { once: true, passive: true });
+    window.addEventListener('keydown', onInteract, { once: true });
+    window.addEventListener('scroll', onInteract, { once: true, passive: true });
 
     return () => {
-      window.removeEventListener('error', onError, true);
-      window.clearTimeout(timer);
-      // Do not remove the embed script on unmount: tearing it down mid-init corrupts Tawk's
-      // internal state and can throw (e.g. i18next / $_Tawk). The widget is session-scoped.
+      removeFilters();
+      cleanupTriggers();
     };
   }, [propertyId, widgetId]);
 
@@ -152,48 +148,16 @@ export function TawkToChat({
 }
 
 export function useTawkTo() {
-  const showWidget = () => {
-    if (window.Tawk_API?.showWidget) {
-      window.Tawk_API.showWidget();
-    }
-  };
-
-  const hideWidget = () => {
-    if (window.Tawk_API?.hideWidget) {
-      window.Tawk_API.hideWidget();
-    }
-  };
-
-  const toggleWidget = () => {
-    if (window.Tawk_API?.toggle) {
-      window.Tawk_API.toggle();
-    }
-  };
-
-  const openChat = () => {
-    if (window.Tawk_API?.maximize) {
-      window.Tawk_API.maximize();
-    }
-  };
-
+  const showWidget = () => window.Tawk_API?.showWidget?.();
+  const hideWidget = () => window.Tawk_API?.hideWidget?.();
+  const toggleWidget = () => window.Tawk_API?.toggle?.();
+  const openChat = () => window.Tawk_API?.maximize?.();
   const setUserAttributes = (attributes: Record<string, string>) => {
-    if (window.Tawk_API?.setAttributes) {
-      window.Tawk_API.setAttributes(attributes);
-    }
+    window.Tawk_API?.setAttributes?.(attributes);
   };
-
   const trackEvent = (event: string, metadata: Record<string, string>) => {
-    if (window.Tawk_API?.addEvent) {
-      window.Tawk_API.addEvent(event, metadata);
-    }
+    window.Tawk_API?.addEvent?.(event, metadata);
   };
 
-  return {
-    showWidget,
-    hideWidget,
-    toggleWidget,
-    openChat,
-    setUserAttributes,
-    trackEvent,
-  };
+  return { showWidget, hideWidget, toggleWidget, openChat, setUserAttributes, trackEvent };
 }

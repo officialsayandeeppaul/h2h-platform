@@ -147,7 +147,7 @@ export const MARKETING_IMAGES = {
   activeRecovery: CLINIC_IMAGES.balanceBosuRehab,
   athleteTraining: CLINIC_IMAGES.sportsAgilityHurdles,
   yogaStudio: CLINIC_IMAGES.therapeuticYogaLunge,
-  telehealth: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&h=600&fit=crop',
+  telehealth: `${IMG}/clinic/telehealth-doctor.webp`,
   nutrition: SERVICE_STOCK_IMAGES.nutrition,
   mentalWellness: CLINIC_IMAGES.groupCoachingSession,
   aboutTrustedChampionsBanner: CLINIC_IMAGES.sportsSoccerAcademy,

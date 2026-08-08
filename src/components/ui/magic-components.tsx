@@ -489,51 +489,7 @@ export function MagicCard({
   );
 }
 
-// ============================================
-// MARQUEE - Infinite scrolling content
-// ============================================
-export function Marquee({
-  className,
-  reverse = false,
-  pauseOnHover = false,
-  children,
-  vertical = false,
-  repeat = 2,
-}: {
-  className?: string;
-  reverse?: boolean;
-  pauseOnHover?: boolean;
-  children?: ReactNode;
-  vertical?: boolean;
-  /** Duplicate track count for seamless loop; 2 is enough for horizontal marquees */
-  repeat?: number;
-}) {
-  return (
-    <div
-      className={cn(
-        'group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]',
-        vertical ? 'flex-col' : 'flex-row',
-        className
-      )}
-    >
-      {Array(repeat)
-        .fill(0)
-        .map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              'flex shrink-0 justify-around [gap:var(--gap)]',
-              vertical ? 'flex-col animate-marquee-vertical' : 'flex-row animate-marquee',
-              reverse && 'direction-reverse',
-              pauseOnHover && 'group-hover:[animation-play-state:paused]'
-            )}
-          >
-            {children}
-          </div>
-        ))}
-    </div>
-  );
-}
+export { Marquee } from '@/components/ui/marquee';
 
 // ============================================
 // ORBITING CIRCLES - Animated orbiting icons

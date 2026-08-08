@@ -42,6 +42,7 @@ export function HowItWorksSection() {
   return (
     <section className="relative py-28 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
       <InteractiveGridPattern
+        patternId="how-it-works-grid"
         className="opacity-30 [mask-image:radial-gradient(600px_circle_at_center,white,transparent)]"
         width={50}
         height={50}
@@ -67,7 +68,7 @@ export function HowItWorksSection() {
               {CARE_STEPS.map(({ n, title, desc, Icon, gradient, shadow }) => (
                 <div key={n} className="flex items-start gap-4 group">
                   <div
-                    className={`relative w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white ${shadow} group-hover:scale-105 transition-transform duration-300`}
+                    className={`relative w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white ${shadow} group-hover:scale-105 transition-transform duration-150`}
                   >
                     <Icon className="w-5 h-5" strokeWidth={2} aria-hidden />
                     <span className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-white/95 px-1 text-[10px] font-bold text-gray-800">
