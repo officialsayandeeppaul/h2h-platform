@@ -134,6 +134,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    if (role) {
+      const { error: metaErr } = await adminClient.auth.admin.updateUserById(userId, {
+        user_metadata: { role },
+        app_metadata: { role },
+      });
+      if (metaErr) {
+        console.error('Failed to sync Auth role metadata:', metaErr.message);
+      }
+    }
+
     return NextResponse.json({ success: true, data: user });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

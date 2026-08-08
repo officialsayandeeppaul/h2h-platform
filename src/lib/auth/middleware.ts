@@ -138,13 +138,20 @@ export async function authMiddleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // User is authenticated
-  const userRole = (user.user_metadata?.role as UserRole) || ROLES.PATIENT;
+  // User is authenticated — prefer app_metadata (set by admin APIs), then user_metadata
+  const userRole = ((user.app_metadata?.role || user.user_metadata?.role) as UserRole) || ROLES.PATIENT;
 
   // Redirect authenticated users away from auth routes
   if (isAuthRoute) {
     // Don't redirect doctors away from /doctor/login — they use separate auth
     if (pathname === '/doctor/login') return response;
+
+    // Honor ?redirect= when the user is allowed on that path (e.g. /login?redirect=/super-admin)
+    const intended = request.nextUrl.searchParams.get('redirect');
+    if (intended && intended.startsWith('/') && canAccessRoute(userRole, intended)) {
+      return NextResponse.redirect(new URL(intended, request.url));
+    }
+
     const dashboardUrl = new URL(ROLE_DASHBOARDS[userRole], request.url);
     return NextResponse.redirect(dashboardUrl);
   }

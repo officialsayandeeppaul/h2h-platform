@@ -102,9 +102,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
+    // Middleware reads role from JWT user_metadata — must sync Auth or user stays "patient"
+    const { error: authMetaError } = await supabase.auth.admin.updateUserById(user.id, {
+      user_metadata: { role: 'super_admin' },
+      app_metadata: { role: 'super_admin' },
+    });
+
+    if (authMetaError) {
+      console.error('Failed to sync Auth role metadata:', authMetaError.message);
+      return NextResponse.json(
+        {
+          error:
+            'Database role updated but Auth session sync failed. Run promote-super-admin script or sign out and try again.',
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      message: 'Super admin created successfully',
+      message: 'Super admin created successfully. Sign in with Google again to refresh your session.',
       user: { id: user.id, email: user.email, full_name: user.full_name },
     });
   } catch (error) {
