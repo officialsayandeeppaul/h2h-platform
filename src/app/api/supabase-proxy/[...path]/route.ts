@@ -70,10 +70,26 @@ async function proxy(
   const pathStr = path.join('/');
   const targetUrl = `${SUPABASE_ORIGIN.replace(/\/$/, '')}/${pathStr}${request.nextUrl.search}`;
 
-  const headers = new Headers(request.headers);
+  // Forward only auth/API headers — avoid leaking browser hop-by-hop headers
+  // (accept-encoding mismatches cause ERR_CONTENT_DECODING_FAILED).
+  const headers = new Headers();
+  const allowList = [
+    'authorization',
+    'apikey',
+    'content-type',
+    'accept',
+    'prefer',
+    'x-supabase-api-version',
+    'x-client-info',
+  ];
+  for (const name of allowList) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
   headers.set('host', new URL(SUPABASE_ORIGIN).host);
+  headers.set('accept-encoding', 'identity');
 
-  const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text();
+  const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer();
 
   try {
     const res = await fetch(targetUrl, {
@@ -83,16 +99,28 @@ async function proxy(
       redirect: 'manual', // Pass 302 through for OAuth redirects
     });
 
-    const resHeaders = new Headers(res.headers);
-    // Allow CORS from our app
+    // Node fetch may decompress; never forward encoding headers to the browser
+    const resHeaders = new Headers();
+    res.headers.forEach((value, key) => {
+      const lower = key.toLowerCase();
+      if (
+        lower === 'content-encoding' ||
+        lower === 'content-length' ||
+        lower === 'transfer-encoding' ||
+        lower === 'connection'
+      ) {
+        return;
+      }
+      resHeaders.set(key, value);
+    });
     resHeaders.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*');
-    resHeaders.delete('transfer-encoding');
 
     if (res.status >= 300 && res.status < 400 && res.headers.get('location')) {
       return NextResponse.redirect(res.headers.get('location')!, res.status);
     }
 
-    return new NextResponse(res.body, {
+    const responseBody = await res.arrayBuffer();
+    return new NextResponse(responseBody, {
       status: res.status,
       statusText: res.statusText,
       headers: resHeaders,
