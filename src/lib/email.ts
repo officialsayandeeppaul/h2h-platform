@@ -55,9 +55,6 @@ interface AppointmentEmailData {
   invoicePayload?: InvoiceData | null;
 }
 
-const EMAIL_FONT =
-  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
-
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-IN', {
     weekday: 'long',
