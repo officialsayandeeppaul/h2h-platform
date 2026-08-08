@@ -386,8 +386,15 @@ export default function DoctorLoginPage() {
             </p>
 
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 max-w-sm">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 mb-4">
-                <ShieldCheck className="h-5 w-5 text-white" />
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white/95 ring-1 ring-white/20 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/brand/logo-email-mark.png"
+                  alt="Heal to Health"
+                  width={40}
+                  height={40}
+                  className="h-9 w-9 object-contain"
+                />
               </div>
               <h3 className="text-[18px] font-semibold text-white mb-2">
                 Secure Doctor Access
