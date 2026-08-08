@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { AvatarCircles } from '@/components/ui/avatar-circles';
+import { BRAND_IMAGES } from '@/constants/marketing-images';
+import Image from 'next/image';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -269,10 +271,20 @@ function LoginContent() {
 
             {/* Stats Card */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 max-w-sm">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 mb-4">
-                <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-white/20">
+                  <Image
+                    src={BRAND_IMAGES.logoShort}
+                    alt="H2H Healthcare"
+                    width={40}
+                    height={40}
+                    className="h-full w-full object-contain p-0.5"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold leading-tight text-white">Heal to Health</p>
+                  <p className="text-[12px] text-gray-400">H2H Healthcare</p>
+                </div>
               </div>
               <h3 className="text-[18px] font-semibold text-white mb-2">
                 Trusted by thousands of patients
@@ -283,6 +295,7 @@ function LoginContent() {
               <div className="flex items-center gap-3">
                 <AvatarCircles
                   numPeople={10000}
+                  numPeopleLabel="10k"
                   avatarUrls={[
                     { imageUrl: 'https://api.dicebear.com/9.x/lorelei/svg?seed=User1&backgroundColor=b6e3f4', profileUrl: '#' },
                     { imageUrl: 'https://api.dicebear.com/9.x/lorelei/svg?seed=User2&backgroundColor=c0aede', profileUrl: '#' },
