@@ -35,7 +35,13 @@ export async function GET() {
   try {
     const doctor = await getDoctorFromRequest();
     if (!doctor) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        {
+          error:
+            'Unauthorized — sign in at /doctor/login. Role alone is not enough; a doctors profile is required.',
+        },
+        { status: 401 }
+      );
     }
 
     const adminClient = createAdminClient();

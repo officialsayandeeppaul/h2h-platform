@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DoctorPatientsSkeleton } from '@/components/admin/AdminSkeletons';
 import { Users, Search, RefreshCw, Phone, Mail, Calendar } from 'lucide-react';
 
 interface PatientRow {
@@ -56,12 +56,7 @@ export default function DoctorPatientsPage() {
   const formatDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   if (loading && patients.length === 0) {
-    return (
-      <div className="p-6 lg:p-8">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <Skeleton className="h-64 rounded-xl" />
-      </div>
-    );
+    return <DoctorPatientsSkeleton />;
   }
 
   return (

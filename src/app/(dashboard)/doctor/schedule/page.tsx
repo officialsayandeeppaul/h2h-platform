@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DoctorScheduleSkeleton } from '@/components/admin/AdminSkeletons';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -162,15 +162,7 @@ export default function DoctorSchedulePage() {
   const availableSlots = Object.values(byDay).flat().filter(s => s.is_available).length;
 
   if (loading) {
-    return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <Skeleton className="h-10 w-64 mb-8" />
-        <div className="grid lg:grid-cols-2 gap-6">
-          <Skeleton className="h-80 rounded-xl" />
-          <Skeleton className="h-80 rounded-xl" />
-        </div>
-      </div>
-    );
+    return <DoctorScheduleSkeleton />;
   }
 
   return (
@@ -178,7 +170,7 @@ export default function DoctorSchedulePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">My Schedule</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">My Schedule</h1>
           <p className="text-sm text-gray-500 mt-1">Recurring weekly slots and date-specific time off</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => { fetchSchedule(); fetchRequests(); }} disabled={loading} className="shrink-0">
@@ -193,7 +185,7 @@ export default function DoctorSchedulePage() {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-cyan-100"><CalendarDays className="h-5 w-5 text-cyan-600" /></div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{Object.keys(byDay).filter(d => (byDay[Number(d)] || []).length > 0).length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{Object.keys(byDay).filter(d => (byDay[Number(d)] || []).length > 0).length}</p>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Working days</p>
               </div>
             </div>
@@ -204,7 +196,7 @@ export default function DoctorSchedulePage() {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-emerald-100"><Clock className="h-5 w-5 text-emerald-600" /></div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{availableSlots}</p>
+                <p className="text-2xl font-semibold text-gray-900">{availableSlots}</p>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Slots / week</p>
               </div>
             </div>
@@ -215,7 +207,7 @@ export default function DoctorSchedulePage() {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-rose-100"><Ban className="h-5 w-5 text-rose-600" /></div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{overrides.length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{overrides.length}</p>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Date blocks</p>
               </div>
             </div>
@@ -226,7 +218,7 @@ export default function DoctorSchedulePage() {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-100"><Inbox className="h-5 w-5 text-amber-600" /></div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
+                <p className="text-2xl font-semibold text-gray-900">{pendingCount}</p>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Pending</p>
               </div>
             </div>

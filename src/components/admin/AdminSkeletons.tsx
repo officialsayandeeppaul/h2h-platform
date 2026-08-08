@@ -545,3 +545,97 @@ export function DoctorsAdminSkeleton() {
     </div>
   );
 }
+
+/** Doctor portal — dashboard layout */
+export function DoctorDashboardSkeleton() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="space-y-2">
+          <Bone className="h-8 w-56" />
+          <Bone className="h-4 w-72 max-w-full bg-gray-100" />
+        </div>
+        <Bone className="h-9 w-28 rounded-lg shrink-0" />
+      </div>
+      <Bone className="h-3 w-40 bg-gray-100" />
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <StatCardBone key={i} />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <StatCardBone />
+            <StatCardBone />
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+            <Bone className="h-5 w-44" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex gap-3 items-center">
+                <Bone className="h-10 w-10 rounded-lg bg-gray-100" />
+                <div className="flex-1 space-y-1.5">
+                  <Bone className="h-3.5 w-[40%]" />
+                  <Bone className="h-3 w-[55%] bg-gray-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-4">
+          <StatCardBone />
+          <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+            <Bone className="h-5 w-28" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Bone key={i} className="h-14 w-full rounded-lg bg-gray-100" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function DoctorAppointmentsSkeleton() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+      <PageHeaderBone titleWidth="w-48" />
+      <div className="flex flex-wrap gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Bone key={i} className="h-9 w-24 rounded-lg bg-gray-100" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Bone className="h-80 rounded-xl bg-gray-100 md:col-span-1" />
+        <Bone className="h-80 rounded-xl bg-gray-100 md:col-span-2" />
+      </div>
+    </div>
+  );
+}
+
+export function DoctorPatientsSkeleton() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+      <PageHeaderBone titleWidth="w-36" />
+      <Bone className="h-10 w-full max-w-md rounded-lg" />
+      <TableShellBone rows={6} />
+    </div>
+  );
+}
+
+export function DoctorScheduleSkeleton() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+      <PageHeaderBone titleWidth="w-40" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <StatCardBone key={i} />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Bone className="h-80 rounded-xl bg-gray-100" />
+        <Bone className="h-80 rounded-xl bg-gray-100" />
+      </div>
+    </div>
+  );
+}

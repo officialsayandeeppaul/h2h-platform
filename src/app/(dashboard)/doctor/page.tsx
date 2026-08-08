@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { DailyJoinButton } from '@/components/video/DailyJoinButton';
+import { DoctorDashboardSkeleton } from '@/components/admin/AdminSkeletons';
 import { 
   Calendar, 
   Clock, 
@@ -95,53 +95,7 @@ export default function DoctorDashboard() {
   useEffect(() => { fetchData(); }, []);
 
   if (loading) {
-    return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        <div className="mb-8">
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-72" />
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="border-gray-200">
-              <CardContent className="pt-5 pb-5">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-5 w-5 rounded" />
-                  <div>
-                    <Skeleton className="h-7 w-12 mb-1" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <div className="grid lg:grid-cols-2 gap-6">
-          {[1, 2].map((i) => (
-            <Card key={i} className="border-gray-200">
-              <CardHeader className="pb-4">
-                <Skeleton className="h-5 w-40 mb-1" />
-                <Skeleton className="h-3 w-32" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[1, 2, 3].map((j) => (
-                    <div key={j} className="flex items-start gap-3 p-3 rounded-lg border border-gray-100">
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                      <div className="flex-1">
-                        <Skeleton className="h-4 w-32 mb-2" />
-                        <Skeleton className="h-3 w-24 mb-2" />
-                        <Skeleton className="h-3 w-40" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <DoctorDashboardSkeleton />;
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -160,7 +114,7 @@ export default function DoctorDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Doctor Dashboard</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 tracking-tight">Doctor Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
             Overview of your appointments, patients, and activity
           </p>
@@ -181,7 +135,7 @@ export default function DoctorDashboard() {
                   <Calendar className="h-5 w-5 text-slate-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900 tabular-nums">{stats?.totalAppointments ?? 0}</p>
+                  <p className="text-2xl font-semibold text-gray-900 tabular-nums">{stats?.totalAppointments ?? 0}</p>
                   <p className="text-xs font-medium text-gray-500 mt-0.5">Total appointments</p>
                 </div>
               </div>
@@ -194,7 +148,7 @@ export default function DoctorDashboard() {
                   <Clock className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-emerald-800 tabular-nums">{stats?.completedCount ?? 0}</p>
+                  <p className="text-2xl font-semibold text-emerald-800 tabular-nums">{stats?.completedCount ?? 0}</p>
                   <p className="text-xs font-medium text-emerald-700/80 mt-0.5">Completed</p>
                 </div>
               </div>
@@ -207,7 +161,7 @@ export default function DoctorDashboard() {
                   <Calendar className="h-5 w-5 text-cyan-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-cyan-800 tabular-nums">{stats?.pendingCount ?? 0}</p>
+                  <p className="text-2xl font-semibold text-cyan-800 tabular-nums">{stats?.pendingCount ?? 0}</p>
                   <p className="text-xs font-medium text-cyan-700/80 mt-0.5">Upcoming (in)</p>
                 </div>
               </div>
@@ -220,7 +174,7 @@ export default function DoctorDashboard() {
                   <Clock className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-amber-800 tabular-nums">{stats?.todayAppointments ?? 0}</p>
+                  <p className="text-2xl font-semibold text-amber-800 tabular-nums">{stats?.todayAppointments ?? 0}</p>
                   <p className="text-xs font-medium text-amber-700/80 mt-0.5">Today</p>
                 </div>
               </div>
@@ -233,7 +187,7 @@ export default function DoctorDashboard() {
                   <XCircle className="h-5 w-5 text-rose-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-rose-800 tabular-nums">{stats?.cancelledCount ?? 0}</p>
+                  <p className="text-2xl font-semibold text-rose-800 tabular-nums">{stats?.cancelledCount ?? 0}</p>
                   <p className="text-xs font-medium text-rose-700/80 mt-0.5">Cancelled / no-show</p>
                 </div>
               </div>
@@ -246,7 +200,7 @@ export default function DoctorDashboard() {
                   <Users className="h-5 w-5 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900 tabular-nums">{stats?.totalPatients ?? 0}</p>
+                  <p className="text-2xl font-semibold text-gray-900 tabular-nums">{stats?.totalPatients ?? 0}</p>
                   <p className="text-xs font-medium text-gray-500 mt-0.5">Unique patients</p>
                 </div>
               </div>
@@ -390,7 +344,7 @@ export default function DoctorDashboard() {
           <Card className="border-gray-200">
             <CardContent className="pt-5 pb-5">
               <p className="text-sm font-medium text-gray-600">This week vs last week</p>
-              <p className={`text-2xl font-bold mt-2 tabular-nums ${(stats?.weekTrend ?? 0) >= 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+              <p className={`text-2xl font-semibold mt-2 tabular-nums ${(stats?.weekTrend ?? 0) >= 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
                 {(stats?.weekTrend ?? 0) >= 0 ? '+' : ''}{stats?.weekTrend ?? 0}%
               </p>
               <p className="text-xs text-gray-500 mt-1">

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DoctorAppointmentsSkeleton } from '@/components/admin/AdminSkeletons';
 import {
   Calendar,
   Clock,
@@ -185,15 +185,7 @@ export default function DoctorAppointmentsPage() {
   };
 
   if (loading && appointments.length === 0) {
-    return (
-      <div className="p-6 lg:p-8">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <div className="grid md:grid-cols-3 gap-4">
-          <Skeleton className="h-[320px] rounded-xl" />
-          <Skeleton className="h-[320px] rounded-xl md:col-span-2" />
-        </div>
-      </div>
-    );
+    return <DoctorAppointmentsSkeleton />;
   }
 
   return (
