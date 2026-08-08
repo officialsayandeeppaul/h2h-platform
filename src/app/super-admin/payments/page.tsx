@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AdminContentSkeleton } from '@/components/admin/AdminSkeletons';
+import { PaymentsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 import { format, parseISO, isToday, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 interface Payment {
@@ -122,7 +122,7 @@ export default function PaymentsPage() {
   });
 
   if (loading) {
-    return <AdminContentSkeleton variant="table" />;
+    return <PaymentsAdminSkeleton />;
   }
 
   return (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { UserCheck, UserX, User } from 'lucide-react';
-import { AdminContentSkeleton } from '@/components/admin/AdminSkeletons';
+import { UsersAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface UserData {
   id: string;
@@ -96,7 +96,7 @@ export default function AdminUsersPage() {
   }
 
   if (loading) {
-    return <AdminContentSkeleton variant="table" />;
+    return <UsersAdminSkeleton />;
   }
 
   return (

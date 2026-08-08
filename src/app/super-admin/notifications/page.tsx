@@ -11,7 +11,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ListItemsSkeleton } from '@/components/admin/AdminSkeletons';
+import { NotificationsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface ContactNotification {
   type: 'contact';
@@ -116,6 +116,10 @@ export default function NotificationsPage() {
       ? items.filter((i) => i.type === 'booking')
       : items;
 
+  if (loading) {
+    return <NotificationsAdminSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -141,9 +145,7 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {loading ? (
-        <ListItemsSkeleton count={6} />
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
           <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-[15px] font-medium text-gray-700">No notifications yet</p>

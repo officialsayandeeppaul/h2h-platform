@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { StackedCardsSkeleton } from '@/components/admin/AdminSkeletons';
+import { ScheduleRequestsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 import {
   Calendar,
   RefreshCw,
@@ -115,6 +115,10 @@ export default function ScheduleRequestsPage() {
       minute: '2-digit',
     });
 
+  if (loading) {
+    return <ScheduleRequestsAdminSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -145,9 +149,7 @@ export default function ScheduleRequestsPage() {
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
       )}
 
-      {loading ? (
-        <StackedCardsSkeleton count={4} />
-      ) : requests.length === 0 ? (
+      {requests.length === 0 ? (
         <Card className="border-gray-200">
           <CardContent className="py-12 text-center text-gray-500">
             <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />

@@ -11,7 +11,7 @@ import {
   RefreshCw,
   ArrowRight,
 } from 'lucide-react';
-import { AdminContentSkeleton } from '@/components/admin/AdminSkeletons';
+import { DashboardAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface DashboardData {
   stats: {
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   useEffect(() => { fetchDashboard(); }, []);
 
   if (loading) {
-    return <AdminContentSkeleton variant="dashboard" />;
+    return <DashboardAdminSkeleton />;
   }
 
   if (!data) {

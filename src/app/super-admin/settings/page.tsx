@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProfilePhotoPicker } from '@/components/shared/ProfilePhotoPicker';
-import { AdminContentSkeleton } from '@/components/admin/AdminSkeletons';
+import { SettingsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 type MeUser = {
   id: string;
@@ -91,7 +91,7 @@ export default function SuperAdminSettingsPage() {
     }
   }
 
-  if (loading) return <AdminContentSkeleton />;
+  if (loading) return <SettingsAdminSkeleton />;
 
   return (
     <div className="space-y-6 w-full">

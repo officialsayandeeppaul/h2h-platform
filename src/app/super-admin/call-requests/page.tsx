@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ListItemsSkeleton } from '@/components/admin/AdminSkeletons';
+import { CallRequestsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 import { Calendar, CalendarCheck, Loader2, Phone, Video } from 'lucide-react';
 
 type RequestStatus = 'new' | 'read' | 'replied';
@@ -80,6 +80,10 @@ export default function SuperAdminCallRequestsPage() {
 
   const newCount = requests.filter((r) => r.status === 'new').length;
 
+  if (loading) {
+    return <CallRequestsAdminSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -106,15 +110,13 @@ export default function SuperAdminCallRequestsPage() {
         </div>
       </div>
 
-      {!loading && statusFilter === 'new' && newCount > 0 && (
+      {statusFilter === 'new' && newCount > 0 && (
         <div className="rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">
           {newCount} new request{newCount !== 1 ? 's' : ''} waiting for review.
         </div>
       )}
 
-      {loading ? (
-        <ListItemsSkeleton count={6} />
-      ) : requests.length === 0 ? (
+      {requests.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-gray-500">
           No call or Cal.com requests found.
         </div>

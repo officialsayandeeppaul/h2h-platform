@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
-import { AdminContentSkeleton } from '@/components/admin/AdminSkeletons';
+import { ServicesAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface Service {
   id: string;
@@ -143,7 +143,7 @@ export default function AdminServicesPage() {
   }
 
   if (loading) {
-    return <AdminContentSkeleton variant="table" />;
+    return <ServicesAdminSkeleton />;
   }
 
   return (

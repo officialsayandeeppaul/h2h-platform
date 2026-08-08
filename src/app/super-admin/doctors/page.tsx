@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ProfilePhotoPicker } from '@/components/shared/ProfilePhotoPicker';
 import { DoctorAvatar } from '@/components/shared/DoctorAvatar';
-import { DoctorCardsSkeleton } from '@/components/admin/AdminSkeletons';
+import { DoctorsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface SlotType {
   id?: string;
@@ -577,6 +577,10 @@ export default function DoctorsPage() {
     doctor.specializations.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  if (loading) {
+    return <DoctorsAdminSkeleton />;
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
       {/* Header */}
@@ -602,9 +606,7 @@ export default function DoctorsPage() {
       </div>
 
       {/* Doctors Grid — 1 col mobile, 2 tablet, 3 desktop */}
-      {loading ? (
-        <DoctorCardsSkeleton count={3} />
-      ) : filteredDoctors.length === 0 ? (
+      {filteredDoctors.length === 0 ? (
         <div className="text-center py-10 sm:py-12 bg-white rounded-xl border border-gray-200 px-4">
           <User className="h-12 w-12 mx-auto text-gray-300 mb-4" />
           <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No doctors found</h3>

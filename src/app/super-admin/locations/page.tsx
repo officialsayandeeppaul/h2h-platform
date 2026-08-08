@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AdminContentSkeleton } from '@/components/admin/AdminSkeletons';
+import { LocationsAdminSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface Location {
   id: string;
@@ -216,7 +216,7 @@ export default function LocationsPage() {
   const getCentersForLocation = (locationId: string) => clinicCenters.filter(c => c.location_id === locationId);
 
   if (loading) {
-    return <AdminContentSkeleton variant="cards" />;
+    return <LocationsAdminSkeleton />;
   }
 
   return (

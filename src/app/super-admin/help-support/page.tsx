@@ -14,7 +14,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ListItemsSkeleton } from '@/components/admin/AdminSkeletons';
+import { HelpSupportAdminSkeleton, ListItemsSkeleton } from '@/components/admin/AdminSkeletons';
 
 interface ContactMessage {
   id: string;
@@ -98,6 +98,10 @@ function HelpSupportContent() {
     });
   }
 
+  if (loading) {
+    return <HelpSupportAdminSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -132,9 +136,7 @@ function HelpSupportContent() {
         </div>
       </div>
 
-      {loading ? (
-        <ListItemsSkeleton count={6} />
-      ) : messages.length === 0 ? (
+      {messages.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
           <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-[15px] font-medium text-gray-700">No messages yet</p>
