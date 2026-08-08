@@ -20,7 +20,8 @@ const BRAND = {
   texture: 'https://www.transparenttextures.com/patterns/brushed-alum.png',
 } as const;
 
-const LOGO_URL = `${APP_CONFIG.url.replace(/\/$/, '')}/images/brand/logo-caps.webp`;
+/** PNG + transparent bg — email clients often fail on WebP / black wordmark boxes */
+const LOGO_URL = `${APP_CONFIG.url.replace(/\/$/, '')}/images/brand/logo-email.png`;
 
 export function escapeEmailHtml(value: string): string {
   return value
@@ -355,16 +356,17 @@ export function wrapH2HEmail(opts: {
                     <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                       <tbody>
                         <tr>
-                          <td style="vertical-align:top;padding:40px;" align="center">
+                          <td style="vertical-align:top;padding:28px 24px 20px;" align="center">
                             <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
                               <tbody>
                                 <tr>
                                   <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                                    <!-- White card so teal/gold logo stays crisp on cyan header -->
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;border-spacing:0;background:#ffffff;border-radius:12px;overflow:hidden;">
                                       <tbody>
                                         <tr>
-                                          <td style="width:150px;">
-                                            <img alt="${escapeEmailHtml(APP_CONFIG.name)}" src="${LOGO_URL}" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="150" height="auto" />
+                                          <td align="center" bgcolor="#ffffff" style="background:#ffffff;border-radius:12px;padding:18px 28px;width:280px;">
+                                            <img alt="${escapeEmailHtml(APP_CONFIG.name)}" src="${LOGO_URL}" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:240px;max-width:100%;font-size:13px;margin:0 auto;" width="240" height="auto" />
                                           </td>
                                         </tr>
                                       </tbody>
