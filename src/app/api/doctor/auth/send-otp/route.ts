@@ -9,6 +9,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { setOTP } from '@/lib/otp-store';
 import nodemailer from 'nodemailer';
+import {
+  emailCodeBlock,
+  emailParagraph,
+  wrapH2HEmail,
+} from '@/lib/email-layout';
 
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -77,22 +82,17 @@ export async function POST(request: NextRequest) {
           from: `"H2H Healthcare" <${process.env.SMTP_USER}>`,
           to: email,
           subject: 'Your H2H Doctor Login OTP',
-          html: `
-            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #f8fafc; border-radius: 16px;">
-              <div style="text-align: center; margin-bottom: 24px;">
-                <h1 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 0;">H2H Healthcare</h1>
-                <p style="font-size: 13px; color: #64748b; margin: 4px 0 0;">Doctor Portal Login</p>
-              </div>
-              <div style="background: white; border-radius: 12px; padding: 32px; text-align: center; border: 1px solid #e2e8f0;">
-                <p style="font-size: 14px; color: #475569; margin: 0 0 20px;">Your one-time login code is:</p>
-                <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0891b2; background: #ecfeff; padding: 16px 24px; border-radius: 12px; display: inline-block; font-family: monospace;">
-                  ${otp}
-                </div>
-                <p style="font-size: 12px; color: #94a3b8; margin: 20px 0 0;">This code expires in 5 minutes. Do not share it with anyone.</p>
-              </div>
-              <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 16px 0 0;">If you didn't request this, please ignore this email.</p>
-            </div>
-          `,
+          html: wrapH2HEmail({
+            preview: 'Your doctor portal login code',
+            title: 'Doctor Login OTP | H2H Healthcare',
+            bodyRowsHtml: [
+              emailParagraph('Hello,'),
+              emailParagraph('Your one-time login code for the doctor portal is:'),
+              emailCodeBlock(otp),
+              emailParagraph('This code expires in 5 minutes. Do not share it with anyone.'),
+            ].join(''),
+            tip: "If you didn't request this, please ignore this email.",
+          }),
         });
         console.log(`✅ OTP email sent to ${email}`);
       } catch (emailErr) {

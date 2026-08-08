@@ -5,6 +5,13 @@
 import crypto from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
+import {
+  emailCodeBlock,
+  emailDetailsTable,
+  emailParagraph,
+  escapeEmailHtml,
+  wrapH2HEmail,
+} from '@/lib/email-layout';
 
 export function generateTemporaryPassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
@@ -141,29 +148,26 @@ export async function sendDoctorWelcomeEmail(params: {
       from: `"H2H Healthcare" <${process.env.SMTP_USER}>`,
       to: email,
       subject: 'Your H2H Doctor Portal Account',
-      html: `
-        <div style="font-family: 'Inter', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #f8fafc; border-radius: 16px;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 0;">H2H Healthcare</h1>
-            <p style="font-size: 13px; color: #64748b; margin: 4px 0 0;">Doctor Portal — Account Created</p>
-          </div>
-          <div style="background: white; border-radius: 12px; padding: 28px; border: 1px solid #e2e8f0;">
-            <p style="font-size: 14px; color: #475569; margin: 0 0 16px;">Hello ${fullName},</p>
-            <p style="font-size: 14px; color: #475569; margin: 0 0 20px;">
-              A super admin has created your doctor account. Use the credentials below to sign in. You can also request a one-time code from the same login page.
-            </p>
-            <p style="font-size: 12px; color: #64748b; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em;">Email</p>
-            <p style="font-size: 15px; font-weight: 600; color: #0f172a; margin: 0 0 16px;">${email}</p>
-            <p style="font-size: 12px; color: #64748b; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em;">Temporary password</p>
-            <div style="font-size: 18px; font-weight: 700; letter-spacing: 1px; color: #0891b2; background: #ecfeff; padding: 12px 16px; border-radius: 10px; font-family: monospace; margin: 0 0 20px;">
-              ${temporaryPassword}
-            </div>
-            <p style="font-size: 12px; color: #94a3b8; margin: 0 0 20px;">Please change this password after your first login when that option is available. Do not share these details.</p>
-            <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(to right, #0f172a, #1e293b); color: white; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;">Open Doctor Portal</a>
-          </div>
-          <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 16px 0 0;">If you did not expect this email, contact your clinic administrator.</p>
-        </div>
-      `,
+      html: wrapH2HEmail({
+        preview: 'Your doctor portal account is ready',
+        title: 'Doctor Portal Account | H2H Healthcare',
+        bodyRowsHtml: [
+          emailParagraph(`Hello ${escapeEmailHtml(fullName)},`),
+          emailParagraph(
+            'A super admin has created your doctor account. Use the credentials below to sign in. You can also request a one-time code from the same login page.'
+          ),
+          emailDetailsTable([
+            { label: 'Email', value: escapeEmailHtml(email) },
+          ]),
+          emailParagraph('Temporary password:'),
+          emailCodeBlock(temporaryPassword),
+          emailParagraph(
+            'Please change this password after your first login when that option is available. Do not share these details.'
+          ),
+        ].join(''),
+        cta: { label: 'Open Doctor Portal', href: loginUrl },
+        tip: 'If you did not expect this email, contact your clinic administrator.',
+      }),
     });
     console.log(`Doctor welcome email sent to ${email}`);
     return { sent: true };

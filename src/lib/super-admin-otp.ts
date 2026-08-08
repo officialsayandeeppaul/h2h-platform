@@ -5,6 +5,12 @@
 
 import { deleteOTP, getOTP, incrementAttempts, setOTP } from '@/lib/otp-store';
 import { sendEmail } from '@/lib/resend';
+import {
+  emailCodeBlock,
+  emailParagraph,
+  escapeEmailHtml,
+  wrapH2HEmail,
+} from '@/lib/email-layout';
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -35,21 +41,27 @@ export async function sendSuperAdminCreationOtp(params: {
   const otp = String(Math.floor(100000 + Math.random() * 900000));
   setOTP(otpStoreKey(params.candidateEmail), otp, OTP_TTL_MS);
 
+  const nameBit = params.candidateName
+    ? ` (${escapeEmailHtml(params.candidateName)})`
+    : '';
+
   const result = await sendEmail({
     to,
     subject: 'H2H Security — Super Admin verification code',
-    html: `
-      <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0f172a;">
-        <h2 style="margin:0 0 12px;color:#0891b2;">Super Admin verification</h2>
-        <p style="margin:0 0 16px;color:#475569;line-height:1.5;">
-          A request was made to grant <strong>super admin</strong> access to
-          <strong>${params.candidateEmail}</strong>${params.candidateName ? ` (${params.candidateName})` : ''}.
-        </p>
-        <p style="margin:0 0 8px;color:#475569;">Your 6-digit verification code:</p>
-        <p style="font-size:32px;letter-spacing:8px;font-weight:700;margin:0 0 16px;color:#0e7490;">${otp}</p>
-        <p style="margin:0;font-size:13px;color:#94a3b8;">This code expires in 10 minutes. If you did not request this, ignore this email.</p>
-      </div>
-    `,
+    html: wrapH2HEmail({
+      preview: 'Your 6-digit super admin verification code',
+      title: 'Super Admin verification | H2H Healthcare',
+      bodyRowsHtml: [
+        emailParagraph('Hello,'),
+        emailParagraph(
+          `A request was made to grant <strong>super admin</strong> access to <strong>${escapeEmailHtml(params.candidateEmail)}</strong>${nameBit}.`
+        ),
+        emailParagraph('Your 6-digit verification code:'),
+        emailCodeBlock(otp),
+        emailParagraph('This code expires in 10 minutes.'),
+      ].join(''),
+      tip: 'If you did not request this, ignore this email and secure your admin secret key.',
+    }),
   });
 
   if (!result.success) {

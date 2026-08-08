@@ -1,5 +1,11 @@
 import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
+import {
+  emailDetailsTable,
+  emailParagraph,
+  escapeEmailHtml,
+  wrapH2HEmail,
+} from '@/lib/email-layout';
 
 let resendClient: Resend | null = null;
 function getResend() {
@@ -9,7 +15,6 @@ function getResend() {
   return resendClient;
 }
 
-// Nodemailer transporter for development (using Gmail or any SMTP)
 const devTransporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
@@ -37,7 +42,6 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 
   try {
     if (isProduction) {
-      // Use Resend in production
       const { data, error } = await getResend().emails.send({
         from: fromEmail,
         to,
@@ -52,25 +56,22 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 
       console.log('✓ Email sent via Resend, ID:', data?.id);
       return { success: true, id: data?.id };
-    } else {
-      // Use Nodemailer in development
-      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        console.log('⚠️ SMTP credentials not configured. Email would be sent to:', to);
-        console.log('To enable dev emails, add SMTP_USER and SMTP_PASS to .env');
-        // Return success anyway so the flow continues
-        return { success: true, id: 'dev-mode-no-smtp' };
-      }
-
-      const info = await devTransporter.sendMail({
-        from: fromEmail,
-        to,
-        subject,
-        html,
-      });
-
-      console.log('✓ Email sent via Nodemailer, ID:', info.messageId);
-      return { success: true, id: info.messageId };
     }
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.log('⚠️ SMTP credentials not configured. Email would be sent to:', to);
+      return { success: true, id: 'dev-mode-no-smtp' };
+    }
+
+    const info = await devTransporter.sendMail({
+      from: fromEmail,
+      to,
+      subject,
+      html,
+    });
+
+    console.log('✓ Email sent via Nodemailer, ID:', info.messageId);
+    return { success: true, id: info.messageId };
   } catch (error) {
     console.error('Email send error:', error);
     return { success: false, error };
@@ -89,73 +90,29 @@ export const emailTemplates = {
     paymentLink: string;
   }) => ({
     subject: `Booking Confirmed - ${data.serviceName} | H2H Healthcare`,
-    html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Confirmation</title>
-</head>
-<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #0066cc 0%, #004d99 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">H2H Healthcare</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">Your Partner in Wellness</p>
-  </div>
-  
-  <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
-    <h2 style="color: #0066cc; margin-top: 0;">Booking Confirmed! ✓</h2>
-    
-    <p>Hi ${data.patientName},</p>
-    
-    <p>Your appointment has been successfully booked. Here are the details:</p>
-    
-    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Service:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.serviceName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Doctor:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.doctorName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Date:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.date}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Time:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.time}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Location:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.location}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Amount:</td>
-          <td style="padding: 8px 0; font-weight: bold; color: #0066cc;">₹${data.amount}</td>
-        </tr>
-      </table>
-    </div>
-    
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${data.paymentLink}" style="background: #0066cc; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Complete Payment</a>
-    </div>
-    
-    <p style="color: #666; font-size: 14px;">Please complete the payment to confirm your appointment. If you have any questions, feel free to contact us.</p>
-  </div>
-  
-  <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
-    <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} H2H Healthcare. All rights reserved.</p>
-    <p style="margin: 10px 0 0; color: #999; font-size: 12px;">
-      <a href="https://healtohealth.in" style="color: #0066cc;">Website</a> | 
-      <a href="mailto:support@healtohealth.in" style="color: #0066cc;">Support</a>
-    </p>
-  </div>
-</body>
-</html>
-    `.trim(),
+    html: wrapH2HEmail({
+      preview: `Your ${data.serviceName} booking is confirmed`,
+      title: 'Booking Confirmed | H2H Healthcare',
+      bodyRowsHtml: [
+        emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
+        emailParagraph(
+          'Your appointment has been successfully booked. Please review the details below and complete payment to confirm your slot.'
+        ),
+        emailDetailsTable([
+          { label: 'Service', value: escapeEmailHtml(data.serviceName) },
+          { label: 'Doctor', value: escapeEmailHtml(data.doctorName) },
+          { label: 'Date', value: escapeEmailHtml(data.date) },
+          { label: 'Time', value: escapeEmailHtml(data.time) },
+          { label: 'Location', value: escapeEmailHtml(data.location) },
+          { label: 'Amount', value: `₹${data.amount}` },
+        ]),
+        emailParagraph(
+          'Complete payment to lock your appointment. If you have any questions, reply to support or call us.'
+        ),
+      ].join(''),
+      cta: { label: 'Complete Payment', href: data.paymentLink },
+      tip: 'If you did not make this booking, please contact us immediately so we can secure your account.',
+    }),
   }),
 
   paymentSuccess: (data: {
@@ -170,71 +127,40 @@ export const emailTemplates = {
     receiptUrl?: string;
   }) => ({
     subject: `Payment Successful - Appointment Confirmed | H2H Healthcare`,
-    html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">Payment Successful! ✓</h1>
-  </div>
-  
-  <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
-    <p>Hi ${data.patientName},</p>
-    
-    <p>Great news! Your payment of <strong>₹${data.amount}</strong> has been received and your appointment is now confirmed.</p>
-    
-    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #0066cc;">Appointment Details</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Service:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.serviceName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Doctor:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.doctorName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Date:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.date}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Time:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.time}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Location:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.location}</td>
-        </tr>
-      </table>
-    </div>
-    
-    ${data.meetLink ? `
-    <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-      <p style="margin: 0 0 10px; font-weight: bold;">📹 Online Consultation Link</p>
-      <a href="${data.meetLink}" style="background: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Join Video Call</a>
-    </div>
-    ` : ''}
-    
-    ${data.receiptUrl ? `
-    <p style="text-align: center;">
-      <a href="${data.receiptUrl}" style="color: #0066cc;">Download Receipt</a>
-    </p>
-    ` : ''}
-    
-    <p style="color: #666; font-size: 14px;">We look forward to seeing you! If you need to reschedule, please do so at least 24 hours before your appointment.</p>
-  </div>
-  
-  <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
-    <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} H2H Healthcare</p>
-  </div>
-</body>
-</html>
-    `.trim(),
+    html: wrapH2HEmail({
+      preview: `Payment of ₹${data.amount} received — appointment confirmed`,
+      title: 'Payment Successful | H2H Healthcare',
+      bodyRowsHtml: [
+        emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
+        emailParagraph(
+          `Great news! Your payment of <strong>₹${data.amount}</strong> has been received and your appointment is confirmed.`
+        ),
+        emailDetailsTable([
+          { label: 'Service', value: escapeEmailHtml(data.serviceName) },
+          { label: 'Doctor', value: escapeEmailHtml(data.doctorName) },
+          { label: 'Date', value: escapeEmailHtml(data.date) },
+          { label: 'Time', value: escapeEmailHtml(data.time) },
+          { label: 'Location', value: escapeEmailHtml(data.location) },
+        ]),
+        data.meetLink
+          ? emailParagraph(
+              `Online consultation link: <a href="${escapeEmailHtml(data.meetLink)}" style="color:#0891b2;">${escapeEmailHtml(data.meetLink)}</a>`
+            )
+          : '',
+        data.receiptUrl
+          ? emailParagraph(
+              `<a href="${escapeEmailHtml(data.receiptUrl)}" style="color:#0891b2;">Download receipt</a>`
+            )
+          : '',
+        emailParagraph(
+          'We look forward to seeing you. Please reschedule at least 24 hours before your appointment if needed.'
+        ),
+      ].join(''),
+      cta: data.meetLink
+        ? { label: 'Join Video Call', href: data.meetLink }
+        : { label: 'Open Patient Dashboard', href: `${process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in'}/patient/appointments` },
+      tip: 'Arrive 10 minutes early for clinic visits. For video calls, use a stable internet connection.',
+    }),
   }),
 
   appointmentReminder: (data: {
@@ -247,63 +173,30 @@ export const emailTemplates = {
     meetLink?: string;
   }) => ({
     subject: `Reminder: Appointment Tomorrow - ${data.serviceName} | H2H Healthcare`,
-    html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Appointment Reminder</h1>
-  </div>
-  
-  <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
-    <p>Hi ${data.patientName},</p>
-    
-    <p>This is a friendly reminder that you have an appointment scheduled for <strong>tomorrow</strong>.</p>
-    
-    <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ff9800;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Service:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.serviceName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Doctor:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.doctorName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Date:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.date}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Time:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.time}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #666;">Location:</td>
-          <td style="padding: 8px 0; font-weight: bold;">${data.location}</td>
-        </tr>
-      </table>
-    </div>
-    
-    ${data.meetLink ? `
-    <div style="text-align: center; margin: 20px 0;">
-      <a href="${data.meetLink}" style="background: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Join Video Call</a>
-    </div>
-    ` : ''}
-    
-    <p style="color: #666; font-size: 14px;">Please arrive 10 minutes early for in-person appointments. For online consultations, ensure you have a stable internet connection.</p>
-  </div>
-  
-  <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
-    <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} H2H Healthcare</p>
-  </div>
-</body>
-</html>
-    `.trim(),
+    html: wrapH2HEmail({
+      preview: `Reminder: ${data.serviceName} tomorrow at ${data.time}`,
+      title: 'Appointment Reminder | H2H Healthcare',
+      bodyRowsHtml: [
+        emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
+        emailParagraph(
+          'This is a friendly reminder that you have an appointment scheduled for <strong>tomorrow</strong>.'
+        ),
+        emailDetailsTable([
+          { label: 'Service', value: escapeEmailHtml(data.serviceName) },
+          { label: 'Doctor', value: escapeEmailHtml(data.doctorName) },
+          { label: 'Date', value: escapeEmailHtml(data.date) },
+          { label: 'Time', value: escapeEmailHtml(data.time) },
+          { label: 'Location', value: escapeEmailHtml(data.location) },
+        ]),
+        emailParagraph(
+          'Please arrive 10 minutes early for in-person appointments. For online consultations, ensure you have a stable internet connection.'
+        ),
+      ].join(''),
+      cta: data.meetLink
+        ? { label: 'Join Video Call', href: data.meetLink }
+        : undefined,
+      tip: 'Need to reschedule? Contact us as soon as possible so we can help.',
+    }),
   }),
 };
 

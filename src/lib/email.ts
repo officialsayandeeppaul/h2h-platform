@@ -6,6 +6,13 @@
 import nodemailer from 'nodemailer';
 import { buildInvoiceEmailSection } from '@/lib/invoice';
 import type { InvoiceData } from '@/lib/invoice';
+import {
+  emailDetailsTable,
+  emailParagraph,
+  emailRawBlock,
+  escapeEmailHtml,
+  wrapH2HEmail,
+} from '@/lib/email-layout';
 
 // Create transporter - uses env vars for SMTP config
 function getTransporter() {
@@ -85,246 +92,102 @@ function getModeLabel(mode: string): string {
 }
 
 function buildPatientEmailHTML(data: AppointmentEmailData): string {
-  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://h2hhealthcare.com'}/patient/appointments`;
-  const invoiceSection = data.invoicePayload
-    ? `
-      <tr>
-        <td style="padding:0 30px 8px;">
-          <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#0f172a;font-family:${EMAIL_FONT};">Your tax invoice</p>
-          ${buildInvoiceEmailSection(data.invoicePayload)}
-        </td>
-      </tr>`
-    : '';
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in'}/patient/appointments`;
+  const detailRows = [
+    { label: 'Service', value: escapeEmailHtml(data.serviceName) },
+    { label: 'Doctor', value: `Dr. ${escapeEmailHtml(data.doctorName)}` },
+    { label: 'Date', value: escapeEmailHtml(formatDate(data.appointmentDate)) },
+    { label: 'Time', value: `${escapeEmailHtml(formatTime(data.startTime))} - ${escapeEmailHtml(formatTime(data.endTime))}` },
+    { label: 'Mode', value: escapeEmailHtml(getModeLabel(data.mode)) },
+  ];
+  if (data.locationName && data.mode !== 'online') {
+    detailRows.push({
+      label: 'Location',
+      value: escapeEmailHtml(
+        `${data.locationName}${data.locationCity ? ', ' + data.locationCity : ''}`
+      ),
+    });
+  }
+  detailRows.push({ label: 'Amount Paid', value: escapeEmailHtml(formatCurrency(data.amount)) });
+  if (data.razorpayPaymentId) {
+    detailRows.push({
+      label: 'Payment ID',
+      value: `<span style="font-family:monospace;font-size:13px;">${escapeEmailHtml(data.razorpayPaymentId)}</span>`,
+    });
+  }
 
-  const meetSection = data.googleMeetLink
-    ? `
-    <tr>
-      <td style="padding:20px 30px;background:#ecfdf5;border-radius:12px;margin:10px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-            <td>
-              <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#065f46;">🎥 Video Call Link</p>
-              <p style="margin:0 0 12px;font-size:13px;color:#047857;">Join your appointment via Google Meet:</p>
-              <a href="${data.googleMeetLink}" style="display:inline-block;padding:12px 28px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">
-                Join Video Call
-              </a>
-              <p style="margin:10px 0 0;font-size:12px;color:#6b7280;font-family:monospace;">${data.googleMeetLink}</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-    <tr><td style="height:16px"></td></tr>`
-    : '';
-
-  return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f4f6f8;font-family:${EMAIL_FONT};">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:30px 0;">
-  <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid #e3e8ee;">
-      <tr>
-        <td style="padding:28px 30px;text-align:center;background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);">
-          <h1 style="margin:0;font-size:26px;color:#ffffff;font-weight:700;font-family:${EMAIL_FONT};letter-spacing:-0.02em;">Payment Successful! ✓</h1>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:24px 30px 16px;">
-          <p style="margin:0 0 8px;font-size:15px;color:#0f172a;line-height:1.6;font-family:${EMAIL_FONT};">
-            Hi <strong>${data.patientName}</strong>,
-          </p>
-          <p style="margin:0;font-size:14px;color:#475569;line-height:1.6;font-family:${EMAIL_FONT};">
-            Your payment of <strong style="color:#0f172a;">${formatCurrency(data.amount)}</strong> has been received and your appointment is confirmed.
-          </p>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
-            <tr>
-              <td style="padding:20px;">
-                <p style="margin:0 0 12px;font-size:14px;font-weight:700;color:#528ff0;font-family:${EMAIL_FONT};">Appointment Details</p>
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;width:120px;font-family:${EMAIL_FONT};">Service</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;font-family:${EMAIL_FONT};">${data.serviceName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Doctor</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">Dr. ${data.doctorName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Date</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${formatDate(data.appointmentDate)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Time</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${formatTime(data.startTime)} - ${formatTime(data.endTime)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Mode</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${getModeLabel(data.mode)}</td>
-                  </tr>
-                  ${data.locationName && data.mode !== 'online' ? `
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Location</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${data.locationName}${data.locationCity ? ', ' + data.locationCity : ''}</td>
-                  </tr>` : ''}
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Amount Paid</td>
-                    <td style="padding:6px 0;font-size:14px;color:#0891b2;font-weight:700;">${formatCurrency(data.amount)}</td>
-                  </tr>
-                  ${data.razorpayPaymentId ? `
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Razorpay Payment ID</td>
-                    <td style="padding:6px 0;font-size:12px;color:#0f172a;font-weight:600;font-family:monospace;">${data.razorpayPaymentId}</td>
-                  </tr>` : ''}
-                </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      ${meetSection}
-      ${invoiceSection}
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <p style="margin:0;font-size:12px;color:#64748b;line-height:1.5;text-align:center;font-family:${EMAIL_FONT};">
-            Save or print the invoice above. You can download it anytime from your
-            <a href="${dashboardUrl}" style="color:#528ff0;font-weight:600;text-decoration:none;">patient dashboard</a>.
-          </p>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:0 30px 24px;text-align:center;">
-          <a href="${dashboardUrl}" style="display:inline-block;padding:12px 28px;background:#528ff0;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;font-family:${EMAIL_FONT};">
-            View in Dashboard
-          </a>
-        </td>
-      </tr>
-      <!-- Footer -->
-      <tr>
-        <td style="padding:20px 30px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
-          <p style="margin:0 0 4px;font-size:12px;color:#64748b;font-weight:600;">H2H Healthcare</p>
-          <p style="margin:0;font-size:11px;color:#94a3b8;">This is an automated confirmation email. Please do not reply.</p>
-        </td>
-      </tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>`;
+  return wrapH2HEmail({
+    preview: `Payment successful — ${data.serviceName} confirmed`,
+    title: 'Payment Successful | H2H Healthcare',
+    bodyRowsHtml: [
+      emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
+      emailParagraph(
+        `Your payment of <strong>${escapeEmailHtml(formatCurrency(data.amount))}</strong> has been received and your appointment is confirmed.`
+      ),
+      emailDetailsTable(detailRows),
+      data.googleMeetLink
+        ? emailParagraph(
+            `Video consultation link: <a href="${escapeEmailHtml(data.googleMeetLink)}" style="color:#0891b2;">${escapeEmailHtml(data.googleMeetLink)}</a>`
+          )
+        : '',
+      data.invoicePayload
+        ? emailRawBlock(
+            `<p style="margin:0 0 12px;font-size:15px;font-weight:500;color:#0c4a6e;font-family:Poppins,Helvetica,Arial,sans-serif;">Your tax invoice</p>${buildInvoiceEmailSection(data.invoicePayload)}`
+          )
+        : '',
+      emailParagraph(
+        `You can view this appointment anytime in your <a href="${escapeEmailHtml(dashboardUrl)}" style="color:#0891b2;">patient dashboard</a>.`
+      ),
+    ].join(''),
+    cta: data.googleMeetLink
+      ? { label: 'Join Video Call', href: data.googleMeetLink }
+      : { label: 'View in Dashboard', href: dashboardUrl },
+    tip: 'This is an automated confirmation email. Please do not reply directly to this message.',
+  });
 }
 
 function buildDoctorEmailHTML(data: AppointmentEmailData): string {
-  const meetSection = data.googleMeetLink
-    ? `
-    <tr>
-      <td style="padding:20px 30px;background:#ecfdf5;border-radius:12px;margin:10px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-            <td>
-              <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#065f46;">🎥 Video Call Link</p>
-              <p style="margin:0 0 12px;font-size:13px;color:#047857;">Use this Google Meet link for the consultation:</p>
-              <a href="${data.googleMeetLink}" style="display:inline-block;padding:12px 28px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">
-                Join Video Call
-              </a>
-              <p style="margin:10px 0 0;font-size:12px;color:#6b7280;font-family:monospace;">${data.googleMeetLink}</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-    <tr><td style="height:16px"></td></tr>`
-    : '';
+  const detailRows = [
+    { label: 'Patient', value: escapeEmailHtml(data.patientName) },
+    { label: 'Patient email', value: escapeEmailHtml(data.patientEmail) },
+    { label: 'Service', value: escapeEmailHtml(data.serviceName) },
+    { label: 'Date', value: escapeEmailHtml(formatDate(data.appointmentDate)) },
+    { label: 'Time', value: `${escapeEmailHtml(formatTime(data.startTime))} - ${escapeEmailHtml(formatTime(data.endTime))}` },
+    { label: 'Mode', value: escapeEmailHtml(getModeLabel(data.mode)) },
+  ];
+  if (data.locationName && data.mode !== 'online') {
+    detailRows.push({
+      label: 'Location',
+      value: escapeEmailHtml(
+        `${data.locationName}${data.locationCity ? ', ' + data.locationCity : ''}`
+      ),
+    });
+  }
+  detailRows.push({ label: 'Fee', value: escapeEmailHtml(formatCurrency(data.amount)) });
 
-  return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:30px 0;">
-  <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
-      <!-- Header -->
-      <tr><td style="height:5px;background:linear-gradient(90deg,#0891b2,#06b6d4,#22d3ee);"></td></tr>
-      <tr>
-        <td style="padding:30px 30px 20px;text-align:center;">
-          <h1 style="margin:0 0 4px;font-size:22px;color:#0891b2;font-weight:800;">H2H Healthcare</h1>
-          <p style="margin:0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;">Doctor Notification</p>
-        </td>
-      </tr>
-      <!-- Greeting -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <h2 style="margin:0 0 8px;font-size:20px;color:#0f172a;">New Appointment Booked 📋</h2>
-          <p style="margin:0;font-size:14px;color:#64748b;line-height:1.6;">
-            Hi <strong>Dr. ${data.doctorName}</strong>, a new appointment has been confirmed. Here are the details:
-          </p>
-        </td>
-      </tr>
-      <!-- Patient Info -->
-      <tr>
-        <td style="padding:0 30px 16px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#eff6ff;border-radius:12px;border:1px solid #bfdbfe;">
-            <tr>
-              <td style="padding:16px 20px;">
-                <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#3b82f6;">Patient Details</p>
-                <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#0f172a;">${data.patientName}</p>
-                <p style="margin:0;font-size:13px;color:#64748b;">${data.patientEmail}</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <!-- Appointment Details -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
-            <tr>
-              <td style="padding:20px;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;width:120px;">Service</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${data.serviceName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Date</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${formatDate(data.appointmentDate)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Time</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${formatTime(data.startTime)} - ${formatTime(data.endTime)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Mode</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${getModeLabel(data.mode)}</td>
-                  </tr>
-                  ${data.locationName && data.mode !== 'online' ? `
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Location</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${data.locationName}${data.locationCity ? ', ' + data.locationCity : ''}</td>
-                  </tr>` : ''}
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Fee</td>
-                    <td style="padding:6px 0;font-size:14px;color:#0891b2;font-weight:700;">${formatCurrency(data.amount)}</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <!-- Meet Link -->
-      ${meetSection}
-      <!-- Footer -->
-      <tr>
-        <td style="padding:20px 30px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
-          <p style="margin:0 0 4px;font-size:12px;color:#64748b;font-weight:600;">H2H Healthcare</p>
-          <p style="margin:0;font-size:11px;color:#94a3b8;">This is an automated notification. Please do not reply.</p>
-        </td>
-      </tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>`;
+  return wrapH2HEmail({
+    preview: `New appointment: ${data.patientName} — ${data.serviceName}`,
+    title: 'New Appointment | H2H Healthcare',
+    bodyRowsHtml: [
+      emailParagraph(`Hello Dr. ${escapeEmailHtml(data.doctorName)},`),
+      emailParagraph(
+        'A new appointment has been confirmed. Here are the patient and session details:'
+      ),
+      emailDetailsTable(detailRows),
+      data.googleMeetLink
+        ? emailParagraph(
+            `Video link: <a href="${escapeEmailHtml(data.googleMeetLink)}" style="color:#0891b2;">${escapeEmailHtml(data.googleMeetLink)}</a>`
+          )
+        : '',
+    ].join(''),
+    cta: data.googleMeetLink
+      ? { label: 'Join Video Call', href: data.googleMeetLink }
+      : {
+          label: 'Open Doctor Portal',
+          href: `${process.env.NEXT_PUBLIC_APP_URL || 'https://healtohealth.in'}/doctor`,
+        },
+    tip: 'This is an automated doctor notification. Please do not reply to this email.',
+  });
 }
 
 // ─── Reminder Emails ───────────────────────────────────────────────
@@ -351,137 +214,33 @@ function getReminderLabel(type: string): string {
   }
 }
 
-function getReminderEmoji(type: string): string {
-  switch (type) {
-    case '3hr': return '🔔';
-    case '1.5hr': return '⏰';
-    case '30min': return '🚨';
-    default: return '🔔';
-  }
-}
-
-function getReminderUrgencyColor(type: string): { bg: string; border: string; text: string; accent: string } {
-  switch (type) {
-    case '3hr': return { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af', accent: '#3b82f6' };
-    case '1.5hr': return { bg: '#fefce8', border: '#fde68a', text: '#92400e', accent: '#f59e0b' };
-    case '30min': return { bg: '#fef2f2', border: '#fecaca', text: '#991b1b', accent: '#ef4444' };
-    default: return { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af', accent: '#3b82f6' };
-  }
-}
-
 function buildReminderEmailHTML(data: ReminderEmailData): string {
   const label = getReminderLabel(data.reminderType);
-  const emoji = getReminderEmoji(data.reminderType);
-  const colors = getReminderUrgencyColor(data.reminderType);
 
-  return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:30px 0;">
-  <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
-      <!-- Header -->
-      <tr><td style="height:5px;background:linear-gradient(90deg,#0891b2,#06b6d4,#22d3ee);"></td></tr>
-      <tr>
-        <td style="padding:30px 30px 20px;text-align:center;">
-          <h1 style="margin:0 0 4px;font-size:22px;color:#0891b2;font-weight:800;">H2H Healthcare</h1>
-          <p style="margin:0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;">Appointment Reminder</p>
-        </td>
-      </tr>
-      <!-- Urgency Banner -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:${colors.bg};border:2px solid ${colors.border};border-radius:12px;">
-            <tr>
-              <td style="padding:20px;text-align:center;">
-                <p style="margin:0 0 6px;font-size:32px;">${emoji}</p>
-                <p style="margin:0 0 4px;font-size:18px;font-weight:800;color:${colors.text};">
-                  Your appointment starts in ${label}!
-                </p>
-                <p style="margin:0;font-size:13px;color:${colors.text};opacity:0.8;">
-                  Please be ready for your video consultation
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <!-- Greeting -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <p style="margin:0;font-size:14px;color:#64748b;line-height:1.6;">
-            Hi <strong>${data.patientName}</strong>, this is a friendly reminder about your upcoming online appointment.
-          </p>
-        </td>
-      </tr>
-      <!-- Details Card -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
-            <tr>
-              <td style="padding:20px;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;width:100px;">Service</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${data.serviceName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Doctor</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">Dr. ${data.doctorName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Date</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${formatDate(data.appointmentDate)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;font-size:13px;color:#64748b;">Time</td>
-                    <td style="padding:6px 0;font-size:13px;color:#0f172a;font-weight:600;">${formatTime(data.startTime)} - ${formatTime(data.endTime)}</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <!-- Meet Link - Prominent -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;border:2px solid #6ee7b7;border-radius:12px;">
-            <tr>
-              <td style="padding:20px;text-align:center;">
-                <p style="margin:0 0 12px;font-size:14px;font-weight:700;color:#065f46;">🎥 Join Your Video Consultation</p>
-                <a href="${data.googleMeetLink}" style="display:inline-block;padding:14px 40px;background:#059669;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:16px;letter-spacing:0.3px;">
-                  Join Google Meet Now
-                </a>
-                <p style="margin:12px 0 0;font-size:12px;color:#6b7280;font-family:monospace;">${data.googleMeetLink}</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <!-- Tips -->
-      <tr>
-        <td style="padding:0 30px 20px;">
-          <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#374151;">Quick Tips:</p>
-          <table cellpadding="0" cellspacing="0">
-            <tr><td style="padding:3px 0;font-size:12px;color:#64748b;">✅ Ensure stable internet connection</td></tr>
-            <tr><td style="padding:3px 0;font-size:12px;color:#64748b;">✅ Test your camera and microphone</td></tr>
-            <tr><td style="padding:3px 0;font-size:12px;color:#64748b;">✅ Find a quiet, well-lit space</td></tr>
-            <tr><td style="padding:3px 0;font-size:12px;color:#64748b;">✅ Keep any relevant reports handy</td></tr>
-          </table>
-        </td>
-      </tr>
-      <!-- Footer -->
-      <tr>
-        <td style="padding:20px 30px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
-          <p style="margin:0 0 4px;font-size:12px;color:#64748b;font-weight:600;">H2H Healthcare</p>
-          <p style="margin:0;font-size:11px;color:#94a3b8;">This is an automated reminder. Please do not reply.</p>
-        </td>
-      </tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>`;
+  return wrapH2HEmail({
+    preview: `Your appointment starts in ${label}`,
+    title: 'Appointment Reminder | H2H Healthcare',
+    bodyRowsHtml: [
+      emailParagraph(`Hello ${escapeEmailHtml(data.patientName)},`),
+      emailParagraph(
+        `This is a friendly reminder that your appointment starts in <strong>${escapeEmailHtml(label)}</strong>. Please be ready for your consultation.`
+      ),
+      emailDetailsTable([
+        { label: 'Service', value: escapeEmailHtml(data.serviceName) },
+        { label: 'Doctor', value: `Dr. ${escapeEmailHtml(data.doctorName)}` },
+        { label: 'Date', value: escapeEmailHtml(formatDate(data.appointmentDate)) },
+        {
+          label: 'Time',
+          value: `${escapeEmailHtml(formatTime(data.startTime))} - ${escapeEmailHtml(formatTime(data.endTime))}`,
+        },
+      ]),
+      emailParagraph(
+        'Quick tips: use a stable internet connection, test your camera/mic, find a quiet well-lit space, and keep any reports handy.'
+      ),
+    ].join(''),
+    cta: { label: 'Join Video Consultation', href: data.googleMeetLink },
+    tip: 'This is an automated reminder. Please do not reply to this email.',
+  });
 }
 
 export async function sendReminderEmail(data: ReminderEmailData): Promise<boolean> {
