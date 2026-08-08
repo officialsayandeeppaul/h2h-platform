@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Menu, X, Phone, ChevronDown } from 'lucide-react';
+import { Menu, X, Phone, ChevronDown, User, Stethoscope } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -169,9 +169,31 @@ export function Header() {
                 </Button>
               ) : (
                 <>
-                  <Button variant="ghost" className="text-[13px] text-gray-600 hover:text-gray-900 hover:bg-gray-100" asChild>
-                    <Link href="/login">Login</Link>
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="text-[13px] text-gray-600 hover:text-gray-900 hover:bg-gray-100 gap-1"
+                      >
+                        Login
+                        <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52 p-2 bg-white border-gray-100 rounded-xl">
+                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-gray-50">
+                        <Link href="/login" className="flex items-center gap-2.5 py-2.5 px-3 text-[13px] text-gray-700">
+                          <User className="h-4 w-4 text-cyan-600 shrink-0" />
+                          Login as User
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer focus:bg-gray-50">
+                        <Link href="/doctor/login" className="flex items-center gap-2.5 py-2.5 px-3 text-[13px] text-gray-700">
+                          <Stethoscope className="h-4 w-4 text-cyan-600 shrink-0" />
+                          Login as Doctor
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button className="text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 border-0  transition-all duration-300" asChild>
                     <Link href="/booking">Book Now</Link>
                   </Button>
@@ -262,8 +284,15 @@ export function Header() {
                   </Button>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full justify-center text-[13px] border-gray-200 text-gray-700 hover:bg-gray-50" asChild>
-                      <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+                    <Button variant="outline" className="w-full justify-center text-[13px] border-gray-200 text-gray-700 hover:bg-gray-50 gap-2" asChild>
+                      <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                        <User className="h-4 w-4" /> Login as User
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-center text-[13px] border-gray-200 text-gray-700 hover:bg-gray-50 gap-2" asChild>
+                      <Link href="/doctor/login" onClick={() => setMobileMenuOpen(false)}>
+                        <Stethoscope className="h-4 w-4" /> Login as Doctor
+                      </Link>
                     </Button>
                     <Button className="w-full justify-center text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" asChild>
                       <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>Book Appointment</Link>
