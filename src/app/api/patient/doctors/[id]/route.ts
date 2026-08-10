@@ -93,7 +93,7 @@ export async function GET(
 
     // Fetch consultation slot types for this doctor (Online vs Clinic pricing)
     const { data: slotTypes } = await (adminClient.from('consultation_slot_types') as any)
-      .select('id, duration_minutes, name, online_price, clinic_price, is_active')
+      .select('id, duration_minutes, name, label, online_price, offline_price, clinic_price, home_visit_price, is_active')
       .eq('doctor_id', id)
       .eq('is_active', true)
       .order('duration_minutes', { ascending: true });
@@ -156,8 +156,10 @@ export async function GET(
     let clinicFeeMin: number | null = null;
     
     if (slotTypes && slotTypes.length > 0) {
-      const onlinePrices = slotTypes.filter((s: any) => s.online_price).map((s: any) => s.online_price);
-      const clinicPrices = slotTypes.filter((s: any) => s.clinic_price).map((s: any) => s.clinic_price);
+      const onlinePrices = slotTypes.filter((s: any) => s.online_price).map((s: any) => Number(s.online_price));
+      const clinicPrices = slotTypes
+        .map((s: any) => Number(s.clinic_price ?? s.offline_price ?? 0))
+        .filter((n: number) => n > 0);
       
       if (onlinePrices.length > 0) {
         onlineFeeMin = Math.min(...onlinePrices);
@@ -204,10 +206,11 @@ export async function GET(
       } : null,
       consultationTypes: (slotTypes || []).map((st: any) => ({
         id: st.id,
-        name: st.name,
+        name: st.name || st.label || `${st.duration_minutes} min`,
         duration: st.duration_minutes,
-        onlinePrice: st.online_price,
-        clinicPrice: st.clinic_price,
+        onlinePrice: Number(st.online_price ?? 0) || 0,
+        clinicPrice: Number(st.clinic_price ?? st.offline_price ?? 0) || 0,
+        homeVisitPrice: Number(st.home_visit_price ?? 0) || 0,
       })),
       services: doctor.doctor_services?.map((ds: any) => ({
         id: ds.service?.id,

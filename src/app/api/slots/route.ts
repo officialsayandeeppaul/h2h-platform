@@ -141,10 +141,28 @@ export async function GET(request: NextRequest) {
       .eq('doctor_id', doctorId)
       .eq('is_active', true);
 
-    // Filter slot types by mode if specified
-    let availableSlotTypes = (slotTypes as any[] || []).filter((st: any) => 
-      mode === 'both' || st.mode === 'both' || st.mode === mode
-    );
+    // Keep rows with missing/both mode — only drop explicit mismatches
+    let availableSlotTypes = (slotTypes as any[] || [])
+      .map((st: any) => {
+        const offline = Number(st.offline_price ?? st.clinic_price ?? 0) || 0;
+        const online = Number(st.online_price ?? 0) || 0;
+        return {
+          ...st,
+          online_price: online,
+          offline_price: offline,
+          clinic_price: offline,
+          home_visit_price: Number(st.home_visit_price ?? 0) || 0,
+          home_visit_additional_charge: Number(st.home_visit_additional_charge ?? 0) || 0,
+          label: st.label || st.name || `${st.duration_minutes} min`,
+        };
+      })
+      .filter((st: any) => {
+        if (!mode || mode === 'both') return true;
+        if (!st.mode || st.mode === 'both') return true;
+        // clinic booking uses mode=offline
+        if (mode === 'offline' && (st.mode === 'offline' || st.mode === 'clinic')) return true;
+        return st.mode === mode;
+      });
 
     // If no custom slot types, use default durations with mode-specific pricing
     if (availableSlotTypes.length === 0) {

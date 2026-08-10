@@ -528,19 +528,17 @@ function BookingPageContent() {
         const data = await res.json();
         if (data.success && data.data) {
           setTimeSlots(data.data.slots || []);
-          // Set slot types from response
+          // Set slot types from response — always sync selected price to selected duration
           if (data.data.slotTypes && data.data.slotTypes.length > 0) {
             setSlotTypes(data.data.slotTypes);
-            // Auto-select first matching slot type if not already selected
-            if (!selectedSlotType) {
-              const matchingType = data.data.slotTypes.find((st: SlotTypeOption) => st.duration_minutes === selectedDuration);
-              if (matchingType) {
-                setSelectedSlotType(matchingType);
-              }
+            const matchingType =
+              data.data.slotTypes.find(
+                (st: SlotTypeOption) => st.duration_minutes === selectedDuration
+              ) || data.data.selectedSlotType;
+            if (matchingType) {
+              setSelectedSlotType(matchingType);
             }
-          }
-          // Update selected slot type from response
-          if (data.data.selectedSlotType) {
+          } else if (data.data.selectedSlotType) {
             setSelectedSlotType(data.data.selectedSlotType);
           }
         } else {

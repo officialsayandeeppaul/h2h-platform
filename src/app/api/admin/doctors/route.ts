@@ -48,6 +48,58 @@ async function checkAdminAccess(): Promise<{ isAdmin: boolean; adminClient: any;
   return { isAdmin, adminClient, userId: user.id };
 }
 
+/** Persist admin "Session Pricing" (slot_types) so booking uses the same prices. */
+async function syncDoctorSlotTypes(adminClient: any, doctorId: string, slotTypes: any[] | undefined) {
+  if (!Array.isArray(slotTypes)) return;
+
+  await adminClient.from('consultation_slot_types').delete().eq('doctor_id', doctorId);
+
+  const rows = slotTypes
+    .filter((st) => st && (st.is_active !== false))
+    .map((st) => {
+      const offline = Number(st.offline_price ?? st.clinic_price ?? 0) || 0;
+      const online = Number(st.online_price ?? 0) || 0;
+      const home = Number(st.home_visit_price ?? 0) || 0;
+      const travel = Number(st.home_visit_additional_charge ?? 0) || 0;
+      const duration = Number(st.duration_minutes) || 30;
+      const label = st.label || st.name || `${duration} min`;
+      return {
+        doctor_id: doctorId,
+        duration_minutes: duration,
+        name: label,
+        label,
+        online_price: online,
+        offline_price: offline,
+        clinic_price: offline,
+        home_visit_price: home,
+        home_visit_additional_charge: travel,
+        mode: 'both',
+        is_active: st.is_active !== false,
+      };
+    });
+
+  if (rows.length === 0) return;
+
+  const { error } = await adminClient.from('consultation_slot_types').insert(rows);
+  if (error) {
+    console.error('syncDoctorSlotTypes:', error);
+    throw new Error(`Failed to save session pricing: ${error.message}`);
+  }
+}
+
+function mapSlotTypeForAdmin(st: any) {
+  const offline = Number(st.offline_price ?? st.clinic_price ?? 0) || 0;
+  return {
+    duration_minutes: st.duration_minutes,
+    online_price: Number(st.online_price ?? 0) || 0,
+    offline_price: offline,
+    home_visit_price: Number(st.home_visit_price ?? 0) || 0,
+    home_visit_additional_charge: Number(st.home_visit_additional_charge ?? 0) || 0,
+    label: st.label || st.name || `${st.duration_minutes} min`,
+    is_active: st.is_active !== false,
+  };
+}
+
 // GET - List all doctors with details
 export async function GET(request: NextRequest) {
   try {
@@ -124,6 +176,12 @@ export async function GET(request: NextRequest) {
       .select('*')
       .in('doctor_id', doctorIds);
 
+    const { data: doctorSlotTypes } = await adminClient
+      .from('consultation_slot_types')
+      .select('*')
+      .in('doctor_id', doctorIds)
+      .order('duration_minutes', { ascending: true });
+
     // Merge data
     const enrichedDoctors = (doctors || []).map((doctor: any) => ({
       ...doctor,
@@ -134,6 +192,9 @@ export async function GET(request: NextRequest) {
         .map((ds: any) => ds.services),
       availability: (doctorAvailability || [])
         .filter((da: any) => da.doctor_id === doctor.id),
+      slot_types: (doctorSlotTypes || [])
+        .filter((st: any) => st.doctor_id === doctor.id)
+        .map(mapSlotTypeForAdmin),
     }));
 
     return NextResponse.json({
@@ -354,6 +415,13 @@ export async function POST(request: NextRequest) {
       await adminClient.from('doctor_availability').insert(defaultAvailability);
     }
 
+    // Session pricing (15/30/45 min Online + Clinic amounts)
+    try {
+      await syncDoctorSlotTypes(adminClient, doctorId, (body as any).slot_types);
+    } catch (slotErr) {
+      console.error('Slot types on create:', slotErr);
+    }
+
     // Fetch complete doctor data
     const { data: completeDoctor } = await adminClient
       .from('doctors')
@@ -529,6 +597,18 @@ export async function PUT(request: NextRequest) {
         }));
 
         await adminClient.from('doctor_availability').insert(availabilityRecords);
+      }
+    }
+
+    // Session pricing — required for booking to show correct 15/30/45 prices
+    if (updateData.slot_types) {
+      try {
+        await syncDoctorSlotTypes(adminClient, id, updateData.slot_types);
+      } catch (slotErr: any) {
+        return NextResponse.json(
+          { error: slotErr?.message || 'Failed to save session pricing' },
+          { status: 500 }
+        );
       }
     }
 
