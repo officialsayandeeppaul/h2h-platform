@@ -176,11 +176,15 @@ export async function GET(request: NextRequest) {
       .select('*')
       .in('doctor_id', doctorIds);
 
-    const { data: doctorSlotTypes } = await adminClient
+    const { data: doctorSlotTypes, error: slotTypesError } = await adminClient
       .from('consultation_slot_types')
       .select('*')
       .in('doctor_id', doctorIds)
       .order('duration_minutes', { ascending: true });
+
+    if (slotTypesError) {
+      console.warn('consultation_slot_types unavailable:', slotTypesError.message);
+    }
 
     // Merge data
     const enrichedDoctors = (doctors || []).map((doctor: any) => ({
@@ -192,9 +196,12 @@ export async function GET(request: NextRequest) {
         .map((ds: any) => ds.services),
       availability: (doctorAvailability || [])
         .filter((da: any) => da.doctor_id === doctor.id),
-      slot_types: (doctorSlotTypes || [])
-        .filter((st: any) => st.doctor_id === doctor.id)
-        .map(mapSlotTypeForAdmin),
+      // omit / empty → admin UI falls back to default 15/30/45 prices
+      slot_types: slotTypesError
+        ? undefined
+        : (doctorSlotTypes || [])
+            .filter((st: any) => st.doctor_id === doctor.id)
+            .map(mapSlotTypeForAdmin),
     }));
 
     return NextResponse.json({

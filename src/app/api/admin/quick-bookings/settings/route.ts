@@ -34,11 +34,27 @@ export async function GET() {
       .maybeSingle();
 
     if (error) {
+      const missing = /schema cache|does not exist|Could not find the table/i.test(error.message);
+      if (missing) {
+        return NextResponse.json({
+          success: true,
+          needsSetup: true,
+          setupSql: 'RUN_THIS_QUICK_BOOKINGS.sql',
+          settings: {
+            payment_enabled: false,
+            default_amount: null,
+            require_payment: true,
+            updated_at: null,
+          },
+          error: error.message,
+        });
+      }
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
+      needsSetup: false,
       settings: data || {
         payment_enabled: false,
         default_amount: null,
@@ -84,7 +100,17 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      const missing = /schema cache|does not exist|Could not find the table/i.test(error.message);
+      return NextResponse.json(
+        {
+          success: false,
+          needsSetup: missing,
+          error: missing
+            ? 'Run supabase/RUN_THIS_QUICK_BOOKINGS.sql in Supabase SQL Editor (Production), then Save again.'
+            : error.message,
+        },
+        { status: missing ? 503 : 500 }
+      );
     }
 
     return NextResponse.json({ success: true, settings: data });

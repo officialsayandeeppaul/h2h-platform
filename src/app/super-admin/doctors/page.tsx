@@ -145,11 +145,27 @@ export default function DoctorsPage() {
 
   // Default slot types with separate online/offline/home_visit pricing
   const DEFAULT_SLOT_TYPES: SlotType[] = [
-    { duration_minutes: 15, online_price: 400, offline_price: 500, home_visit_price: 800, home_visit_additional_charge: 300, label: 'Quick Consultation', is_active: true },
+    { duration_minutes: 15, online_price: 380, offline_price: 500, home_visit_price: 800, home_visit_additional_charge: 300, label: 'Quick Consultation', is_active: true },
     { duration_minutes: 30, online_price: 800, offline_price: 1000, home_visit_price: 1500, home_visit_additional_charge: 500, label: 'Standard Session', is_active: true },
     { duration_minutes: 45, online_price: 1200, offline_price: 1500, home_visit_price: 2200, home_visit_additional_charge: 700, label: 'Extended Session', is_active: true },
     { duration_minutes: 60, online_price: 1600, offline_price: 2000, home_visit_price: 3000, home_visit_additional_charge: 1000, label: 'Comprehensive Session', is_active: false },
   ];
+
+  const resolveSlotTypes = (incoming?: SlotType[] | null): SlotType[] => {
+    if (Array.isArray(incoming) && incoming.length > 0) {
+      return incoming.map((st) => ({
+        duration_minutes: st.duration_minutes || 30,
+        online_price: Number(st.online_price) || 0,
+        offline_price: Number(st.offline_price) || 0,
+        home_visit_price: Number(st.home_visit_price) || 0,
+        home_visit_additional_charge: Number(st.home_visit_additional_charge) || 0,
+        label: st.label || `${st.duration_minutes || 30} min`,
+        is_active: st.is_active !== false,
+      }));
+    }
+    // Deep copy so edits don't mutate the shared defaults
+    return DEFAULT_SLOT_TYPES.map((st) => ({ ...st }));
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -191,7 +207,7 @@ export default function DoctorsPage() {
         { start_time: '09:00', end_time: '18:00', mode: 'both' as 'online' | 'offline' | 'both' }
       ] as AvailabilitySlot[],
     })) as DayAvailability[],
-    slot_types: DEFAULT_SLOT_TYPES,
+    slot_types: resolveSlotTypes(DEFAULT_SLOT_TYPES),
   });
 
   // Custom input states
@@ -291,7 +307,7 @@ export default function DoctorsPage() {
         is_available: index !== 0,
         slots: [{ start_time: '09:00', end_time: '18:00', mode: 'both' as 'online' | 'offline' | 'both' }],
       })),
-      slot_types: DEFAULT_SLOT_TYPES,
+      slot_types: resolveSlotTypes(),
     });
     setCustomSpecialization('');
     setCustomQualification('');
@@ -360,7 +376,7 @@ export default function DoctorsPage() {
             break_end: '',
           })),
       day_availability: dayAvailability,
-      slot_types: doctor.slot_types || DEFAULT_SLOT_TYPES,
+      slot_types: resolveSlotTypes(doctor.slot_types),
     });
     setCustomSpecialization('');
     setCustomQualification('');
@@ -1166,7 +1182,7 @@ export default function DoctorsPage() {
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">Configure available consultation durations and their prices</p>
                 <div className="space-y-3">
-                  {formData.slot_types.map((slotType, index) => (
+                  {(formData.slot_types?.length ? formData.slot_types : resolveSlotTypes()).map((slotType, index) => (
                     <div key={index} className={`p-4 rounded-lg border-2 ${slotType.is_active ? 'border-cyan-200 bg-cyan-50/30' : 'border-gray-200 bg-gray-50'}`}>
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-4 flex-wrap">

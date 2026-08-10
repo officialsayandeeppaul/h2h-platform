@@ -42,6 +42,7 @@ export default function SuperAdminQuickBookingsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const [amountInput, setAmountInput] = useState('');
+  const [needsSetup, setNeedsSetup] = useState(false);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -56,11 +57,17 @@ export default function SuperAdminQuickBookingsPage() {
       const setJson = await setRes.json().catch(() => ({}));
       if (listJson.success && Array.isArray(listJson.data)) setBookings(listJson.data);
       else setBookings([]);
+      setNeedsSetup(Boolean(setJson.needsSetup));
       if (setJson.settings) {
         setSettings(setJson.settings);
         setAmountInput(
           setJson.settings.default_amount != null ? String(setJson.settings.default_amount) : ''
         );
+      }
+      if (setJson.needsSetup) {
+        toast.message('Database setup needed', {
+          description: 'Run RUN_THIS_QUICK_BOOKINGS.sql in Supabase SQL Editor for this project.',
+        });
       }
     } finally {
       setLoading(false);
@@ -149,6 +156,12 @@ export default function SuperAdminQuickBookingsPage() {
       {/* Payment controls */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
         <h2 className="text-sm font-semibold text-gray-900">Payment settings</h2>
+        {needsSetup && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Tables missing on this database. In Supabase SQL Editor run{' '}
+            <code className="font-mono text-xs">RUN_THIS_QUICK_BOOKINGS.sql</code>, then refresh.
+          </div>
+        )}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input
