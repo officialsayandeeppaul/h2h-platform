@@ -12,12 +12,14 @@ let razorpayInstance: Razorpay | null = null;
 
 function getRazorpay(): Razorpay {
   if (!razorpayInstance) {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+    if (!keyId || !keySecret) {
       throw new Error('Razorpay credentials not configured');
     }
     razorpayInstance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: keyId,
+      key_secret: keySecret,
     });
   }
   return razorpayInstance;
@@ -78,14 +80,18 @@ function isRazorpayAuthError(error: unknown): boolean {
   return msg.includes('authentication') || msg.includes('unauthorized');
 }
 
-/** Checkout key must be the same key_id used to create the order. */
+/** Checkout key must be the same key_id used to create the order (server key, trimmed). */
 function checkoutKeyId(): string {
-  return process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
+  return (process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '').trim();
 }
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    const serverKey = (process.env.RAZORPAY_KEY_ID || '').trim();
+    const publicKey = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+
+    if (!serverKey || !keySecret) {
       console.error(
         'Razorpay env missing: set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET (and NEXT_PUBLIC_RAZORPAY_KEY_ID for client)'
       );
@@ -95,18 +101,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    if (publicKey && publicKey !== process.env.RAZORPAY_KEY_ID) {
-      console.error(
-        'Razorpay key mismatch: RAZORPAY_KEY_ID and NEXT_PUBLIC_RAZORPAY_KEY_ID must be identical'
-      );
-      return NextResponse.json(
-        {
-          error:
-            'Payment keys are misconfigured (KEY_ID mismatch). Update Vercel Production env so RAZORPAY_KEY_ID and NEXT_PUBLIC_RAZORPAY_KEY_ID match, then redeploy.',
-        },
-        { status: 503 }
-      );
+    // NEXT_PUBLIC_* is inlined at build time; RAZORPAY_KEY_ID is runtime — they can briefly diverge
+    // after an env edit. Checkout uses keyId from this API response, so never block on mismatch.
+    if (publicKey && publicKey !== serverKey) {
+      console.warn('Razorpay NEXT_PUBLIC_RAZORPAY_KEY_ID differs from RAZORPAY_KEY_ID; using server key for checkout', {
+        serverLen: serverKey.length,
+        publicLen: publicKey.length,
+        serverPrefix: serverKey.slice(0, 12),
+        publicPrefix: publicKey.slice(0, 12),
+      });
     }
 
     const supabase = await createClient();
