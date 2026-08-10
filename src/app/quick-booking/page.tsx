@@ -1,37 +1,52 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { Suspense, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { QuickBookingForm } from '@/components/booking/QuickBookingForm';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { openQuickBooking } from '@/components/booking/QuickBookingDialog';
+import { Button } from '@/components/ui/button';
 
-export const metadata: Metadata = {
-  title: 'Quick Booking | H2H Healthcare',
-  description: 'Book a service in seconds — just pick a service and share your name and mobile.',
-};
+function OpenFromQuery() {
+  const searchParams = useSearchParams();
+  const service = searchParams.get('service');
 
-type PageProps = {
-  searchParams?: Promise<{ service?: string }>;
-};
+  useEffect(() => {
+    openQuickBooking({ service });
+  }, [service]);
 
-export default async function QuickBookingPage({ searchParams }: PageProps) {
-  const params = searchParams ? await searchParams : {};
-  const serviceSlug = params.service || null;
+  return null;
+}
 
+/** Deep link — opens the shared Quick Booking modal hosted in Header. */
+export default function QuickBookingPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-cyan-50/40 pt-28 pb-16">
-      <div className="mx-auto max-w-lg px-6">
-        <p className="mb-2 text-center text-[12px] font-medium uppercase tracking-[0.14em] text-cyan-700">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-cyan-50/40">
+      <Header />
+      <main className="mx-auto max-w-lg px-6 pt-32 pb-20 text-center">
+        <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-cyan-700 mb-2">
           H2H Healthcare
         </p>
-        <h1 className="mb-2 text-center text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-          Quick Booking
-        </h1>
-        <p className="mb-8 text-center text-sm text-gray-500">
-          No doctor pick needed. Prefer a full appointment?{' '}
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Quick Booking</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Prefer full booking with a doctor?{' '}
           <Link href="/booking" className="text-cyan-700 hover:underline">
             Book with doctor
           </Link>
         </p>
-        <QuickBookingForm initialServiceSlug={serviceSlug} />
-      </div>
-    </main>
+        <Button
+          type="button"
+          className="bg-gradient-to-r from-blue-600 to-cyan-600"
+          onClick={() => openQuickBooking()}
+        >
+          Open Quick Booking
+        </Button>
+        <Suspense fallback={null}>
+          <OpenFromQuery />
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
   );
 }

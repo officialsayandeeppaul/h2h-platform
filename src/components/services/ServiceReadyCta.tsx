@@ -1,14 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { openQuickBooking } from '@/components/booking/QuickBookingDialog';
 
 type ServiceReadyCtaProps = {
   title?: string;
   subtitle?: string;
   bookingHref?: string;
   contactHref?: string;
-  quickBookingHref?: string;
+  /** service slug preselect for quick booking modal */
+  quickBookingService?: string;
   bookLabel?: string;
   contactLabel?: string;
   quickBookLabel?: string;
@@ -21,7 +25,7 @@ export function ServiceReadyCta({
   subtitle = 'Book your appointment today and take the first step towards recovery',
   bookingHref = '/booking',
   contactHref = '/contact',
-  quickBookingHref = '/quick-booking',
+  quickBookingService,
   bookLabel = 'Book Appointment',
   contactLabel = 'Contact Us',
   quickBookLabel = 'Quick Booking',
@@ -50,13 +54,12 @@ export function ServiceReadyCta({
         </p>
         <div className="flex flex-col justify-center gap-4 sm:flex-row sm:flex-wrap">
           <Button
+            type="button"
             className="h-12 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 hover:bg-gray-100 hover:!text-gray-900 [&_svg]:text-gray-900"
-            asChild
+            onClick={() => openQuickBooking({ service: quickBookingService })}
           >
-            <Link href={quickBookingHref}>
-              {quickBookLabel}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            {quickBookLabel}
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           <Button
             variant="outline"

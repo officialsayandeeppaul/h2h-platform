@@ -43,13 +43,18 @@ function loadRazorpayScript(): Promise<boolean> {
 type QuickBookingFormProps = {
   initialServiceSlug?: string | null;
   compact?: boolean;
+  /** modal = no outer card/header (dialog already has chrome) */
+  variant?: 'page' | 'modal';
   className?: string;
+  onSuccess?: () => void;
 };
 
 export function QuickBookingForm({
   initialServiceSlug,
   compact = false,
+  variant = 'page',
   className = '',
+  onSuccess,
 }: QuickBookingFormProps) {
   const [services, setServices] = useState<ServiceOption[]>([]);
   const [settings, setSettings] = useState<Settings>({
@@ -189,6 +194,7 @@ export function QuickBookingForm({
       if (data.booking?.payment_required) {
         await openCheckout(data.booking.id);
         toast.success('Payment completed');
+        onSuccess?.();
       } else {
         setDone({
           message: data.message || 'Request submitted. Our team will call you shortly.',
@@ -197,6 +203,7 @@ export function QuickBookingForm({
         setName('');
         setPhone('');
         setEmail('');
+        onSuccess?.();
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong';
@@ -216,7 +223,9 @@ export function QuickBookingForm({
 
   if (done) {
     return (
-      <div className={`rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center ${className}`}>
+      <div
+        className={`rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center ${className}`}
+      >
         <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600 mb-3" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           {done.paid ? 'Booking confirmed' : 'Request received'}
@@ -238,22 +247,30 @@ export function QuickBookingForm({
     );
   }
 
+  const isModal = variant === 'modal';
+
   return (
     <form
       onSubmit={onSubmit}
-      className={`rounded-2xl border border-gray-200 bg-white shadow-sm ${compact ? 'p-5' : 'p-6 sm:p-8'} ${className}`}
+      className={
+        isModal
+          ? `space-y-4 ${className}`
+          : `rounded-2xl border border-gray-200 bg-white shadow-sm ${compact ? 'p-5' : 'p-6 sm:p-8'} ${className}`
+      }
     >
-      <div className="flex items-start gap-3 mb-6">
-        <div className="rounded-xl bg-cyan-50 p-2.5 text-cyan-700">
-          <Zap className="h-5 w-5" />
+      {!isModal && (
+        <div className="flex items-start gap-3 mb-6">
+          <div className="rounded-xl bg-cyan-50 p-2.5 text-cyan-700">
+            <Zap className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Quick Booking</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Pick a service, share your name &amp; mobile — no doctor selection needed.
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Quick Booking</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Pick a service, share your name &amp; mobile — no doctor selection needed.
-          </p>
-        </div>
-      </div>
+      )}
 
       <div className="space-y-4">
         <div>

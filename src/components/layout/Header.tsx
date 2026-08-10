@@ -14,6 +14,7 @@ import {
 import { APP_CONFIG } from '@/constants/config';
 import { SERVICE_CATEGORIES } from '@/constants/services';
 import { Marquee } from '@/components/ui/marquee';
+import { QuickBookingDialog, openQuickBooking } from '@/components/booking/QuickBookingDialog';
 import type { User } from '@supabase/supabase-js';
 
 const phoneTel = `tel:${APP_CONFIG.phoneE164}`;
@@ -80,6 +81,7 @@ export function Header() {
 
   return (
     <>
+      <QuickBookingDialog />
       {/* Top announcement marquee */}
       <div role="banner" aria-label="Site updates" className="fixed top-0 left-0 right-0 z-[60] h-[30px] bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-600 overflow-hidden">
         <Marquee className="py-1.5" pauseOnHover={false} repeat={2}>
@@ -166,9 +168,10 @@ export function Header() {
                   <Button
                     variant="outline"
                     className="text-[13px] font-medium border-cyan-500 text-cyan-700 hover:bg-cyan-50"
-                    asChild
+                    type="button"
+                    onClick={() => openQuickBooking()}
                   >
-                    <Link href="/quick-booking">Quick Booking</Link>
+                    Quick Booking
                   </Button>
                   <Button variant="outline" className="text-[13px] font-medium border-cyan-500 text-cyan-600 hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-300" asChild>
                     <Link href="/dashboard">
@@ -206,9 +209,10 @@ export function Header() {
                   <Button
                     variant="outline"
                     className="text-[13px] font-medium border-cyan-500 text-cyan-700 hover:bg-cyan-50"
-                    asChild
+                    type="button"
+                    onClick={() => openQuickBooking()}
                   >
-                    <Link href="/quick-booking">Quick Booking</Link>
+                    Quick Booking
                   </Button>
                   <Button className="text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 border-0  transition-all duration-300" asChild>
                     <Link href="/booking">Book Now</Link>
@@ -292,10 +296,15 @@ export function Header() {
                 )
               )}
               <div className="flex flex-col gap-3 pt-4 mt-2 border-t border-gray-100">
-                <Button className="w-full justify-center text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" asChild>
-                  <Link href="/quick-booking" onClick={() => setMobileMenuOpen(false)}>
-                    Quick Booking
-                  </Link>
+                <Button
+                  className="w-full justify-center text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openQuickBooking();
+                  }}
+                >
+                  Quick Booking
                 </Button>
                 {user ? (
                   <Button variant="outline" className="w-full justify-center text-[13px] font-medium border-cyan-500 text-cyan-600 hover:bg-cyan-50" asChild>
