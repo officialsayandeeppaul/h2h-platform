@@ -98,15 +98,12 @@ export function QuickBookingDialog({
             </DialogHeader>
           </div>
 
-          <div className="overflow-y-auto px-5 sm:px-6 py-5">
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-6 py-5">
             {open && (
               <QuickBookingForm
                 key={serviceSlug || 'default'}
                 initialServiceSlug={serviceSlug}
                 variant="modal"
-                onSuccess={() => {
-                  /* keep modal open to show success state inside form */
-                }}
               />
             )}
           </div>

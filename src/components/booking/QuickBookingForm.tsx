@@ -3,7 +3,14 @@
 import { useEffect, useState } from 'react';
 import { Loader2, CheckCircle2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatPhoneInput } from '@/lib/validation/indian-phone';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { formatPhoneInput, validateIndianMobile } from '@/lib/validation/indian-phone';
 import { toast } from 'sonner';
 
 type ServiceOption = {
@@ -67,6 +74,8 @@ export function QuickBookingForm({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [serviceError, setServiceError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ message: string; paid?: boolean } | null>(null);
 
@@ -114,6 +123,21 @@ export function QuickBookingForm({
         ? settings.default_amount
         : selected?.tier1_price ?? null
       : null;
+
+  const onPhoneChange = (raw: string) => {
+    const next = formatPhoneInput(raw);
+    setPhone(next);
+    if (!next) {
+      setPhoneError(null);
+      return;
+    }
+    if (next.length < 10) {
+      setPhoneError('Enter exactly 10 digits');
+      return;
+    }
+    const check = validateIndianMobile(next);
+    setPhoneError(check.valid ? null : check.error || 'Invalid mobile');
+  };
 
   const openCheckout = async (bookingId: string) => {
     const orderRes = await fetch('/api/quick-bookings/create-order', {
@@ -173,6 +197,25 @@ export function QuickBookingForm({
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!serviceId) {
+      setServiceError('Please select a service');
+      return;
+    }
+    setServiceError(null);
+
+    const phoneCheck = validateIndianMobile(phone);
+    if (!phoneCheck.valid || !phoneCheck.normalized) {
+      setPhoneError(phoneCheck.error || 'Enter exactly 10-digit mobile');
+      return;
+    }
+    setPhoneError(null);
+
+    if (name.trim().length < 2) {
+      toast.error('Name is required');
+      return;
+    }
+
     setSubmitting(true);
     setDone(null);
     try {
@@ -181,8 +224,8 @@ export function QuickBookingForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           serviceId,
-          name,
-          phone,
+          name: name.trim(),
+          phone: phoneCheck.normalized,
           email: email.trim() || undefined,
         }),
       });
@@ -203,6 +246,7 @@ export function QuickBookingForm({
         setName('');
         setPhone('');
         setEmail('');
+        setServiceId('');
         onSuccess?.();
       }
     } catch (err) {
@@ -215,7 +259,7 @@ export function QuickBookingForm({
 
   if (loadingMeta) {
     return (
-      <div className={`flex items-center justify-center py-16 text-gray-500 ${className}`}>
+      <div className={`flex items-center justify-center py-12 text-gray-500 ${className}`}>
         <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
       </div>
     );
@@ -223,9 +267,7 @@ export function QuickBookingForm({
 
   if (done) {
     return (
-      <div
-        className={`rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center ${className}`}
-      >
+      <div className={`rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center ${className}`}>
         <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600 mb-3" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           {done.paid ? 'Booking confirmed' : 'Request received'}
@@ -239,6 +281,7 @@ export function QuickBookingForm({
             setName('');
             setPhone('');
             setEmail('');
+            setServiceId('');
           }}
         >
           Book another
@@ -257,6 +300,7 @@ export function QuickBookingForm({
           ? `space-y-4 ${className}`
           : `rounded-2xl border border-gray-200 bg-white shadow-sm ${compact ? 'p-5' : 'p-6 sm:p-8'} ${className}`
       }
+      noValidate
     >
       {!isModal && (
         <div className="flex items-start gap-3 mb-6">
@@ -275,19 +319,33 @@ export function QuickBookingForm({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Service *</label>
-          <select
-            required
-            value={serviceId}
-            onChange={(e) => setServiceId(e.target.value)}
-            className="w-full h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500"
+          <Select
+            value={serviceId || undefined}
+            onValueChange={(v) => {
+              setServiceId(v);
+              setServiceError(null);
+            }}
           >
-            <option value="">Select a service</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              className={`h-11 w-full rounded-lg border-gray-200 bg-white text-sm ${
+                serviceError ? 'border-red-400 focus-visible:ring-red-200' : ''
+              }`}
+            >
+              <SelectValue placeholder="Select a service" />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              sideOffset={4}
+              className="z-[80] max-h-56 w-[var(--radix-select-trigger-width)] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg"
+            >
+              {services.map((s) => (
+                <SelectItem key={s.id} value={s.id} className="cursor-pointer text-sm">
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {serviceError && <p className="mt-1 text-xs text-red-600">{serviceError}</p>}
         </div>
 
         <div>
@@ -304,15 +362,36 @@ export function QuickBookingForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile *</label>
-          <input
-            required
-            inputMode="numeric"
-            autoComplete="tel"
-            value={phone}
-            onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
-            placeholder="10-digit mobile"
-            className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500"
-          />
+          <div
+            className={`flex h-11 overflow-hidden rounded-lg border bg-white focus-within:ring-2 focus-within:ring-cyan-500/30 focus-within:border-cyan-500 ${
+              phoneError ? 'border-red-400' : 'border-gray-200'
+            }`}
+          >
+            <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3 text-sm text-gray-600 shrink-0">
+              +91
+            </span>
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="tel-national"
+              maxLength={10}
+              pattern="[6-9][0-9]{9}"
+              value={phone}
+              onChange={(e) => onPhoneChange(e.target.value)}
+              onBlur={() => {
+                if (phone) {
+                  const check = validateIndianMobile(phone);
+                  setPhoneError(check.valid ? null : check.error || 'Invalid mobile');
+                }
+              }}
+              placeholder="10-digit mobile"
+              className="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm outline-none"
+              aria-invalid={Boolean(phoneError)}
+            />
+          </div>
+          <p className={`mt-1 text-xs ${phoneError ? 'text-red-600' : 'text-gray-400'}`}>
+            {phoneError || `${phone.length}/10 digits · starts with 6–9`}
+          </p>
         </div>
 
         <div>
@@ -339,7 +418,7 @@ export function QuickBookingForm({
 
         <Button
           type="submit"
-          disabled={submitting || !services.length}
+          disabled={submitting || !services.length || Boolean(phoneError)}
           className="w-full h-11 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
         >
           {submitting ? (
