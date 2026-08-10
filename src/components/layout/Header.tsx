@@ -162,11 +162,20 @@ export function Header() {
 
             <div className="hidden sm:flex items-center gap-2">
               {user ? (
-                <Button variant="outline" className="text-[13px] font-medium border-cyan-500 text-cyan-600 hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-300" asChild>
-                  <Link href="/dashboard">
-                    Dashboard
-                  </Link>
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    className="text-[13px] font-medium border-cyan-500 text-cyan-700 hover:bg-cyan-50"
+                    asChild
+                  >
+                    <Link href="/quick-booking">Quick Booking</Link>
+                  </Button>
+                  <Button variant="outline" className="text-[13px] font-medium border-cyan-500 text-cyan-600 hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-300" asChild>
+                    <Link href="/dashboard">
+                      Dashboard
+                    </Link>
+                  </Button>
+                </>
               ) : (
                 <>
                   <DropdownMenu>
@@ -194,6 +203,13 @@ export function Header() {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  <Button
+                    variant="outline"
+                    className="text-[13px] font-medium border-cyan-500 text-cyan-700 hover:bg-cyan-50"
+                    asChild
+                  >
+                    <Link href="/quick-booking">Quick Booking</Link>
+                  </Button>
                   <Button className="text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 border-0  transition-all duration-300" asChild>
                     <Link href="/booking">Book Now</Link>
                   </Button>
@@ -276,6 +292,11 @@ export function Header() {
                 )
               )}
               <div className="flex flex-col gap-3 pt-4 mt-2 border-t border-gray-100">
+                <Button className="w-full justify-center text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" asChild>
+                  <Link href="/quick-booking" onClick={() => setMobileMenuOpen(false)}>
+                    Quick Booking
+                  </Link>
+                </Button>
                 {user ? (
                   <Button variant="outline" className="w-full justify-center text-[13px] font-medium border-cyan-500 text-cyan-600 hover:bg-cyan-50" asChild>
                     <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
@@ -294,7 +315,7 @@ export function Header() {
                         <Stethoscope className="h-4 w-4" /> Login as Doctor
                       </Link>
                     </Button>
-                    <Button className="w-full justify-center text-[13px] font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" asChild>
+                    <Button variant="outline" className="w-full justify-center text-[13px] font-medium border-cyan-500 text-cyan-700" asChild>
                       <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>Book Appointment</Link>
                     </Button>
                   </>

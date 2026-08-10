@@ -187,6 +187,7 @@ export default function ServiceDetailPage() {
           title={service.cta.title}
           subtitle={service.cta.subtitle}
           bookingHref={`/booking?service=${slug}`}
+          quickBookingHref={`/quick-booking?service=${slug}`}
         />
       </main>
 

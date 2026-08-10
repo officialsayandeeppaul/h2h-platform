@@ -8,8 +8,10 @@ type ServiceReadyCtaProps = {
   subtitle?: string;
   bookingHref?: string;
   contactHref?: string;
+  quickBookingHref?: string;
   bookLabel?: string;
   contactLabel?: string;
+  quickBookLabel?: string;
   className?: string;
 };
 
@@ -19,8 +21,10 @@ export function ServiceReadyCta({
   subtitle = 'Book your appointment today and take the first step towards recovery',
   bookingHref = '/booking',
   contactHref = '/contact',
+  quickBookingHref = '/quick-booking',
   bookLabel = 'Book Appointment',
   contactLabel = 'Contact Us',
+  quickBookLabel = 'Quick Booking',
   className,
 }: ServiceReadyCtaProps) {
   return (
@@ -44,15 +48,22 @@ export function ServiceReadyCta({
         <p className="mx-auto mb-8 max-w-xl text-[15px] leading-relaxed text-white/85">
           {subtitle}
         </p>
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+        <div className="flex flex-col justify-center gap-4 sm:flex-row sm:flex-wrap">
           <Button
             className="h-12 rounded-full bg-white px-8 text-[14px] font-medium text-gray-900 hover:bg-gray-100 hover:!text-gray-900 [&_svg]:text-gray-900"
             asChild
           >
-            <Link href={bookingHref}>
-              {bookLabel}
+            <Link href={quickBookingHref}>
+              {quickBookLabel}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-12 rounded-full border border-white/50 bg-transparent px-8 text-[14px] font-medium text-white shadow-none hover:bg-white/15 hover:!text-white hover:border-white"
+            asChild
+          >
+            <Link href={bookingHref}>{bookLabel}</Link>
           </Button>
           <Button
             variant="outline"

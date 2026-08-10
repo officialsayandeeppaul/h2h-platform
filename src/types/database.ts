@@ -179,6 +179,40 @@ export interface ContactMessage {
   created_at: string;
 }
 
+export type QuickBookingStatus = 'new' | 'contacted' | 'converted' | 'cancelled';
+export type QuickBookingPaymentStatus =
+  | 'not_required'
+  | 'pending'
+  | 'paid'
+  | 'failed'
+  | 'waived';
+
+export interface QuickBooking {
+  id: string;
+  service_id: string | null;
+  service_name: string;
+  patient_name: string;
+  patient_phone: string;
+  patient_email: string | null;
+  status: QuickBookingStatus;
+  payment_required: boolean;
+  amount: number | null;
+  payment_status: QuickBookingPaymentStatus;
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuickBookingSettingsRow {
+  id: number;
+  payment_enabled: boolean;
+  default_amount: number | null;
+  require_payment: boolean;
+  updated_at: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -236,6 +270,38 @@ export interface Database {
         Row: ContactMessage;
         Insert: Omit<ContactMessage, 'id' | 'created_at'> & { services?: string[] };
         Update: Partial<Omit<ContactMessage, 'id'>>;
+      };
+      quick_bookings: {
+        Row: QuickBooking;
+        Insert: {
+          id?: string;
+          service_id?: string | null;
+          service_name: string;
+          patient_name: string;
+          patient_phone: string;
+          patient_email?: string | null;
+          status?: QuickBookingStatus;
+          payment_required?: boolean;
+          amount?: number | null;
+          payment_status?: QuickBookingPaymentStatus;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          admin_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<QuickBooking, 'id'>>;
+      };
+      quick_booking_settings: {
+        Row: QuickBookingSettingsRow;
+        Insert: {
+          id?: number;
+          payment_enabled?: boolean;
+          default_amount?: number | null;
+          require_payment?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<QuickBookingSettingsRow, 'id'>>;
       };
     };
   };

@@ -25,7 +25,8 @@ import {
   BarChart3,
   MessageCircle,
   Bell,
-  Camera
+  Camera,
+  Zap
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -168,6 +169,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/super-admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/super-admin/appointments', icon: Calendar, label: 'Appointments' },
     { href: '/super-admin/call-requests', icon: PhoneCall, label: 'Call Requests', superAdminOnly: true },
+    { href: '/super-admin/quick-bookings', icon: Zap, label: 'Quick Bookings', superAdminOnly: true },
     { href: '/super-admin/schedule-requests', icon: CalendarClock, label: 'Schedule requests', superAdminOnly: true },
     { href: '/super-admin/payments', icon: CreditCard, label: 'Payments' },
     { href: '/super-admin/users', icon: Users, label: 'Users', superAdminOnly: true },
