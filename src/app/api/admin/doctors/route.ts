@@ -572,13 +572,23 @@ export async function PUT(request: NextRequest) {
         for (const dayAvail of updateData.day_availability) {
           if (dayAvail.is_available && dayAvail.slots && dayAvail.slots.length > 0) {
             for (const slot of dayAvail.slots) {
+              const mode = slot.mode || 'both';
+              if ((mode === 'offline' || mode === 'both') && !slot.center_id) {
+                return NextResponse.json(
+                  {
+                    error:
+                      'Each Both/Clinic availability slot needs a clinic center. Select a center, then save again.',
+                  },
+                  { status: 400 }
+                );
+              }
               availabilityRecords.push({
                 doctor_id: id,
                 day_of_week: dayAvail.day_of_week,
                 start_time: slot.start_time,
                 end_time: slot.end_time,
                 is_available: true,
-                mode: slot.mode || 'both',
+                mode,
                 center_id: slot.center_id || null,
               });
             }

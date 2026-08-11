@@ -171,16 +171,58 @@ export async function GET(request: NextRequest) {
         
         if (doctorServices && doctorServices.length > 0) {
           const doctorIds = [...new Set(doctorServices.map((ds: any) => ds.doctor_id))];
-          
-          // Get center IDs where these doctors have availability
+          const centerIdSet = new Set<string>();
+
           const { data: availability } = await supabase
             .from('doctor_availability')
-            .select('center_id')
+            .select('center_id, mode, doctor_id')
             .in('doctor_id', doctorIds)
-            .not('center_id', 'is', null);
-          
-          if (availability && availability.length > 0) {
-            centerIdsWithService = [...new Set(availability.map((a: any) => a.center_id))] as string[];
+            .eq('is_available', true);
+
+          const clinicCapable = (availability || []).filter((a: any) => {
+            const mode = a.mode || 'both';
+            return mode === 'offline' || mode === 'both';
+          });
+
+          for (const row of clinicCapable) {
+            if (row.center_id) centerIdSet.add(row.center_id);
+          }
+
+          // Both/Clinic slots are often saved with empty "📍 Center" → center_id null.
+          // Fall back to active centers under the doctor's location so Clinic Visit still shows.
+          const { data: doctorsMeta } = await supabase
+            .from('doctors')
+            .select('id, location_id, offers_clinic')
+            .in('id', doctorIds)
+            .eq('is_active', true);
+
+          const locationIds = [
+            ...new Set(
+              (doctorsMeta || [])
+                .filter((d: any) => {
+                  if (d.offers_clinic === false || !d.location_id) return false;
+                  const rows = clinicCapable.filter((a: any) => a.doctor_id === d.id);
+                  if (rows.length === 0) return d.offers_clinic === true;
+                  return rows.some((a: any) => !a.center_id);
+                })
+                .map((d: any) => d.location_id as string)
+            ),
+          ];
+
+          if (locationIds.length > 0) {
+            const { data: fallbackCenters } = await supabase
+              .from('clinic_centers')
+              .select('id')
+              .in('location_id', locationIds)
+              .eq('is_active', true);
+
+            for (const c of fallbackCenters || []) {
+              if (c.id) centerIdSet.add(c.id);
+            }
+          }
+
+          if (centerIdSet.size > 0) {
+            centerIdsWithService = [...centerIdSet];
           }
         }
         

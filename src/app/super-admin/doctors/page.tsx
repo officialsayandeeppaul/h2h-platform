@@ -421,30 +421,30 @@ export default function DoctorsPage() {
   // Validate time slots don't overlap within the same day
   const validateTimeSlots = (): string | null => {
     for (const dayAvail of formData.day_availability) {
-      if (!dayAvail.is_available || dayAvail.slots.length < 2) continue;
-      
-      // Sort slots by start time
-      const sortedSlots = [...dayAvail.slots].sort((a, b) => 
+      if (!dayAvail.is_available) continue;
+      const dayName = DAYS_OF_WEEK[dayAvail.day_of_week];
+
+      for (const slot of dayAvail.slots) {
+        if (slot.start_time >= slot.end_time) {
+          return `Invalid time range on ${dayName}: Start time (${slot.start_time}) must be before end time (${slot.end_time})`;
+        }
+        // Clinic Visit on booking only appears when a real center is linked
+        if ((slot.mode === 'offline' || slot.mode === 'both') && !slot.center_id) {
+          return `Select a clinic center for ${dayName} (${slot.start_time}–${slot.end_time}). “Both” / Clinic needs a center so patients can book clinic visits.`;
+        }
+      }
+
+      if (dayAvail.slots.length < 2) continue;
+
+      const sortedSlots = [...dayAvail.slots].sort((a, b) =>
         a.start_time.localeCompare(b.start_time)
       );
-      
-      // Check for overlaps
+
       for (let i = 0; i < sortedSlots.length - 1; i++) {
         const current = sortedSlots[i];
         const next = sortedSlots[i + 1];
-        
-        // If current end time is after next start time, they overlap
         if (current.end_time > next.start_time) {
-          const dayName = DAYS_OF_WEEK[dayAvail.day_of_week];
           return `Time slots overlap on ${dayName}: ${current.start_time}-${current.end_time} and ${next.start_time}-${next.end_time}`;
-        }
-      }
-      
-      // Validate each slot has valid times
-      for (const slot of dayAvail.slots) {
-        if (slot.start_time >= slot.end_time) {
-          const dayName = DAYS_OF_WEEK[dayAvail.day_of_week];
-          return `Invalid time range on ${dayName}: Start time (${slot.start_time}) must be before end time (${slot.end_time})`;
         }
       }
     }
@@ -1429,9 +1429,14 @@ export default function DoctorsPage() {
                                       newDayAvail[dayIndex] = { ...dayAvail, slots: newSlots };
                                       setFormData({ ...formData, day_availability: newDayAvail });
                                     }}
-                                    className="px-2 py-1 border border-cyan-300 bg-cyan-50 rounded text-sm h-8 min-w-[150px]"
+                                    className={`px-2 py-1 border rounded text-sm h-8 min-w-[150px] ${
+                                      !slot.center_id
+                                        ? 'border-amber-400 bg-amber-50'
+                                        : 'border-cyan-300 bg-cyan-50'
+                                    }`}
+                                    required
                                   >
-                                    <option value="">📍 Center</option>
+                                    <option value="">Select center…</option>
                                     {clinicCenters.length > 0 ? (
                                       clinicCenters.map((center) => (
                                         <option key={center.id} value={center.id}>

@@ -91,6 +91,44 @@ export async function GET(
       }
     }
 
+    // Fallback when Both/Clinic slots have no center_id assigned
+    if (
+      clinicCenters.length === 0 &&
+      doctor.offers_clinic !== false &&
+      (doctor as any).location?.id
+    ) {
+      const hasClinicMode = (doctor.doctor_availability || []).some((a: any) => {
+        const mode = a.mode || 'both';
+        return a.is_available !== false && (mode === 'offline' || mode === 'both');
+      });
+      if (hasClinicMode || doctor.offers_clinic === true) {
+        const { data: locCenters } = await (adminClient.from('clinic_centers') as any)
+          .select(`
+            id,
+            name,
+            address,
+            phone,
+            facilities,
+            rating,
+            location:location_id(id, name, city)
+          `)
+          .eq('location_id', (doctor as any).location.id)
+          .eq('is_active', true);
+
+        if (locCenters && locCenters.length > 0) {
+          clinicCenters = locCenters.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            address: c.address || '',
+            city: c.location?.city || '',
+            phone: c.phone || '',
+            facilities: c.facilities || [],
+            rating: c.rating || 0,
+          }));
+        }
+      }
+    }
+
     // Fetch consultation slot types for this doctor (Online vs Clinic pricing)
     const { data: slotTypes } = await (adminClient.from('consultation_slot_types') as any)
       .select('id, duration_minutes, name, label, online_price, offline_price, clinic_price, home_visit_price, is_active')
