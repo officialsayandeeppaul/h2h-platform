@@ -127,48 +127,69 @@ export async function GET(request: NextRequest) {
     let centerIdsWithService: string[] | null = null;
     
     if (serviceId || serviceSlug) {
-      // First, get the service ID if only slug is provided
-      let actualServiceId = serviceId;
-      if (!actualServiceId && serviceSlug) {
-        // Normalize the slug (handle spaces, underscores, hyphens)
-        const normalizedSlug = serviceSlug.toLowerCase().replace(/[\s_]/g, '-').replace(/-+/g, '-');
-        
-        // Try exact match first
-        let { data: serviceData } = await supabase
+      // Resolve one or many service IDs (booking often passes category keys like pain_relief_physiotherapy)
+      let serviceIds: string[] = [];
+
+      if (serviceId) {
+        serviceIds = [serviceId];
+      } else if (serviceSlug) {
+        const raw = serviceSlug.toLowerCase().trim();
+        const normalizedSlug = raw.replace(/[\s_]/g, '-').replace(/-+/g, '-');
+        const categoryKey = raw.replace(/[-\s]/g, '_');
+
+        // Category match (e.g. pain_relief_physiotherapy → all services in category)
+        const { data: byCategory } = await supabase
           .from('services')
-          .select('id, slug, name')
-          .eq('slug', normalizedSlug)
-          .single();
-        
-        // If no exact match, try fuzzy match by searching all services
-        if (!serviceData) {
+          .select('id')
+          .eq('is_active', true)
+          .eq('category', categoryKey);
+
+        if (byCategory && byCategory.length > 0) {
+          serviceIds = byCategory.map((s: any) => s.id);
+        }
+
+        // Exact slug match
+        if (serviceIds.length === 0) {
+          const { data: bySlug } = await supabase
+            .from('services')
+            .select('id')
+            .eq('slug', normalizedSlug)
+            .eq('is_active', true);
+          if (bySlug?.length) serviceIds = bySlug.map((s: any) => s.id);
+        }
+
+        // Fuzzy fallback
+        if (serviceIds.length === 0) {
           const { data: allServices } = await supabase
             .from('services')
-            .select('id, slug, name')
+            .select('id, slug, name, category')
             .eq('is_active', true);
-          
+
           if (allServices) {
-            const searchTerms = serviceSlug.toLowerCase().replace(/[-_]/g, ' ').split(' ').filter(Boolean);
-            const matched = allServices.find((s: any) => {
-              const slugMatch = s.slug === normalizedSlug || s.slug?.includes(normalizedSlug) || normalizedSlug.includes(s.slug || '');
-              const nameWords = s.name.toLowerCase().replace(/[&]/g, 'and').split(' ');
-              const nameMatch = searchTerms.some((term: string) => nameWords.some((word: string) => word.includes(term) || term.includes(word)));
+            const searchTerms = raw.replace(/[-_]/g, ' ').split(' ').filter(Boolean);
+            const matched = allServices.filter((s: any) => {
+              if (s.category === categoryKey || s.category === raw) return true;
+              const slugMatch =
+                s.slug === normalizedSlug ||
+                s.slug?.includes(normalizedSlug) ||
+                normalizedSlug.includes(s.slug || '');
+              const nameWords = s.name.toLowerCase().replace(/[&]/g, 'and').split(/\s+/);
+              const nameMatch = searchTerms.some((term: string) =>
+                nameWords.some((word: string) => word.includes(term) || term.includes(word))
+              );
               return slugMatch || nameMatch;
             });
-            serviceData = matched || null;
+            serviceIds = matched.map((s: any) => s.id);
           }
         }
-        
-        actualServiceId = (serviceData as any)?.id || null;
       }
-      
-      if (actualServiceId) {
-        // Find doctors who offer this service via doctor_services join table
+
+      if (serviceIds.length > 0) {
         const { data: doctorServices } = await supabase
           .from('doctor_services')
           .select('doctor_id')
-          .eq('service_id', actualServiceId);
-        
+          .in('service_id', serviceIds);
+
         if (doctorServices && doctorServices.length > 0) {
           const doctorIds = [...new Set(doctorServices.map((ds: any) => ds.doctor_id))];
           const centerIdSet = new Set<string>();
@@ -188,14 +209,13 @@ export async function GET(request: NextRequest) {
             if (row.center_id) centerIdSet.add(row.center_id);
           }
 
-          // Both/Clinic slots are often saved with empty "📍 Center" → center_id null.
-          // Fall back to active centers under the doctor's location so Clinic Visit still shows.
           const { data: doctorsMeta } = await supabase
             .from('doctors')
             .select('id, location_id, offers_clinic')
             .in('id', doctorIds)
             .eq('is_active', true);
 
+          // Location fallback for Both/Clinic slots with null center_id, or offers_clinic doctors
           const locationIds = [
             ...new Set(
               (doctorsMeta || [])
@@ -203,7 +223,7 @@ export async function GET(request: NextRequest) {
                   if (d.offers_clinic === false || !d.location_id) return false;
                   const rows = clinicCapable.filter((a: any) => a.doctor_id === d.id);
                   if (rows.length === 0) return d.offers_clinic === true;
-                  return rows.some((a: any) => !a.center_id);
+                  return rows.some((a: any) => !a.center_id) || d.offers_clinic === true;
                 })
                 .map((d: any) => d.location_id as string)
             ),
@@ -221,13 +241,26 @@ export async function GET(request: NextRequest) {
             }
           }
 
+          // Last resort: any doctor offering this service with clinic enabled → all active centers
+          if (centerIdSet.size === 0) {
+            const anyClinicDoctor = (doctorsMeta || []).some((d: any) => d.offers_clinic !== false);
+            if (anyClinicDoctor || clinicCapable.length > 0) {
+              const { data: allCenters } = await supabase
+                .from('clinic_centers')
+                .select('id')
+                .eq('is_active', true);
+              for (const c of allCenters || []) {
+                if (c.id) centerIdSet.add(c.id);
+              }
+            }
+          }
+
           if (centerIdSet.size > 0) {
             centerIdsWithService = [...centerIdSet];
           }
         }
-        
+
         if (!centerIdsWithService || centerIdsWithService.length === 0) {
-          // No centers have doctors offering this service - return empty
           return NextResponse.json({
             success: true,
             data: {
