@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, CheckCircle2, Zap } from 'lucide-react';
+import { QuickBookingFormSkeleton } from '@/components/booking/BookingSkeletons';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -26,6 +27,48 @@ type Settings = {
   default_amount: number | null;
   require_payment: boolean;
 };
+
+type QuickBookingMeta = {
+  services: ServiceOption[];
+  settings: Settings;
+};
+
+let quickBookingMetaCache: QuickBookingMeta | null = null;
+let quickBookingMetaPromise: Promise<QuickBookingMeta> | null = null;
+
+/** Prefetch so Quick Booking opens with the form ready (no spinner). */
+export function prefetchQuickBookingMeta(): Promise<QuickBookingMeta> {
+  if (quickBookingMetaCache) return Promise.resolve(quickBookingMetaCache);
+  if (quickBookingMetaPromise) return quickBookingMetaPromise;
+
+  quickBookingMetaPromise = (async () => {
+    const [svcRes, setRes] = await Promise.all([
+      fetch('/api/services'),
+      fetch('/api/quick-bookings'),
+    ]);
+    const svcJson = await svcRes.json().catch(() => ({}));
+    const setJson = await setRes.json().catch(() => ({}));
+    const list: ServiceOption[] = Array.isArray(svcJson.data)
+      ? svcJson.data
+      : Array.isArray(svcJson.services)
+        ? svcJson.services
+        : [];
+    const meta: QuickBookingMeta = {
+      services: list.filter((s) => s.id && s.name),
+      settings: setJson.settings || {
+        payment_enabled: false,
+        default_amount: null,
+        require_payment: true,
+      },
+    };
+    quickBookingMetaCache = meta;
+    return meta;
+  })().finally(() => {
+    quickBookingMetaPromise = null;
+  });
+
+  return quickBookingMetaPromise;
+}
 
 declare global {
   interface Window {
@@ -63,13 +106,18 @@ export function QuickBookingForm({
   className = '',
   onSuccess,
 }: QuickBookingFormProps) {
-  const [services, setServices] = useState<ServiceOption[]>([]);
-  const [settings, setSettings] = useState<Settings>({
-    payment_enabled: false,
-    default_amount: null,
-    require_payment: true,
-  });
-  const [loadingMeta, setLoadingMeta] = useState(true);
+  const [services, setServices] = useState<ServiceOption[]>(
+    () => quickBookingMetaCache?.services ?? []
+  );
+  const [settings, setSettings] = useState<Settings>(
+    () =>
+      quickBookingMetaCache?.settings ?? {
+        payment_enabled: false,
+        default_amount: null,
+        require_payment: true,
+      }
+  );
+  const [loadingMeta, setLoadingMeta] = useState(() => !quickBookingMetaCache);
   const [serviceId, setServiceId] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -83,26 +131,14 @@ export function QuickBookingForm({
     let cancelled = false;
     (async () => {
       try {
-        const [svcRes, setRes] = await Promise.all([
-          fetch('/api/services'),
-          fetch('/api/quick-bookings'),
-        ]);
-        const svcJson = await svcRes.json().catch(() => ({}));
-        const setJson = await setRes.json().catch(() => ({}));
+        const meta = await prefetchQuickBookingMeta();
         if (cancelled) return;
 
-        const list: ServiceOption[] = Array.isArray(svcJson.data)
-          ? svcJson.data
-          : Array.isArray(svcJson.services)
-            ? svcJson.services
-            : [];
-        const active = list.filter((s) => s.id && s.name);
-        setServices(active);
-
-        if (setJson.settings) setSettings(setJson.settings);
+        setServices(meta.services);
+        setSettings(meta.settings);
 
         if (initialServiceSlug) {
-          const match = active.find(
+          const match = meta.services.find(
             (s) => s.slug === initialServiceSlug || s.id === initialServiceSlug
           );
           if (match) setServiceId(match.id);
@@ -259,9 +295,10 @@ export function QuickBookingForm({
 
   if (loadingMeta) {
     return (
-      <div className={`flex items-center justify-center py-12 text-gray-500 ${className}`}>
-        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
-      </div>
+      <QuickBookingFormSkeleton
+        className={className}
+        modal={variant === 'modal'}
+      />
     );
   }
 

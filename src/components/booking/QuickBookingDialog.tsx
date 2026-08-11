@@ -20,6 +20,10 @@ export type OpenQuickBookingDetail = {
 /** Open Quick Booking modal from anywhere (navbar, services CTA, etc.). */
 export function openQuickBooking(detail?: OpenQuickBookingDetail) {
   if (typeof window === 'undefined') return;
+  // Warm cache so the form paints ready on open
+  void import('@/components/booking/QuickBookingForm').then((m) =>
+    m.prefetchQuickBookingMeta()
+  );
   window.dispatchEvent(
     new CustomEvent(QUICK_BOOKING_EVENT, {
       detail: { service: detail?.service ?? null },

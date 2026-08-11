@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { BookingConfirmationSkeleton } from '@/components/booking/BookingSkeletons';
 
 interface AppointmentDetails {
   id: string;
@@ -138,11 +139,7 @@ function ConfirmationContent() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
-      </div>
-    );
+    return <BookingConfirmationSkeleton />;
   }
 
   if (error || !appointment) {
@@ -457,11 +454,7 @@ function ConfirmationContent() {
 
 export default function BookingConfirmationPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
-      </div>
-    }>
+    <Suspense fallback={<BookingConfirmationSkeleton />}>
       <ConfirmationContent />
     </Suspense>
   );

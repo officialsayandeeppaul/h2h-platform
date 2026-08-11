@@ -49,6 +49,13 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Warm Quick Booking data so click opens the form without a spinner
+  useEffect(() => {
+    void import('@/components/booking/QuickBookingForm').then((m) =>
+      m.prefetchQuickBookingMeta()
+    );
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;

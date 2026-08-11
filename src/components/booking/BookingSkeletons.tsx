@@ -224,3 +224,107 @@ export function BookingPageSuspenseSkeleton() {
     </div>
   );
 }
+
+/** Booking confirmation page — matches receipt + sidebar layout */
+export function BookingConfirmationSkeleton() {
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="h-16 sm:h-20 border-b border-gray-100 bg-white" />
+      <main className="flex-1 pt-28 sm:pt-32 pb-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 animate-in fade-in duration-300">
+          <div className="text-center mb-8 space-y-3">
+            <Skeleton className="mx-auto h-7 w-40 rounded-full bg-gray-200/90" />
+            <Skeleton className="mx-auto h-9 w-64 max-w-full rounded-lg" />
+            <Skeleton className="mx-auto h-4 w-80 max-w-full rounded-md bg-gray-100" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3 space-y-5">
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-cyan-100 to-teal-100 px-6 py-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-3 w-20 rounded bg-white/70" />
+                    <Skeleton className="h-6 w-24 rounded-full bg-white/80" />
+                  </div>
+                  <Skeleton className="h-6 w-2/3 max-w-xs rounded-md bg-white/90" />
+                  <Skeleton className="h-4 w-40 rounded-md bg-white/70" />
+                </div>
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-xl bg-gray-100" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-3 w-12 rounded bg-gray-100" />
+                        <Skeleton className="h-4 w-36 max-w-full rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-6 pb-6">
+                  <Skeleton className="h-16 w-full rounded-xl bg-cyan-50/80" />
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 space-y-4">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3"
+                >
+                  <Skeleton className="h-4 w-28 rounded" />
+                  <Skeleton className="h-11 w-full rounded-xl bg-gray-100" />
+                  {i === 1 && <Skeleton className="h-11 w-full rounded-xl bg-gray-100" />}
+                  {i === 2 && (
+                    <div className="space-y-2 pt-1">
+                      <Skeleton className="h-3 w-full rounded bg-gray-100" />
+                      <Skeleton className="h-3 w-[90%] rounded bg-gray-100" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Skeleton className="h-12 w-full rounded-xl bg-cyan-100/80" />
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/** Quick Booking modal / form — fields appear instantly as placeholders */
+export function QuickBookingFormSkeleton({
+  className,
+  modal = true,
+}: {
+  className?: string;
+  modal?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        'animate-in fade-in duration-200 space-y-4',
+        !modal && 'rounded-2xl border border-gray-200 bg-white p-6 shadow-sm',
+        className
+      )}
+    >
+      {!modal && (
+        <div className="mb-2 flex items-start gap-3">
+          <Skeleton className="h-10 w-10 rounded-xl bg-cyan-100" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-5 w-36 rounded" />
+            <Skeleton className="h-3 w-56 max-w-full rounded bg-gray-100" />
+          </div>
+        </div>
+      )}
+      {['Service', 'Full name', 'Mobile', 'Email'].map((label) => (
+        <div key={label} className="space-y-1.5">
+          <Skeleton className="h-3.5 w-20 rounded bg-gray-100" />
+          <Skeleton className="h-11 w-full rounded-lg" />
+        </div>
+      ))}
+      <Skeleton className="mt-2 h-11 w-full rounded-lg bg-cyan-100/90" />
+      <Skeleton className="mx-auto h-3 w-48 rounded bg-gray-100" />
+    </div>
+  );
+}
