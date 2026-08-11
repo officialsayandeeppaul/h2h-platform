@@ -320,30 +320,47 @@ function BookingPageContent() {
       
       // NORMAL FLOW: Fetch locations and clinic centers
       try {
-        // If service is pre-selected, fetch only centers that support that service
-        const centersUrl = serviceParam 
-          ? `/api/clinic-centers?serviceSlug=${serviceParam}`
-          : '/api/clinic-centers';
-        
-        const [locRes, centersRes] = await Promise.all([
-          fetch('/api/locations'),
-          fetch(centersUrl)
+        // Prefer service-scoped centers; if empty, fall back to all active centers
+        // so Clinic Visit always appears when Kolkata / Bhubaneswar exist.
+        const fetchOpts: RequestInit = { cache: 'no-store' };
+        const [locRes, centersRes, allCentersRes] = await Promise.all([
+          fetch('/api/locations', fetchOpts),
+          fetch(
+            serviceParam
+              ? `/api/clinic-centers?serviceSlug=${encodeURIComponent(serviceParam)}`
+              : '/api/clinic-centers',
+            fetchOpts
+          ),
+          serviceParam
+            ? fetch('/api/clinic-centers', fetchOpts)
+            : Promise.resolve(null),
         ]);
         
         const locData = await locRes.json();
-        const centersData = await centersRes.json();
+        let centersData = await centersRes.json();
         
         if (locData.success) {
           setLocations(locData.data || []);
         }
+
+        let centers = centersData.success ? centersData.data.centers || [] : [];
+        let grouped = centersData.success ? centersData.data.groupedByCity || {} : {};
+
+        if (centers.length === 0 && allCentersRes) {
+          const allJson = await allCentersRes.json();
+          if (allJson.success && (allJson.data?.centers?.length || 0) > 0) {
+            centersData = allJson;
+            centers = allJson.data.centers || [];
+            grouped = allJson.data.groupedByCity || {};
+          }
+        }
         
-        if (centersData.success) {
-          const centers = centersData.data.centers || [];
+        if (centersData.success || centers.length > 0) {
           setClinicCenters(centers);
-          setGroupedCenters(centersData.data.groupedByCity || {});
+          setGroupedCenters(grouped);
           
           // Build cities list with center counts
-          const cityList = Object.entries(centersData.data.groupedByCity || {}).map(
+          const cityList = Object.entries(grouped).map(
             ([cityName, cityCenters]: [string, any]) => ({
               name: cityName,
               centerCount: cityCenters.length,

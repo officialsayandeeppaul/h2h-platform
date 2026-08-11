@@ -7,7 +7,8 @@ import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 
-export const revalidate = 300; // Cache for 5 minutes
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface ClinicCenter {
   id: string;
@@ -260,18 +261,9 @@ export async function GET(request: NextRequest) {
           }
         }
 
+        // Never hide Clinic Visit when centers exist — if service linking failed, show all active centers
         if (!centerIdsWithService || centerIdsWithService.length === 0) {
-          return NextResponse.json({
-            success: true,
-            data: {
-              centers: [],
-              groupedByCity: {},
-              cities: [],
-              totalCenters: 0,
-              currentDay: DAY_NAMES[new Date().getDay()],
-              currentDayOfWeek: new Date().getDay(),
-            },
-          });
+          centerIdsWithService = null;
         }
       }
     }
