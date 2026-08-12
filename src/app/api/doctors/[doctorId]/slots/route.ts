@@ -92,26 +92,25 @@ export async function GET(
 
     if (availError) {
       console.error('Error fetching availability:', availError);
-      // Return static slots on error
       return NextResponse.json({
         success: true,
-        data: generateStaticSlots(30),
+        data: [],
         date,
         doctorId,
         slotDuration: 30,
-        source: 'static_fallback',
+        source: 'availability_error',
       });
     }
 
     if (!availability || availability.length === 0) {
-      // Return static slots if no availability found
+      // No weekly slots for this day — doctor is off (do not invent static times)
       return NextResponse.json({
         success: true,
-        data: generateStaticSlots(30),
+        data: [],
         date,
         doctorId,
         slotDuration: 30,
-        source: 'static_no_availability',
+        source: 'no_availability',
       });
     }
 

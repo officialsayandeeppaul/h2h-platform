@@ -2037,7 +2037,9 @@ function BookingPageContent() {
                               <h3 className="text-[16px] font-semibold text-gray-900 truncate">{doctor.name}</h3>
                               {selectedDoctor?.id === doctor.id && <CheckCircle2 className="h-5 w-5 text-cyan-500 flex-shrink-0 ml-2" />}
                             </div>
-                            <p className="text-[12px] text-gray-500 mb-2">{doctor.specializations?.join(', ') || 'Specialist'}</p>
+                            <p className="text-[12px] text-gray-500 mb-2 line-clamp-2">
+                              {doctor.specializations?.slice(0, 4).join(', ') || 'Specialist'}
+                            </p>
                             <div className="flex items-center gap-3 text-[12px]">
                               <span className="text-gray-400">{doctor.experience_years} yrs</span>
                               <span className="flex items-center gap-1 text-amber-500 font-medium">

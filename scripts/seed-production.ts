@@ -231,7 +231,7 @@ const DOCTORS = [
     id: D_DEEPTI,
     user_id: U_DEEPTI,
     location_id: LOC_KOLKATA,
-    specializations: ['Sports Physiotherapy', 'Cricket', 'Manual Therapy', 'Prehab & Taping'],
+    specializations: ['Sports Physiotherapy', 'Cricket & Sports Medicine', 'Manual Therapy', 'Prehab & Taping', 'Sports Injury Rehab', 'Return to Play'],
     qualifications: ['BPT', 'MPT Sports Medicine', 'Dry Needling', 'ACL Rehab (Physioplus)'],
     experience_years: 10,
     bio: DEEPTI_BIO,
