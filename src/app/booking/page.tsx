@@ -18,7 +18,7 @@ type ConfettiRef = import('@/components/ui/confetti').ConfettiRef;
 
 import { 
   MapPin, Clock, Video, Building2, Home, ArrowRight, ArrowLeft,
-  CheckCircle2, IndianRupee, Sparkles, Loader2, Star, AlertCircle, CalendarDays,
+  CheckCircle2, IndianRupee, Loader2, Star, AlertCircle, CalendarDays,
   Globe, Users, Phone, Stethoscope
 } from 'lucide-react';
 import {
