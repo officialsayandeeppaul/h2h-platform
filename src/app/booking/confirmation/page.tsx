@@ -209,27 +209,27 @@ function ConfirmationContent() {
           <div className="text-center mb-8">
             {appointment.payment_status === 'paid' ? (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 border border-green-200 rounded-full text-green-700 text-sm font-medium mb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 border border-green-200 rounded-full text-green-700 text-sm font-normal mb-4">
                   <CheckCircle2 className="h-4 w-4" />
-                  Payment Successful
+                  Payment successful
                 </div>
-                <h2 className="text-[26px] md:text-[30px] font-semibold text-gray-900 tracking-tight">
-                  Booking Confirmed!
+                <h2 className="text-[26px] md:text-[30px] font-medium text-gray-900 tracking-tight">
+                  Booking confirmed!
                 </h2>
-                <p className="text-[14px] text-gray-500 mt-1">
+                <p className="text-[14px] text-gray-500 mt-1 font-normal">
                   Your appointment has been booked. A confirmation email is on its way.
                 </p>
               </>
             ) : (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-sm font-medium mb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-sm font-normal mb-4">
                   <Clock className="h-4 w-4" />
-                  Payment Pending
+                  Payment pending
                 </div>
-                <h2 className="text-[26px] md:text-[30px] font-semibold text-gray-900 tracking-tight">
-                  Booking Created
+                <h2 className="text-[26px] md:text-[30px] font-medium text-gray-900 tracking-tight">
+                  Booking created
                 </h2>
-                <p className="text-[14px] text-gray-500 mt-1">
+                <p className="text-[14px] text-gray-500 mt-1 font-normal">
                   Complete payment to confirm your appointment. Check your email or contact support if you need help.
                 </p>
               </>
@@ -245,13 +245,13 @@ function ConfirmationContent() {
                 {/* Card Header */}
                 <div className="bg-gradient-to-r from-cyan-500 to-teal-500 px-6 py-5 text-white">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[12px] font-medium opacity-80 uppercase tracking-wider">Booking ID</span>
-                    <span className="text-[12px] font-mono bg-white/20 px-3 py-1 rounded-full">
+                    <span className="text-[12px] font-normal opacity-90">Booking ID</span>
+                    <span className="text-[12px] font-mono bg-white/20 px-3 py-1 rounded-full font-normal">
                       {appointment.id.slice(0, 8).toUpperCase()}
                     </span>
                   </div>
-                  <h2 className="text-[20px] font-semibold mb-0.5">{serviceName}</h2>
-                  <p className="text-[13px] opacity-80">with Dr. {doctorName}</p>
+                  <h2 className="text-[20px] font-medium mb-0.5">{serviceName}</h2>
+                  <p className="text-[13px] opacity-90 font-normal">with Dr. {doctorName}</p>
                 </div>
 
                 {/* Details Grid */}
@@ -263,8 +263,8 @@ function ConfirmationContent() {
                         <Calendar className="h-4 w-4 text-cyan-600" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Date</p>
-                        <p className="text-[14px] font-semibold text-gray-900">
+                        <p className="text-[12px] font-normal text-gray-500">Date</p>
+                        <p className="text-[14px] font-normal text-gray-900">
                           {format(new Date(appointment.appointment_date), 'EEEE, MMMM d, yyyy')}
                         </p>
                       </div>
@@ -276,8 +276,8 @@ function ConfirmationContent() {
                         <Clock className="h-4 w-4 text-cyan-600" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Time</p>
-                        <p className="text-[14px] font-semibold text-gray-900">
+                        <p className="text-[12px] font-normal text-gray-500">Time</p>
+                        <p className="text-[14px] font-normal text-gray-900">
                           {appointment.start_time?.slice(0, 5) || '00:00'} - {appointment.end_time?.slice(0, 5) || '00:00'}
                         </p>
                       </div>
@@ -289,8 +289,8 @@ function ConfirmationContent() {
                         {getModeIcon(appointment.mode)}
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Mode</p>
-                        <p className="text-[14px] font-semibold text-gray-900">{getModeLabel(appointment.mode)}</p>
+                        <p className="text-[12px] font-normal text-gray-500">Mode</p>
+                        <p className="text-[14px] font-normal text-gray-900">{getModeLabel(appointment.mode)}</p>
                       </div>
                     </div>
 
@@ -304,10 +304,10 @@ function ConfirmationContent() {
                         )}
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                          {appointment.payment_status === 'paid' ? 'Amount Paid' : 'Amount Due'}
+                        <p className="text-[12px] font-normal text-gray-500">
+                          {appointment.payment_status === 'paid' ? 'Amount paid' : 'Amount due'}
                         </p>
-                        <p className={`text-[18px] font-semibold ${appointment.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>₹{appointment.amount}</p>
+                        <p className={`text-[18px] font-medium ${appointment.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>₹{appointment.amount}</p>
                       </div>
                     </div>
                   </div>
@@ -319,17 +319,17 @@ function ConfirmationContent() {
                         <MapPin className="h-4 w-4 text-cyan-600" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Location</p>
+                        <p className="text-[12px] font-normal text-gray-500">Location</p>
                         {appointment.metadata?.center_name ? (
                           <>
-                            <p className="text-[14px] font-semibold text-gray-900">{appointment.metadata.center_name}</p>
-                            <p className="text-[12px] text-gray-500">{appointment.location?.city}</p>
+                            <p className="text-[14px] font-normal text-gray-900">{appointment.metadata.center_name}</p>
+                            <p className="text-[12px] text-gray-500 font-normal">{appointment.location?.city}</p>
                           </>
                         ) : (
-                          <p className="text-[14px] font-semibold text-gray-900">{appointment.location?.name || 'Clinic'}</p>
+                          <p className="text-[14px] font-normal text-gray-900">{appointment.location?.name || 'Clinic'}</p>
                         )}
                         {appointment.location?.address && (
-                          <p className="text-[12px] text-gray-500 mt-0.5">{appointment.location.address}</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5 font-normal">{appointment.location.address}</p>
                         )}
                       </div>
                     </div>
@@ -338,20 +338,20 @@ function ConfirmationContent() {
                   {/* Video Consultation Link */}
                   {appointment.mode === 'online' && appointment.google_meet_link && (
                     <div className="mt-5 pt-5 border-t border-gray-100">
-                      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Your Video Call</p>
+                      <p className="text-[12px] font-normal text-gray-500 mb-3">Your video call</p>
                       <a
                         href={appointment.google_meet_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl hover:from-green-100 hover:to-emerald-100 hover:border-green-300 transition-all"
+                        className="flex items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100/80 hover:border-green-300 transition-colors"
                       >
                         <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center flex-shrink-0">
                           <Video className="h-6 w-6 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[15px] font-semibold text-green-800">Join Video Consultation</p>
-                          <p className="text-[12px] text-green-600 font-mono truncate mt-0.5">{appointment.google_meet_link}</p>
-                          <p className="text-[11px] text-gray-500 mt-1">Click to open — room is ready for you and the doctor</p>
+                          <p className="text-[15px] font-medium text-green-900">Join video consultation</p>
+                          <p className="text-[12px] text-green-700/90 font-mono truncate mt-0.5">{appointment.google_meet_link}</p>
+                          <p className="text-[11px] text-gray-600 mt-1 font-normal">Click to open — room is ready for you and the doctor</p>
                         </div>
                         <ArrowRight className="h-5 w-5 text-green-600 flex-shrink-0" />
                       </a>
@@ -365,13 +365,16 @@ function ConfirmationContent() {
             <div className="lg:col-span-2 space-y-5">
               {/* Add to Calendar Card */}
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <h3 className="text-[14px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="text-[14px] font-medium text-gray-900 mb-4 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-cyan-500" />
-                  Add to Calendar
+                  Add to calendar
                 </h3>
                 <a href={calendarUrl} target="_blank" rel="noopener noreferrer" className="block">
-                  <Button className="w-full h-11 rounded-xl bg-white border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 font-semibold text-[13px]">
-                    <Calendar className="mr-2 h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl border-cyan-500 bg-white text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800 font-normal text-[13px]"
+                  >
+                    <Calendar className="mr-2 h-4 w-4 text-cyan-600" />
                     Google Calendar
                   </Button>
                 </a>
@@ -379,19 +382,19 @@ function ConfirmationContent() {
 
               {/* Quick Actions Card */}
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <h3 className="text-[14px] font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                <h3 className="text-[14px] font-medium text-gray-900 mb-4">Quick actions</h3>
                 <div className="space-y-3">
                   <Button
                     variant="outline"
-                    className="w-full h-11 rounded-xl border-gray-200 hover:bg-gray-50 justify-start text-[13px]"
+                    className="w-full h-11 rounded-xl border-gray-200 hover:bg-gray-50 hover:text-gray-900 justify-start text-[13px] font-normal text-gray-700"
                     onClick={handleDownloadReceipt}
                   >
                     <Download className="mr-3 h-4 w-4 text-gray-400" />
-                    Download Receipt
+                    Download receipt
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full h-11 rounded-xl border-gray-200 hover:bg-gray-50 justify-start text-[13px]"
+                    className="w-full h-11 rounded-xl border-gray-200 hover:bg-gray-50 hover:text-gray-900 justify-start text-[13px] font-normal text-gray-700"
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
@@ -406,30 +409,30 @@ function ConfirmationContent() {
                     }}
                   >
                     <Share2 className="mr-3 h-4 w-4 text-gray-400" />
-                    Share Booking
+                    Share booking
                   </Button>
                 </div>
               </div>
 
               {/* What's Next Card */}
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <h3 className="text-[14px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="text-[14px] font-medium text-gray-900 mb-4 flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-500" />
-                  What&apos;s Next?
+                  What&apos;s next?
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-[13px] text-gray-600">Confirmation email with appointment details</span>
+                    <span className="text-[13px] text-gray-600 font-normal">Confirmation email with appointment details</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-[13px] text-gray-600">Email reminders before your appointment</span>
+                    <span className="text-[13px] text-gray-600 font-normal">Email reminders before your appointment</span>
                   </li>
                   {appointment.mode === 'online' && (
                     <li className="flex items-start gap-2.5">
                       <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-[13px] text-gray-600">Video consultation link is ready in your dashboard</span>
+                      <span className="text-[13px] text-gray-600 font-normal">Video consultation link is ready in your dashboard</span>
                     </li>
                   )}
                 </ul>
@@ -437,8 +440,8 @@ function ConfirmationContent() {
 
               {/* Go to Dashboard */}
               <Link href="/patient" className="block">
-                <Button className="w-full h-12 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-semibold text-[14px]">
-                  Go to Dashboard
+                <Button className="w-full h-12 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-medium text-[14px]">
+                  Go to dashboard
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
