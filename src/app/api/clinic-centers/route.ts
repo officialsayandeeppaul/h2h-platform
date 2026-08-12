@@ -1,6 +1,9 @@
 /**
  * H2H Healthcare - Clinic Centers API
  * Fetch clinic centers with availability by city/location
+ *
+ * Note: Does NOT require clinic_center_availability (missing on some prod DBs).
+ * That join was causing 500s and hiding Clinic Visit on booking.
  */
 
 import { NextResponse } from 'next/server';
@@ -9,26 +12,6 @@ import { createAdminClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-interface ClinicCenter {
-  id: string;
-  location_id: string;
-  name: string;
-  slug: string;
-  address: string;
-  landmark: string | null;
-  pincode: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  phone: string | null;
-  email: string | null;
-  image_url: string | null;
-  facilities: string[];
-  rating: number;
-  total_reviews: number;
-  is_featured: boolean;
-  is_active: boolean;
-}
 
 interface CenterAvailability {
   id: string;
@@ -44,54 +27,38 @@ interface CenterAvailability {
   special_note: string | null;
 }
 
-interface CenterWithAvailability extends ClinicCenter {
-  location: {
-    id: string;
-    name: string;
-    city: string;
-    tier: number;
-  };
-  availability: CenterAvailability[];
-  todayAvailability: CenterAvailability | null;
-  isOpenNow: boolean;
-  nextOpenDay: string | null;
-  availableSlots: number;
-}
-
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function isOpenNow(availability: CenterAvailability | null): boolean {
   if (!availability || !availability.is_open) return false;
-  
+
   const now = new Date();
   const currentTime = now.getHours() * 60 + now.getMinutes();
-  
+
   const [openHour, openMin] = availability.open_time.split(':').map(Number);
   const [closeHour, closeMin] = availability.close_time.split(':').map(Number);
-  
+
   const openTime = openHour * 60 + openMin;
   const closeTime = closeHour * 60 + closeMin;
-  
-  // Check if during break
+
   if (availability.break_start && availability.break_end) {
     const [breakStartHour, breakStartMin] = availability.break_start.split(':').map(Number);
     const [breakEndHour, breakEndMin] = availability.break_end.split(':').map(Number);
     const breakStart = breakStartHour * 60 + breakStartMin;
     const breakEnd = breakEndHour * 60 + breakEndMin;
-    
+
     if (currentTime >= breakStart && currentTime < breakEnd) {
-      return false; // Currently on break
+      return false;
     }
   }
-  
+
   return currentTime >= openTime && currentTime < closeTime;
 }
 
 function getNextOpenDay(availability: CenterAvailability[], currentDayOfWeek: number): string | null {
-  // Check next 7 days
   for (let i = 1; i <= 7; i++) {
     const checkDay = (currentDayOfWeek + i) % 7;
-    const dayAvail = availability.find(a => a.day_of_week === checkDay);
+    const dayAvail = availability.find((a) => a.day_of_week === checkDay);
     if (dayAvail?.is_open) {
       return DAY_NAMES[checkDay];
     }
@@ -104,13 +71,142 @@ function calculateAvailableSlots(availability: CenterAvailability | null): numbe
   return Math.max(0, availability.max_appointments - availability.current_bookings);
 }
 
+async function resolveServiceDoctorCenterIds(
+  supabase: ReturnType<typeof createAdminClient>,
+  serviceId: string | null,
+  serviceSlug: string | null
+): Promise<string[] | null> {
+  if (!serviceId && !serviceSlug) return null;
+
+  let serviceIds: string[] = [];
+
+  if (serviceId) {
+    serviceIds = [serviceId];
+  } else if (serviceSlug) {
+    const raw = serviceSlug.toLowerCase().trim();
+    const normalizedSlug = raw.replace(/[\s_]/g, '-').replace(/-+/g, '-');
+    const categoryKey = raw.replace(/[-\s]/g, '_');
+
+    const { data: byCategory } = await supabase
+      .from('services')
+      .select('id')
+      .eq('is_active', true)
+      .eq('category', categoryKey);
+
+    if (byCategory && byCategory.length > 0) {
+      serviceIds = byCategory.map((s: any) => s.id);
+    }
+
+    if (serviceIds.length === 0) {
+      const { data: bySlug } = await supabase
+        .from('services')
+        .select('id')
+        .eq('slug', normalizedSlug)
+        .eq('is_active', true);
+      if (bySlug?.length) serviceIds = bySlug.map((s: any) => s.id);
+    }
+
+    if (serviceIds.length === 0) {
+      const { data: allServices } = await supabase
+        .from('services')
+        .select('id, slug, name, category')
+        .eq('is_active', true);
+
+      if (allServices) {
+        const searchTerms = raw.replace(/[-_]/g, ' ').split(' ').filter(Boolean);
+        const matched = allServices.filter((s: any) => {
+          if (s.category === categoryKey || s.category === raw) return true;
+          const slugMatch =
+            s.slug === normalizedSlug ||
+            s.slug?.includes(normalizedSlug) ||
+            normalizedSlug.includes(s.slug || '');
+          const nameWords = s.name.toLowerCase().replace(/[&]/g, 'and').split(/\s+/);
+          const nameMatch = searchTerms.some((term: string) =>
+            nameWords.some((word: string) => word.includes(term) || term.includes(word))
+          );
+          return slugMatch || nameMatch;
+        });
+        serviceIds = matched.map((s: any) => s.id);
+      }
+    }
+  }
+
+  if (serviceIds.length === 0) return null;
+
+  const { data: doctorServices } = await supabase
+    .from('doctor_services')
+    .select('doctor_id')
+    .in('service_id', serviceIds);
+
+  if (!doctorServices?.length) return null;
+
+  const doctorIds = [...new Set(doctorServices.map((ds: any) => ds.doctor_id))];
+  const centerIdSet = new Set<string>();
+
+  const { data: availability } = await supabase
+    .from('doctor_availability')
+    .select('center_id, mode, doctor_id')
+    .in('doctor_id', doctorIds)
+    .eq('is_available', true);
+
+  const clinicCapable = (availability || []).filter((a: any) => {
+    const mode = a.mode || 'both';
+    return mode === 'offline' || mode === 'both';
+  });
+
+  for (const row of clinicCapable) {
+    if (row.center_id) centerIdSet.add(row.center_id);
+  }
+
+  const { data: doctorsMeta } = await supabase
+    .from('doctors')
+    .select('id, location_id, offers_clinic')
+    .in('id', doctorIds)
+    .eq('is_active', true);
+
+  const locationIds = [
+    ...new Set(
+      (doctorsMeta || [])
+        .filter((d: any) => {
+          if (d.offers_clinic === false || !d.location_id) return false;
+          const rows = clinicCapable.filter((a: any) => a.doctor_id === d.id);
+          if (rows.length === 0) return d.offers_clinic === true;
+          return rows.some((a: any) => !a.center_id) || d.offers_clinic === true;
+        })
+        .map((d: any) => d.location_id as string)
+    ),
+  ];
+
+  if (locationIds.length > 0) {
+    const { data: fallbackCenters } = await supabase
+      .from('clinic_centers')
+      .select('id')
+      .in('location_id', locationIds)
+      .eq('is_active', true);
+
+    for (const c of fallbackCenters || []) {
+      if (c.id) centerIdSet.add(c.id);
+    }
+  }
+
+  if (centerIdSet.size === 0) {
+    const anyClinicDoctor = (doctorsMeta || []).some((d: any) => d.offers_clinic !== false);
+    if (anyClinicDoctor || clinicCapable.length > 0) {
+      const { data: allCenters } = await supabase
+        .from('clinic_centers')
+        .select('id')
+        .eq('is_active', true);
+      for (const c of allCenters || []) {
+        if (c.id) centerIdSet.add(c.id);
+      }
+    }
+  }
+
+  return centerIdSet.size > 0 ? [...centerIdSet] : null;
+}
+
 /**
  * GET /api/clinic-centers
- * Query params:
- * - city: Filter by city name
- * - locationId: Filter by location ID
- * - featured: Only featured centers
- * - date: Get availability for specific date (YYYY-MM-DD)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -119,180 +215,47 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get('locationId');
     const featured = searchParams.get('featured') === 'true';
     const dateParam = searchParams.get('date');
-    const serviceId = searchParams.get('serviceId'); // Filter by service
-    const serviceSlug = searchParams.get('serviceSlug'); // Filter by service slug
-    
+    const serviceId = searchParams.get('serviceId');
+    const serviceSlug = searchParams.get('serviceSlug');
+
     const supabase = createAdminClient();
-    
-    // If serviceId or serviceSlug is provided, first get centers that support this service
-    let centerIdsWithService: string[] | null = null;
-    
-    if (serviceId || serviceSlug) {
-      // Resolve one or many service IDs (booking often passes category keys like pain_relief_physiotherapy)
-      let serviceIds: string[] = [];
 
-      if (serviceId) {
-        serviceIds = [serviceId];
-      } else if (serviceSlug) {
-        const raw = serviceSlug.toLowerCase().trim();
-        const normalizedSlug = raw.replace(/[\s_]/g, '-').replace(/-+/g, '-');
-        const categoryKey = raw.replace(/[-\s]/g, '_');
+    const centerIdsWithService = await resolveServiceDoctorCenterIds(
+      supabase,
+      serviceId,
+      serviceSlug
+    );
 
-        // Category match (e.g. pain_relief_physiotherapy → all services in category)
-        const { data: byCategory } = await supabase
-          .from('services')
-          .select('id')
-          .eq('is_active', true)
-          .eq('category', categoryKey);
-
-        if (byCategory && byCategory.length > 0) {
-          serviceIds = byCategory.map((s: any) => s.id);
-        }
-
-        // Exact slug match
-        if (serviceIds.length === 0) {
-          const { data: bySlug } = await supabase
-            .from('services')
-            .select('id')
-            .eq('slug', normalizedSlug)
-            .eq('is_active', true);
-          if (bySlug?.length) serviceIds = bySlug.map((s: any) => s.id);
-        }
-
-        // Fuzzy fallback
-        if (serviceIds.length === 0) {
-          const { data: allServices } = await supabase
-            .from('services')
-            .select('id, slug, name, category')
-            .eq('is_active', true);
-
-          if (allServices) {
-            const searchTerms = raw.replace(/[-_]/g, ' ').split(' ').filter(Boolean);
-            const matched = allServices.filter((s: any) => {
-              if (s.category === categoryKey || s.category === raw) return true;
-              const slugMatch =
-                s.slug === normalizedSlug ||
-                s.slug?.includes(normalizedSlug) ||
-                normalizedSlug.includes(s.slug || '');
-              const nameWords = s.name.toLowerCase().replace(/[&]/g, 'and').split(/\s+/);
-              const nameMatch = searchTerms.some((term: string) =>
-                nameWords.some((word: string) => word.includes(term) || term.includes(word))
-              );
-              return slugMatch || nameMatch;
-            });
-            serviceIds = matched.map((s: any) => s.id);
-          }
-        }
-      }
-
-      if (serviceIds.length > 0) {
-        const { data: doctorServices } = await supabase
-          .from('doctor_services')
-          .select('doctor_id')
-          .in('service_id', serviceIds);
-
-        if (doctorServices && doctorServices.length > 0) {
-          const doctorIds = [...new Set(doctorServices.map((ds: any) => ds.doctor_id))];
-          const centerIdSet = new Set<string>();
-
-          const { data: availability } = await supabase
-            .from('doctor_availability')
-            .select('center_id, mode, doctor_id')
-            .in('doctor_id', doctorIds)
-            .eq('is_available', true);
-
-          const clinicCapable = (availability || []).filter((a: any) => {
-            const mode = a.mode || 'both';
-            return mode === 'offline' || mode === 'both';
-          });
-
-          for (const row of clinicCapable) {
-            if (row.center_id) centerIdSet.add(row.center_id);
-          }
-
-          const { data: doctorsMeta } = await supabase
-            .from('doctors')
-            .select('id, location_id, offers_clinic')
-            .in('id', doctorIds)
-            .eq('is_active', true);
-
-          // Location fallback for Both/Clinic slots with null center_id, or offers_clinic doctors
-          const locationIds = [
-            ...new Set(
-              (doctorsMeta || [])
-                .filter((d: any) => {
-                  if (d.offers_clinic === false || !d.location_id) return false;
-                  const rows = clinicCapable.filter((a: any) => a.doctor_id === d.id);
-                  if (rows.length === 0) return d.offers_clinic === true;
-                  return rows.some((a: any) => !a.center_id) || d.offers_clinic === true;
-                })
-                .map((d: any) => d.location_id as string)
-            ),
-          ];
-
-          if (locationIds.length > 0) {
-            const { data: fallbackCenters } = await supabase
-              .from('clinic_centers')
-              .select('id')
-              .in('location_id', locationIds)
-              .eq('is_active', true);
-
-            for (const c of fallbackCenters || []) {
-              if (c.id) centerIdSet.add(c.id);
-            }
-          }
-
-          // Last resort: any doctor offering this service with clinic enabled → all active centers
-          if (centerIdSet.size === 0) {
-            const anyClinicDoctor = (doctorsMeta || []).some((d: any) => d.offers_clinic !== false);
-            if (anyClinicDoctor || clinicCapable.length > 0) {
-              const { data: allCenters } = await supabase
-                .from('clinic_centers')
-                .select('id')
-                .eq('is_active', true);
-              for (const c of allCenters || []) {
-                if (c.id) centerIdSet.add(c.id);
-              }
-            }
-          }
-
-          if (centerIdSet.size > 0) {
-            centerIdsWithService = [...centerIdSet];
-          }
-        }
-
-        // Never hide Clinic Visit when centers exist — if service linking failed, show all active centers
-        if (!centerIdsWithService || centerIdsWithService.length === 0) {
-          centerIdsWithService = null;
-        }
-      }
-    }
-    
-    // Build query for clinic centers
+    // Simple select — no clinic_center_availability join (table often missing on prod)
     let query = supabase
       .from('clinic_centers')
-      .select(`
-        *,
-        location:locations!clinic_centers_location_id_fkey (
+      .select(
+        `
+        id,
+        location_id,
+        name,
+        slug,
+        address,
+        landmark,
+        pincode,
+        latitude,
+        longitude,
+        phone,
+        email,
+        image_url,
+        facilities,
+        rating,
+        total_reviews,
+        is_featured,
+        is_active,
+        location:locations (
           id,
           name,
           city,
           tier
-        ),
-        availability:clinic_center_availability (
-          id,
-          center_id,
-          day_of_week,
-          is_open,
-          open_time,
-          close_time,
-          break_start,
-          break_end,
-          max_appointments,
-          current_bookings,
-          special_note
         )
-      `)
+      `
+      )
       .eq('is_active', true)
       .order('is_featured', { ascending: false })
       .order('rating', { ascending: false });
@@ -304,63 +267,118 @@ export async function GET(request: NextRequest) {
     if (featured) {
       query = query.eq('is_featured', true);
     }
-    
-    // Filter by centers that support the service
+
     if (centerIdsWithService) {
       query = query.in('id', centerIdsWithService);
     }
 
-    const { data: centers, error } = await query;
+    let { data: centers, error } = await query;
 
+    // Fallback if location embed fails (ambiguous FK / missing constraint name)
     if (error) {
-      console.error('Error fetching clinic centers:', error);
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to fetch clinic centers',
-      }, { status: 500 });
+      console.error('clinic-centers embed error, retrying flat:', error.message || error);
+      let flat = supabase
+        .from('clinic_centers')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_featured', { ascending: false })
+        .order('rating', { ascending: false });
+
+      if (locationId) flat = flat.eq('location_id', locationId);
+      if (featured) flat = flat.eq('is_featured', true);
+      if (centerIdsWithService) flat = flat.in('id', centerIdsWithService);
+
+      const flatRes = await flat;
+      if (flatRes.error) {
+        console.error('Error fetching clinic centers:', flatRes.error);
+        return NextResponse.json(
+          { success: false, error: 'Failed to fetch clinic centers', detail: flatRes.error.message },
+          { status: 500 }
+        );
+      }
+
+      const locIds = [
+        ...new Set((flatRes.data || []).map((c: any) => c.location_id).filter(Boolean)),
+      ];
+      let locMap: Record<string, any> = {};
+      if (locIds.length > 0) {
+        const { data: locs } = await supabase
+          .from('locations')
+          .select('id, name, city, tier')
+          .in('id', locIds);
+        for (const loc of locs || []) {
+          locMap[loc.id] = loc;
+        }
+      }
+
+      centers = (flatRes.data || []).map((c: any) => ({
+        ...c,
+        location: locMap[c.location_id] || null,
+      }));
+      error = null;
     }
 
-    // Filter by city if provided (case-insensitive)
     let filteredCenters = centers || [];
     if (city) {
-      filteredCenters = filteredCenters.filter((center: any) => 
-        center.location?.city?.toLowerCase() === city.toLowerCase()
+      filteredCenters = filteredCenters.filter(
+        (center: any) => center.location?.city?.toLowerCase() === city.toLowerCase()
       );
     }
 
-    // Get current day of week and time
     const now = new Date();
-    const currentDayOfWeek = dateParam 
-      ? new Date(dateParam).getDay() 
-      : now.getDay();
+    const currentDayOfWeek = dateParam ? new Date(dateParam).getDay() : now.getDay();
 
-    // Process centers with availability info
-    const processedCenters: CenterWithAvailability[] = filteredCenters.map((center: any) => {
-      const availability = center.availability || [];
-      const todayAvailability = availability.find((a: CenterAvailability) => 
-        a.day_of_week === currentDayOfWeek
-      ) || null;
-      
+    // Optional hours — ignore if table missing
+    let availByCenter: Record<string, CenterAvailability[]> = {};
+    try {
+      const centerIds = filteredCenters.map((c: any) => c.id).filter(Boolean);
+      if (centerIds.length > 0) {
+        const { data: hours, error: hoursErr } = await supabase
+          .from('clinic_center_availability')
+          .select(
+            'id, center_id, day_of_week, is_open, open_time, close_time, break_start, break_end, max_appointments, current_bookings, special_note'
+          )
+          .in('center_id', centerIds);
+
+        if (!hoursErr && hours) {
+          for (const row of hours as CenterAvailability[]) {
+            if (!availByCenter[row.center_id]) availByCenter[row.center_id] = [];
+            availByCenter[row.center_id].push(row);
+          }
+        }
+      }
+    } catch {
+      // table may not exist
+    }
+
+    const processedCenters = filteredCenters.map((center: any) => {
+      const availability = availByCenter[center.id] || [];
+      const todayAvailability =
+        availability.find((a) => a.day_of_week === currentDayOfWeek) || null;
+
       return {
         ...center,
+        availability,
         todayAvailability,
-        isOpenNow: dateParam ? todayAvailability?.is_open || false : isOpenNow(todayAvailability),
-        nextOpenDay: todayAvailability?.is_open ? null : getNextOpenDay(availability, currentDayOfWeek),
-        availableSlots: calculateAvailableSlots(todayAvailability),
+        isOpenNow: todayAvailability
+          ? dateParam
+            ? todayAvailability.is_open
+            : isOpenNow(todayAvailability)
+          : true, // no hours row → treat as open for booking UI
+        nextOpenDay: todayAvailability?.is_open
+          ? null
+          : getNextOpenDay(availability, currentDayOfWeek),
+        availableSlots: todayAvailability ? calculateAvailableSlots(todayAvailability) : 20,
       };
     });
 
-    // Group by city for easier frontend consumption
-    const groupedByCity: Record<string, CenterWithAvailability[]> = {};
-    processedCenters.forEach(center => {
+    const groupedByCity: Record<string, typeof processedCenters> = {};
+    processedCenters.forEach((center) => {
       const cityName = center.location?.city || 'Unknown';
-      if (!groupedByCity[cityName]) {
-        groupedByCity[cityName] = [];
-      }
+      if (!groupedByCity[cityName]) groupedByCity[cityName] = [];
       groupedByCity[cityName].push(center);
     });
 
-    // Get unique cities
     const cities = Object.keys(groupedByCity).sort();
 
     return NextResponse.json({
@@ -376,9 +394,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error in clinic centers API:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
