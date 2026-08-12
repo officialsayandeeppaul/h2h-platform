@@ -138,7 +138,7 @@ export default function PatientDashboard() {
     <div className="p-6 lg:p-8">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="text-2xl md:text-[28px] font-semibold text-gray-900 tracking-tight">Welcome back!</h1>
+        <h1 className="text-2xl md:text-[28px] font-normal text-gray-900 tracking-tight">Welcome back!</h1>
         <p className="text-[15px] text-gray-500 mt-1">Here&apos;s an overview of your health journey</p>
       </div>
 
@@ -149,7 +149,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-cyan-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">{stats.upcoming}</p>
+                <p className="text-2xl font-normal text-gray-900">{stats.upcoming}</p>
                 <p className="text-[13px] text-gray-500">Upcoming</p>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-teal-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">{stats.completed}</p>
+                <p className="text-2xl font-normal text-gray-900">{stats.completed}</p>
                 <p className="text-[13px] text-gray-500">Completed</p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">{stats.records}</p>
+                <p className="text-2xl font-normal text-gray-900">{stats.records}</p>
                 <p className="text-[13px] text-gray-500">Records</p>
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function PatientDashboard() {
             <div className="flex items-center gap-3">
               <CreditCard className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="text-2xl font-semibold text-gray-900">₹{stats.totalSpent.toLocaleString()}</p>
+                <p className="text-2xl font-normal text-gray-900">₹{stats.totalSpent.toLocaleString()}</p>
                 <p className="text-[13px] text-gray-500">Total Spent</p>
               </div>
             </div>
@@ -195,10 +195,10 @@ export default function PatientDashboard() {
         <Card className="border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="text-[15px] font-semibold text-gray-900">Upcoming Appointments</CardTitle>
+              <CardTitle className="text-[15px] font-normal text-gray-900">Upcoming Appointments</CardTitle>
               <CardDescription className="text-[12px] text-gray-500">Your scheduled consultations</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 text-[12px] h-8" asChild>
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 text-[12px] h-8 font-normal" asChild>
               <Link href="/patient/appointments">
                 View All
                 <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -211,7 +211,7 @@ export default function PatientDashboard() {
                 <div className="text-center py-8 text-gray-500">
                   <Calendar className="h-10 w-10 mx-auto mb-3 text-gray-300" />
                   <p className="text-[13px]">No upcoming appointments</p>
-                  <Button size="sm" className="mt-3 bg-cyan-500 hover:bg-cyan-600 text-white text-[11px]" asChild>
+                  <Button size="sm" className="mt-3 bg-cyan-500 hover:bg-cyan-600 text-white text-[11px] font-normal" asChild>
                     <Link href="/booking">Book Now</Link>
                   </Button>
                 </div>
@@ -231,10 +231,10 @@ export default function PatientDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="font-medium text-[13px] text-gray-900">{appointment.service}</p>
+                          <p className="font-normal text-[13px] text-gray-900">{appointment.service}</p>
                           <p className="text-[12px] text-gray-500">{appointment.doctor}</p>
                         </div>
-                        <Badge className="bg-cyan-500 text-white border-0 text-[10px] font-medium px-2 py-0.5">
+                        <Badge className="bg-cyan-500 text-white border-0 text-[10px] font-normal px-2 py-0.5">
                           {appointment.status}
                         </Badge>
                       </div>
@@ -263,10 +263,10 @@ export default function PatientDashboard() {
         <Card className="border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="text-[15px] font-semibold text-gray-900">Recent Payments</CardTitle>
+              <CardTitle className="text-[15px] font-normal text-gray-900">Recent Payments</CardTitle>
               <CardDescription className="text-[12px] text-gray-500">Your payment history</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 text-[12px] h-8" asChild>
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 text-[12px] h-8 font-normal" asChild>
               <Link href="/patient/payments">
                 View All
                 <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -287,7 +287,7 @@ export default function PatientDashboard() {
                     className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
                   >
                     <div>
-                      <p className="font-medium text-[13px] text-gray-900">{payment.service}</p>
+                      <p className="font-normal text-[13px] text-gray-900">{payment.service}</p>
                       <p className="text-[11px] text-gray-500">
                         {new Date(payment.date).toLocaleDateString('en-IN', {
                           day: 'numeric',
@@ -297,8 +297,8 @@ export default function PatientDashboard() {
                       </p>
                     </div>
                   <div className="text-right">
-                    <p className="font-semibold text-[14px] text-gray-900">₹{payment.amount}</p>
-                    <Badge className="bg-green-500 text-white border-0 text-[10px] font-medium px-2 py-0.5">
+                    <p className="font-normal text-[14px] text-gray-900">₹{payment.amount}</p>
+                    <Badge className="bg-green-500 text-white border-0 text-[10px] font-normal px-2 py-0.5">
                       {payment.status}
                     </Badge>
                   </div>
@@ -313,29 +313,29 @@ export default function PatientDashboard() {
       {/* Quick Actions */}
       <Card className="mt-6 border-gray-200">
         <CardHeader className="pb-4">
-          <CardTitle className="text-[15px] font-semibold text-gray-900">Quick Actions</CardTitle>
+          <CardTitle className="text-[15px] font-normal text-gray-900">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Button className="bg-cyan-500 hover:bg-cyan-600 text-white text-[12px] h-9" asChild>
+            <Button className="bg-cyan-500 hover:bg-cyan-600 text-white text-[12px] h-9 font-normal" asChild>
               <Link href="/booking">
                 <Calendar className="mr-2 h-4 w-4" />
                 Book New Appointment
               </Link>
             </Button>
-            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9" asChild>
+            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9 font-normal" asChild>
               <Link href="/patient/doctors">
                 <Stethoscope className="mr-2 h-4 w-4" />
                 Find Doctors
               </Link>
             </Button>
-            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9" asChild>
+            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9 font-normal" asChild>
               <Link href="/patient/records">
                 <FileText className="mr-2 h-4 w-4" />
                 View Medical Records
               </Link>
             </Button>
-            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9" asChild>
+            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50 text-[12px] h-9 font-normal" asChild>
               <Link href="/contact">
                 <Bell className="mr-2 h-4 w-4" />
                 Contact Support

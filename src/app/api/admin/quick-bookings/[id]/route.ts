@@ -42,6 +42,7 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
       }
       updates.status = body.status;
+      // Status changes must never clear payment / Razorpay fields
     }
 
     if (body.payment_status != null) {
@@ -61,6 +62,14 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
       }
       updates.amount = amount;
+    }
+
+    // Never allow clients to wipe transaction IDs via accidental nulls
+    if (body.razorpay_payment_id !== undefined && body.razorpay_payment_id) {
+      updates.razorpay_payment_id = String(body.razorpay_payment_id);
+    }
+    if (body.razorpay_order_id !== undefined && body.razorpay_order_id) {
+      updates.razorpay_order_id = String(body.razorpay_order_id);
     }
 
     const { data, error } = await adminClient

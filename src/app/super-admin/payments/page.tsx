@@ -14,22 +14,25 @@ import { format, parseISO, isToday, startOfMonth, endOfMonth, subMonths } from '
 
 interface Payment {
   id: string;
-  appointment_id: string;
+  source?: 'appointment' | 'quick_booking';
+  appointment_id: string | null;
+  quick_booking_id?: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'paid' | 'refunded' | 'failed';
+  status: 'pending' | 'paid' | 'refunded' | 'failed' | 'waived';
   payment_method: string;
   razorpay_payment_id: string | null;
   razorpay_order_id: string | null;
+  lead_status?: string;
   created_at: string;
   updated_at: string;
   appointment?: {
     id: string;
-    appointment_date: string;
-    start_time: string;
+    appointment_date: string | null;
+    start_time: string | null;
     mode: string;
     patient?: { full_name: string; email: string; phone: string | null };
-    doctor?: { users: { full_name: string } };
+    doctor?: { users: { full_name: string } } | null;
     service?: { name: string };
   };
 }
@@ -39,6 +42,7 @@ const STATUS_COLORS: Record<string, string> = {
   paid: 'bg-green-100 text-green-700 border-green-200',
   refunded: 'bg-purple-100 text-purple-700 border-purple-200',
   failed: 'bg-red-100 text-red-700 border-red-200',
+  waived: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
 export default function PaymentsPage() {
@@ -99,12 +103,16 @@ export default function PaymentsPage() {
     // Search filter
     const patientName = payment.appointment?.patient?.full_name || '';
     const patientEmail = payment.appointment?.patient?.email || '';
+    const patientPhone = payment.appointment?.patient?.phone || '';
     const transactionId = payment.razorpay_payment_id || '';
+    const orderId = payment.razorpay_order_id || '';
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = !searchQuery || 
       patientName.toLowerCase().includes(searchLower) ||
       patientEmail.toLowerCase().includes(searchLower) ||
-      transactionId.toLowerCase().includes(searchLower);
+      patientPhone.toLowerCase().includes(searchLower) ||
+      transactionId.toLowerCase().includes(searchLower) ||
+      orderId.toLowerCase().includes(searchLower);
 
     // Status filter
     const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
@@ -210,6 +218,7 @@ export default function PaymentsPage() {
           <option value="pending">Pending</option>
           <option value="refunded">Refunded</option>
           <option value="failed">Failed</option>
+          <option value="waived">Waived</option>
         </select>
         <select 
           value={dateFilter} 
@@ -260,7 +269,10 @@ export default function PaymentsPage() {
                         {payment.appointment?.patient?.full_name || 'Unknown'}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {payment.appointment?.patient?.email || ''}
+                        {payment.appointment?.patient?.email ||
+                          (payment.appointment?.patient?.phone
+                            ? `+91 ${payment.appointment.patient.phone}`
+                            : '')}
                       </div>
                     </td>
                     <td className="px-4 py-4">
@@ -268,7 +280,22 @@ export default function PaymentsPage() {
                         {payment.appointment?.service?.name || 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Dr. {(payment.appointment?.doctor?.users?.full_name || 'N/A').replace(/^Dr\.?\s*/i, '')}
+                        {payment.source === 'quick_booking' ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Badge className="bg-cyan-50 text-cyan-700 border-cyan-200 text-[10px] px-1.5 py-0">
+                              Quick Booking
+                            </Badge>
+                            {payment.lead_status ? ` · ${payment.lead_status}` : ''}
+                          </span>
+                        ) : (
+                          <>
+                            Dr.{' '}
+                            {(payment.appointment?.doctor?.users?.full_name || 'N/A').replace(
+                              /^Dr\.?\s*/i,
+                              ''
+                            )}
+                          </>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-4">
@@ -283,8 +310,13 @@ export default function PaymentsPage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-xs font-mono text-gray-500">
-                        {payment.razorpay_payment_id || '-'}
+                        {payment.razorpay_payment_id || payment.razorpay_order_id || '-'}
                       </div>
+                      {payment.razorpay_payment_id && payment.razorpay_order_id && (
+                        <div className="text-[10px] font-mono text-gray-400 mt-0.5 truncate max-w-[160px]">
+                          order: {payment.razorpay_order_id}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))

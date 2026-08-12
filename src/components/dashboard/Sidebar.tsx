@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -105,6 +105,7 @@ function SidebarContent({
   collapsed = false,
   user,
   brandVariant,
+  onNavigate,
 }: { 
   navItems: NavItem[]; 
   pathname: string;
@@ -112,12 +113,13 @@ function SidebarContent({
   collapsed?: boolean;
   user?: UserData;
   brandVariant: PortalBrandVariant;
+  onNavigate?: () => void;
 }) {
   return (
     <div className="flex flex-col h-full bg-[#1a2e35]">
       {/* Logo */}
       <div className={cn("h-16 flex items-center shrink-0 border-b border-white/5", collapsed ? "px-3 justify-center" : "px-4")}>
-        <PortalSidebarBrand variant={brandVariant} collapsed={collapsed} />
+        <PortalSidebarBrand variant={brandVariant} collapsed={collapsed} onNavigate={onNavigate} />
       </div>
 
       {/* Navigation */}
@@ -133,8 +135,9 @@ function SidebarContent({
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => onNavigate?.()}
                 className={cn(
-                  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
+                  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-normal transition-all duration-200',
                   isActive
                     ? 'bg-cyan-500 text-white'
                     : 'text-gray-400 hover:bg-white/10 hover:text-white',
@@ -163,8 +166,8 @@ function SidebarContent({
               className="h-9 w-9 rounded-full flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-white truncate">{user.fullName || 'User'}</p>
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+              <p className="text-[13px] font-normal text-white truncate">{user.fullName || 'User'}</p>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
                 {ROLE_LABELS[user.role]}
               </Badge>
             </div>
@@ -182,10 +185,13 @@ function SidebarContent({
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start text-gray-400 hover:text-white hover:bg-white/10 text-[13px] transition-colors",
+            "w-full justify-start text-gray-400 hover:text-white hover:bg-white/10 text-[13px] font-normal transition-colors",
             collapsed && "justify-center px-2"
           )}
-          onClick={onLogout}
+          onClick={() => {
+            onNavigate?.();
+            onLogout();
+          }}
         >
           <LogOut className="h-[18px] w-[18px]" />
           {!collapsed && <span className="ml-2.5">Logout</span>}
@@ -199,6 +205,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Always close mobile drawer after route changes (back button, deep links, etc.)
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const getNavItems = (): NavItem[] => {
     // Use user role if available, otherwise fall back to pathname-based detection
@@ -229,13 +241,15 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     router.refresh();
   };
 
+  const closeMobile = () => setMobileOpen(false);
+
   const navItems = getNavItems();
   const brandVariant = user ? portalVariantFromRole(user.role) : portalVariantFromPath(pathname);
 
   return (
     <>
-      {/* Mobile Sidebar */}
-      <Sheet>
+      {/* Mobile Sidebar — closes after any nav choice */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
@@ -247,8 +261,8 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="p-0 w-72 bg-[#1a2e35] border-r border-white/10"
-          closeClassName="text-white opacity-90 hover:opacity-100 hover:bg-white/10 data-[state=open]:bg-white/10"
+          className="p-0 w-72 bg-[#1a2e35] border-r border-white/10 [&>button]:text-white [&>button]:hover:text-white"
+          closeClassName="text-white hover:text-white opacity-100 hover:opacity-100 hover:bg-white/10 focus:ring-white/40"
         >
           <VisuallyHidden>
             <SheetTitle>Navigation Menu</SheetTitle>
@@ -259,6 +273,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             onLogout={handleLogout}
             user={user}
             brandVariant={brandVariant}
+            onNavigate={closeMobile}
           />
         </SheetContent>
       </Sheet>

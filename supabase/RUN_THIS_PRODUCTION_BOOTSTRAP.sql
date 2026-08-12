@@ -46,16 +46,29 @@ CREATE TABLE IF NOT EXISTS public.clinic_centers (
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   address TEXT NOT NULL,
+  landmark TEXT,
   pincode TEXT,
+  latitude DECIMAL(10, 8),
+  longitude DECIMAL(11, 8),
   phone TEXT,
   email TEXT,
+  image_url TEXT,
   facilities JSONB DEFAULT '[]'::JSONB,
   rating DECIMAL(2, 1) DEFAULT 0,
   total_reviews INTEGER DEFAULT 0,
   is_featured BOOLEAN DEFAULT false,
   is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure columns exist on older DBs that already created clinic_centers without them
+ALTER TABLE public.clinic_centers
+  ADD COLUMN IF NOT EXISTS landmark TEXT,
+  ADD COLUMN IF NOT EXISTS latitude DECIMAL(10, 8),
+  ADD COLUMN IF NOT EXISTS longitude DECIMAL(11, 8),
+  ADD COLUMN IF NOT EXISTS image_url TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 CREATE TABLE IF NOT EXISTS public.services (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

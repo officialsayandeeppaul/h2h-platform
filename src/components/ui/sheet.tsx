@@ -81,7 +81,7 @@ function SheetContent({
             closeClassName
           )}
         >
-          <XIcon className="size-4" />
+          <XIcon className="size-4 text-current" strokeWidth={2.25} />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>

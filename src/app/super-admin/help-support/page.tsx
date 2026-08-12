@@ -43,7 +43,15 @@ function HelpSupportContent() {
   useEffect(() => {
     if (expandId && messages.length > 0) {
       const found = messages.some((m) => m.id === expandId);
-      if (found) setExpandedId(expandId);
+      if (found) {
+        setExpandedId(expandId);
+        requestAnimationFrame(() => {
+          document.getElementById(`contact-${expandId}`)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        });
+      }
     }
   }, [expandId, messages]);
 
@@ -149,6 +157,7 @@ function HelpSupportContent() {
           {messages.map((msg) => (
             <div
               key={msg.id}
+              id={`contact-${msg.id}`}
               className={`rounded-xl border bg-white overflow-hidden transition-all ${
                 msg.status === 'new'
                   ? 'border-cyan-200 ring-1 ring-cyan-100'

@@ -110,6 +110,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     document.body.style.overflow = '';
   }, [sidebarOpen]);
 
+  // Close mobile drawer after navigation
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   // Poll new contact message count (super admin only) — must run before any early return (Rules of Hooks)
   useEffect(() => {
     if (user?.role !== 'super_admin') return;
@@ -146,6 +151,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   async function handleLogout() {
+    setSidebarOpen(false);
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/super-admin/login');
   }
@@ -218,10 +224,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           />
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden shrink-0 p-2 -mr-1 text-gray-400 hover:text-white rounded-md hover:bg-white/10 transition-colors"
+            className="lg:hidden shrink-0 p-2 -mr-1 text-white hover:text-white rounded-md hover:bg-white/10 transition-colors"
             aria-label="Close menu"
           >
-            <X size={20} />
+            <X size={20} className="text-white" strokeWidth={2.25} />
           </button>
         </div>
 

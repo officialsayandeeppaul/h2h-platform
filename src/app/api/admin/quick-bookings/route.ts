@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       .from('quick_bookings')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(200);
+      .limit(500);
 
     if (status && status !== 'all') query = query.eq('status', status);
     if (paymentStatus && paymentStatus !== 'all') query = query.eq('payment_status', paymentStatus);
@@ -43,7 +43,17 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
     if (error) {
       console.error('admin quick_bookings list:', error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      const missing = /schema cache|does not exist|Could not find the table/i.test(error.message);
+      return NextResponse.json(
+        {
+          success: false,
+          needsSetup: missing,
+          error: missing
+            ? 'Run supabase/RUN_THIS_QUICK_BOOKINGS.sql in Supabase SQL Editor (Production).'
+            : error.message,
+        },
+        { status: missing ? 503 : 500 }
+      );
     }
 
     return NextResponse.json({ success: true, data: data || [] });

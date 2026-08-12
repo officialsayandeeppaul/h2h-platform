@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { 
   Search, Calendar, Clock, User, Phone, MapPin, Video, Building2, Home,
   CheckCircle2, XCircle, AlertCircle, Loader2, Eye, Filter, Download,
@@ -104,6 +105,18 @@ interface SlotData {
 }
 
 export default function AppointmentsPage() {
+  return (
+    <Suspense fallback={<AppointmentsAdminSkeleton />}>
+      <AppointmentsPageContent />
+    </Suspense>
+  );
+}
+
+function AppointmentsPageContent() {
+  const searchParams = useSearchParams();
+  const deepLinkId = searchParams.get('id');
+  const deepLinkHandled = useRef<string | null>(null);
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +145,53 @@ export default function AppointmentsPage() {
   const [statusMessage, setStatusMessage] = useState<{ id: string; text: string; tone: 'success' | 'error' } | null>(null);
 
   useEffect(() => { fetchAppointments(); fetchRescheduleRequests(); }, []);
+
+  // Open specific appointment from Notifications → Details (?id=...)
+  useEffect(() => {
+    if (!deepLinkId || loading) return;
+    if (deepLinkHandled.current === deepLinkId) return;
+
+    const openTarget = async () => {
+      setActiveTab('appointments');
+      setStatusFilter('all');
+      setModeFilter('all');
+      setDateFilter('all');
+      setSearchQuery('');
+
+      let found = appointments.some((a) => a.id === deepLinkId);
+      if (!found) {
+        try {
+          const res = await fetch(`/api/admin/appointments/${deepLinkId}`);
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.success && data.data) {
+            setAppointments((prev) => {
+              if (prev.some((a) => a.id === data.data.id)) return prev;
+              return [data.data as Appointment, ...prev];
+            });
+            found = true;
+          } else {
+            setError(data.error || 'Appointment not found');
+            deepLinkHandled.current = deepLinkId;
+            return;
+          }
+        } catch {
+          setError('Failed to load appointment details');
+          deepLinkHandled.current = deepLinkId;
+          return;
+        }
+      }
+
+      setExpandedId(deepLinkId);
+      deepLinkHandled.current = deepLinkId;
+
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`appointment-${deepLinkId}`);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    };
+
+    void openTarget();
+  }, [deepLinkId, loading, appointments]);
 
   const handleEndConsultation = async (appointmentId: string) => {
     setEndingId(appointmentId);
@@ -777,7 +837,15 @@ export default function AppointmentsPage() {
             const centerName = apt.metadata?.center_name || apt.location?.city || 'N/A';
 
             return (
-              <div key={apt.id} className="bg-white rounded-xl border overflow-hidden">
+              <div
+                key={apt.id}
+                id={`appointment-${apt.id}`}
+                className={`bg-white rounded-xl border overflow-hidden ${
+                  expandedId === apt.id && deepLinkId === apt.id
+                    ? 'ring-2 ring-cyan-400 border-cyan-300'
+                    : ''
+                }`}
+              >
                 {/* Main Row */}
                 <div className="p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50" onClick={() => setExpandedId(isExpanded ? null : apt.id)}>
                   {/* Date/Time */}
