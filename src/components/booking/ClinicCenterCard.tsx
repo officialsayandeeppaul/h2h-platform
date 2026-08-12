@@ -9,7 +9,6 @@ import {
   CheckCircle2, 
   Phone,
   Users,
-  Sparkles,
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -80,16 +79,6 @@ export function ClinicCenterCard({
       )}
       onClick={() => onSelect(center)}
     >
-      {/* Featured Badge */}
-      {center.is_featured && (
-        <div className="absolute -top-2 -right-2 z-10">
-          <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
-            <Sparkles className="h-3 w-3 mr-1" />
-            Featured
-          </Badge>
-        </div>
-      )}
-
       {/* Selection Indicator */}
       {isSelected && (
         <div className="absolute top-4 right-4">

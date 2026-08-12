@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, CheckCircle2, Zap } from 'lucide-react';
+import { Loader2, CheckCircle2, Zap, Eye, EyeOff } from 'lucide-react';
 import { QuickBookingFormSkeleton } from '@/components/booking/BookingSkeletons';
 import { Button } from '@/components/ui/button';
 import {
@@ -126,6 +126,7 @@ export function QuickBookingForm({
   const [serviceError, setServiceError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ message: string; paid?: boolean } | null>(null);
+  const [showTokenInfo, setShowTokenInfo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -445,10 +446,41 @@ export function QuickBookingForm({
         </div>
 
         {settings.payment_enabled && displayAmount != null && (
-          <div className="rounded-lg border border-cyan-100 bg-cyan-50 px-3 py-2.5 text-sm text-cyan-900">
-            Payment required: <strong>₹{Number(displayAmount).toLocaleString('en-IN')}</strong>
-            {settings.default_amount == null && (
-              <span className="text-cyan-700/80"> (service rate)</span>
+          <div className="rounded-xl border border-cyan-100 bg-cyan-50/80 px-3.5 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-cyan-950">
+                <span className="text-cyan-800/80">Amount </span>
+                <span className="font-semibold tabular-nums">
+                  ₹{Number(displayAmount).toLocaleString('en-IN')}
+                </span>
+                {settings.default_amount == null && (
+                  <span className="text-cyan-700/70 text-xs"> · service rate</span>
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowTokenInfo((v) => !v)}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cyan-200 bg-white text-cyan-700 transition hover:bg-cyan-100 hover:text-cyan-900"
+                aria-label={showTokenInfo ? 'Hide amount details' : 'Show amount details'}
+                aria-expanded={showTokenInfo}
+              >
+                {showTokenInfo ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {showTokenInfo && (
+              <div className="mt-2.5 rounded-lg border border-cyan-100/80 bg-white/90 px-3 py-2.5 text-[12.5px] leading-relaxed text-cyan-900/85">
+                <p className="font-medium text-cyan-950 mb-1">Initial booking token</p>
+                <p>
+                  This ₹{Number(displayAmount).toLocaleString('en-IN')} is the initial token amount
+                  to confirm your Quick Booking appointment. Our team will call to assign a doctor
+                  and confirm your slot. Any remaining consultation fee (if applicable) will be
+                  shared when your appointment is finalized.
+                </p>
+              </div>
             )}
           </div>
         )}

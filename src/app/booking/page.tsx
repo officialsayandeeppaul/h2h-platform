@@ -1674,16 +1674,6 @@ function BookingPageContent() {
                               setSelectedMode('offline');
                             }}
                           >
-                            {/* Featured Badge */}
-                            {center.is_featured && (
-                              <div className="absolute -top-2 -right-2 z-10">
-                                <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
-                                  <Sparkles className="h-3 w-3 mr-1" />
-                                  Featured
-                                </Badge>
-                              </div>
-                            )}
-
                             {/* Selection Indicator */}
                             {selectedCenter?.id === center.id && (
                               <div className="absolute top-4 right-4">
