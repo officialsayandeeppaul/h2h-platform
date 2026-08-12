@@ -9,6 +9,10 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import {
+  H2H_FALLBACK_CLINIC_CENTERS,
+  groupCentersByCity,
+} from '@/constants/clinic-centers';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -226,7 +230,7 @@ export async function GET(request: NextRequest) {
       serviceSlug
     );
 
-    // Simple select — no clinic_center_availability join (table often missing on prod)
+    // Minimal columns — avoid missing-column / missing-table joins that 500 on prod
     let query = supabase
       .from('clinic_centers')
       .select(
@@ -236,13 +240,8 @@ export async function GET(request: NextRequest) {
         name,
         slug,
         address,
-        landmark,
-        pincode,
-        latitude,
-        longitude,
         phone,
         email,
-        image_url,
         facilities,
         rating,
         total_reviews,
@@ -257,8 +256,7 @@ export async function GET(request: NextRequest) {
       `
       )
       .eq('is_active', true)
-      .order('is_featured', { ascending: false })
-      .order('rating', { ascending: false });
+      .order('is_featured', { ascending: false });
 
     if (locationId) {
       query = query.eq('location_id', locationId);
@@ -279,10 +277,9 @@ export async function GET(request: NextRequest) {
       console.error('clinic-centers embed error, retrying flat:', error.message || error);
       let flat = supabase
         .from('clinic_centers')
-        .select('*')
+        .select('id, location_id, name, slug, address, phone, email, facilities, rating, total_reviews, is_featured, is_active')
         .eq('is_active', true)
-        .order('is_featured', { ascending: false })
-        .order('rating', { ascending: false });
+        .order('is_featured', { ascending: false });
 
       if (locationId) flat = flat.eq('location_id', locationId);
       if (featured) flat = flat.eq('is_featured', true);
@@ -291,10 +288,22 @@ export async function GET(request: NextRequest) {
       const flatRes = await flat;
       if (flatRes.error) {
         console.error('Error fetching clinic centers:', flatRes.error);
-        return NextResponse.json(
-          { success: false, error: 'Failed to fetch clinic centers', detail: flatRes.error.message },
-          { status: 500 }
-        );
+        // Never leave booking online-only — return known H2H centers
+        const fallback = [...H2H_FALLBACK_CLINIC_CENTERS];
+        const grouped = groupCentersByCity(fallback);
+        return NextResponse.json({
+          success: true,
+          version: 'centers-v2-fallback',
+          detail: flatRes.error.message,
+          data: {
+            centers: fallback,
+            groupedByCity: grouped,
+            cities: Object.keys(grouped).sort(),
+            totalCenters: fallback.length,
+            currentDay: DAY_NAMES[new Date().getDay()],
+            currentDayOfWeek: new Date().getDay(),
+          },
+        });
       }
 
       const locIds = [
@@ -316,6 +325,24 @@ export async function GET(request: NextRequest) {
         location: locMap[c.location_id] || null,
       }));
       error = null;
+    }
+
+    // Empty DB rows → still show known centers
+    if (!centers || centers.length === 0) {
+      const fallback = [...H2H_FALLBACK_CLINIC_CENTERS];
+      const grouped = groupCentersByCity(fallback);
+      return NextResponse.json({
+        success: true,
+        version: 'centers-v2-empty-fallback',
+        data: {
+          centers: fallback,
+          groupedByCity: grouped,
+          cities: Object.keys(grouped).sort(),
+          totalCenters: fallback.length,
+          currentDay: DAY_NAMES[new Date().getDay()],
+          currentDayOfWeek: new Date().getDay(),
+        },
+      });
     }
 
     let filteredCenters = centers || [];
@@ -383,6 +410,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      version: 'centers-v2',
       data: {
         centers: processedCenters,
         groupedByCity,
@@ -394,9 +422,19 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error in clinic centers API:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    const fallback = [...H2H_FALLBACK_CLINIC_CENTERS];
+    const grouped = groupCentersByCity(fallback);
+    return NextResponse.json({
+      success: true,
+      version: 'centers-v2-catch-fallback',
+      data: {
+        centers: fallback,
+        groupedByCity: grouped,
+        cities: Object.keys(grouped).sort(),
+        totalCenters: fallback.length,
+        currentDay: DAY_NAMES[new Date().getDay()],
+        currentDayOfWeek: new Date().getDay(),
+      },
+    });
   }
 }

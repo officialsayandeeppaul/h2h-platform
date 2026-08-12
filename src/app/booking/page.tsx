@@ -5,6 +5,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Header, Footer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import {
+  H2H_FALLBACK_CLINIC_CENTERS,
+  groupCentersByCity,
+} from '@/constants/clinic-centers';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
@@ -354,6 +358,13 @@ function BookingPageContent() {
             grouped = allJson.data.groupedByCity || {};
           }
         }
+
+        // Last resort: known Kolkata + Bhubaneswar centers (API was 500ing / empty)
+        if (centers.length === 0) {
+          centers = [...H2H_FALLBACK_CLINIC_CENTERS];
+          grouped = groupCentersByCity(centers);
+          centersData = { success: true, data: { centers, groupedByCity: grouped } };
+        }
         
         if (centersData.success || centers.length > 0) {
           setClinicCenters(centers);
@@ -415,6 +426,17 @@ function BookingPageContent() {
         }
       } catch (err) {
         console.error('Failed to fetch data:', err);
+        const centers = [...H2H_FALLBACK_CLINIC_CENTERS];
+        const grouped = groupCentersByCity(centers);
+        setClinicCenters(centers);
+        setGroupedCenters(grouped);
+        setCities(
+          Object.entries(grouped).map(([cityName, cityCenters]) => ({
+            name: cityName,
+            centerCount: cityCenters.length,
+            tier: cityCenters[0]?.location?.tier || 1,
+          }))
+        );
       } finally {
         setLoadingLocations(false);
       }
