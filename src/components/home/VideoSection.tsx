@@ -83,7 +83,7 @@ export function VideoSection() {
             <div className="relative">
               <HeroVideoDialog
                 animationStyle="from-center"
-                mp4Src="https://videos.pexels.com/video-files/5319980/5319980-sd_540_960_25fps.mp4"
+                interactive={false}
                 thumbnailSrc={MARKETING_IMAGES.videoIntro}
                 thumbnailAlt="Physiotherapy and rehabilitation care at H2H Healthcare"
                 className="rounded-2xl sm:rounded-3xl overflow-hidden"

@@ -75,6 +75,8 @@ interface HeroVideoDialogProps {
   className?: string;
   /** Direct MP4 — preferred for reliability (no embed blocks). Opens in native video modal. */
   mp4Src?: string;
+  /** When false, shows thumbnail only (no play / modal). Use until a real video is ready. */
+  interactive?: boolean;
 }
 
 /** Keep player fully in view with a bit of edge padding */
@@ -87,11 +89,13 @@ export function HeroVideoDialog({
   thumbnailAlt = "Video thumbnail",
   className,
   mp4Src,
+  interactive = true,
 }: HeroVideoDialogProps) {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const selectedAnimation = animationVariants[animationStyle];
+  const canPlay = interactive && Boolean(mp4Src || videoSrc);
 
   const ytThumb = videoSrc ? youtubeEmbedToThumbnail(videoSrc) : null;
   const primaryThumb = thumbnailSrc || ytThumb;
@@ -181,17 +185,24 @@ export function HeroVideoDialog({
   return (
     <div className={cn("relative", className)}>
       <div
-        className="relative cursor-pointer group aspect-video"
-        onClick={() => setIsVideoOpen(true)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setIsVideoOpen(true);
-          }
-        }}
-        aria-label="Play video"
+        className={cn(
+          "relative group aspect-video",
+          canPlay ? "cursor-pointer" : "cursor-default"
+        )}
+        onClick={canPlay ? () => setIsVideoOpen(true) : undefined}
+        role={canPlay ? "button" : undefined}
+        tabIndex={canPlay ? 0 : undefined}
+        onKeyDown={
+          canPlay
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setIsVideoOpen(true);
+                }
+              }
+            : undefined
+        }
+        aria-label={canPlay ? "Play video" : undefined}
       >
         {!thumbnailFailed && primaryThumb ? (
           <Image
@@ -215,14 +226,16 @@ export function HeroVideoDialog({
             </p>
           </div>
         )}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:scale-110 transition-transform duration-300 ring-4 ring-white/20">
-            <Play className="w-8 h-8 md:w-10 md:h-10 text-white fill-white ml-1" />
+        {canPlay && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:scale-110 transition-transform duration-300 ring-4 ring-white/20">
+              <Play className="w-8 h-8 md:w-10 md:h-10 text-white fill-white ml-1" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {mounted ? createPortal(modal, document.body) : null}
+      {mounted && canPlay ? createPortal(modal, document.body) : null}
     </div>
   );
 }
