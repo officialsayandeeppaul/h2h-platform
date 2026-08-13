@@ -83,8 +83,8 @@
 
 ### 14. **FOUNDER SECTION** - Dark Theme
 - **Theme**: Dark (gray-950) with gradient orbs
-- **Features**: Founder profile with image
-- **Content**: Founder message and vision
+- **Features**: Mentor profile with image
+- **Content**: Mentor message and vision
 - **Purpose**: Personal connection and brand story
 
 ### 15. **TREATMENT PROCESS SECTION** - Light Theme

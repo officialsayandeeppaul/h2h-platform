@@ -182,7 +182,7 @@ const DOCTOR_USERS = [
 ];
 
 const SUKDEB_BIO =
-  'Founder & High-Performance Director with 17+ years in elite sports physiotherapy across cricket, football, hockey, and Olympic pathways. Leads National Excellence Centre programmes (MoYAS/SAI), with FIFA and IOC credentials and HPCP (Loughborough). License No. 24395-L.';
+  'Mentor & High-Performance Director with 17+ years in elite sports physiotherapy across cricket, football, hockey, and Olympic pathways. Leads National Excellence Centre programmes (MoYAS/SAI), with FIFA and IOC credentials and HPCP (Loughborough). License No. 24395-L.';
 
 const AKSHAT_BIO =
   'Sports Physiotherapist — 38th National Games (Uttarakhand), U-22 Asian Boxing selection trials (ASI Pune), and SAI NCOE internship. First Rank BPT (83.8%); pursuing MPT (Sports). On-field care, rehab, and return-to-sport for boxing, cricket, hockey, and gymnastics.';

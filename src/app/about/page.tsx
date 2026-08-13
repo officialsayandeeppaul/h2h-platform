@@ -11,7 +11,7 @@ import { ArrowRight, CheckCircle2 } from 'lucide-react';
 const leadershipTeam = [
   {
     name: 'Dr. Sukdeb Mahanta',
-    role: 'Founder · High-Performance Director',
+    role: 'Mentor · High-Performance Director',
     image: ABOUT_IMAGES.foundersGroup,
     highlights: [
       '17+ years in elite sports medicine — cricket, football, hockey, boxing & Olympic pathways',
@@ -79,7 +79,7 @@ export default function AboutPage() {
               </p>
 
               <p className="text-[13px] text-gray-600 mb-8 max-w-md leading-relaxed">
-                Led by founder Dr. Sukdeb Mahanta and a network of specialists with
+                Led by mentor Dr. Sukdeb Mahanta and a network of specialists with
                 national-level sport and hospital experience.
               </p>
 
@@ -224,7 +224,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Leadership team — founder & lead clinicians */}
+          {/* Leadership team — mentor & lead clinicians */}
           <div className="mt-20">
             <div className="text-center mb-12">
               <h2 className="text-[28px] md:text-[32px] font-medium text-gray-900 tracking-tight mb-4">
@@ -234,7 +234,7 @@ export default function AboutPage() {
                 </Highlighter>
               </h2>
               <p className="text-[15px] text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                Founder-led leadership and nationally credentialed sports physiotherapists — from domestic cricket and franchise
+                Mentor-led leadership and nationally credentialed sports physiotherapists — from domestic cricket and franchise
                 medicine to National Games and SAI high-performance centres.
               </p>
             </div>

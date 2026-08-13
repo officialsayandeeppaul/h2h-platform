@@ -46,7 +46,7 @@ export function FounderSection() {
               <div className="relative w-full overflow-hidden rounded-2xl border border-gray-800 bg-gray-950 aspect-[4/5] min-h-[280px] max-sm:min-h-[300px] max-sm:max-h-[min(72vh,520px)] sm:aspect-[3/4] sm:min-h-[420px] sm:max-h-[560px]">
                 <Image
                   src="/images/about/founders-group.webp"
-                  alt="Dr. Sukdeb Mahanta — Founder, H2H Healthcare"
+                  alt="Dr. Sukdeb Mahanta — Mentor, H2H Healthcare"
                   fill
                   className="object-contain object-top sm:object-cover sm:object-[center_22%]"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 480px"
@@ -56,7 +56,7 @@ export function FounderSection() {
 
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-950/95 to-transparent p-4 pt-14 sm:p-6 sm:pt-12">
                   <h3 className="text-[18px] font-medium text-white mb-1">Dr. Sukdeb Mahanta</h3>
-                  <p className="text-[14px] text-cyan-400">Founder · High-Performance Director, H2H Healthcare</p>
+                  <p className="text-[14px] text-cyan-400">Mentor · High-Performance Director, H2H Healthcare</p>
                 </div>
 
                 {/* Mobile: 17+ top-left; Pro & national on suit shoulder (right) */}
