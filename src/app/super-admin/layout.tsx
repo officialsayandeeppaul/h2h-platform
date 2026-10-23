@@ -26,7 +26,8 @@ import {
   MessageCircle,
   Bell,
   Camera,
-  Zap
+  Zap,
+  ClipboardList
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -174,6 +175,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/super-admin/doctors', icon: UserCircle2, label: 'Doctors' },
     { href: '/super-admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/super-admin/appointments', icon: Calendar, label: 'Appointments' },
+    { href: '/super-admin/audit-bookings', icon: ClipboardList, label: 'Audit Bookings', superAdminOnly: true },
     { href: '/super-admin/call-requests', icon: PhoneCall, label: 'Call Requests', superAdminOnly: true },
     { href: '/super-admin/quick-bookings', icon: Zap, label: 'Quick Bookings', superAdminOnly: true },
     { href: '/super-admin/schedule-requests', icon: CalendarClock, label: 'Schedule requests', superAdminOnly: true },

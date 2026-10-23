@@ -50,6 +50,25 @@ interface RazorpayWebhookPayload {
         created_at: number;
       };
     };
+    payment_link?: {
+      entity: {
+        id: string;
+        entity: string;
+        amount: number;
+        amount_paid: number;
+        currency: string;
+        status: string;
+        short_url?: string;
+        notes?: Record<string, string>;
+        payments?: {
+          payment_id: string;
+          amount: string;
+          method: string;
+          status: string;
+        } | null;
+        created_at: number;
+      };
+    };
   };
   created_at: number;
 }
@@ -357,6 +376,114 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Refund created:', refund.id);
+        break;
+      }
+
+      case 'payment_link.paid': {
+        const link = payload.payload.payment_link?.entity;
+        if (!link) break;
+
+        console.log('Payment link paid:', link.id, 'amount:', link.amount_paid / 100);
+
+        // Resolve the appointment this link was created for (via notes.appointmentId).
+        const appointmentId = link.notes?.appointmentId;
+        if (!appointmentId) {
+          console.log('payment_link.paid without appointmentId note — skipping');
+          break;
+        }
+
+        const { data: aptForLink } = await (supabase as any)
+          .from('appointments')
+          .select('id, mode, google_meet_link, appointment_date, start_time, end_time, metadata, doctor_id')
+          .eq('id', appointmentId)
+          .single();
+
+        if (!aptForLink) {
+          console.log('No appointment found for payment link:', appointmentId);
+          break;
+        }
+
+        const paymentId = link.payments?.payment_id || null;
+        const paymentMethod = link.payments?.method || null;
+
+        // Update the payment ledger row (match on order id if present, else appointment).
+        await (supabase as any)
+          .from('payments')
+          .update({
+            razorpay_payment_id: paymentId,
+            status: 'success',
+            payment_method: paymentMethod,
+          })
+          .eq('appointment_id', appointmentId);
+
+        const linkMeta =
+          aptForLink.metadata && typeof aptForLink.metadata === 'object' && !Array.isArray(aptForLink.metadata)
+            ? { ...(aptForLink.metadata as Record<string, unknown>) }
+            : {};
+
+        const linkUpdates: Record<string, unknown> = {
+          razorpay_payment_id: paymentId,
+          payment_status: 'paid',
+          status: 'confirmed',
+          metadata: {
+            ...linkMeta,
+            payment_link_id: link.id,
+            payment_link_status: 'paid',
+            payment_link_paid_at: new Date().toISOString(),
+          },
+        };
+
+        // Create a video room for online bookings if one isn't already set.
+        if (aptForLink.mode === 'online' && !aptForLink.google_meet_link) {
+          try {
+            let doctorName = 'Doctor';
+            if ((aptForLink as any).doctor_id) {
+              const { data: docRow } = await (supabase as any)
+                .from('doctors')
+                .select('user_id')
+                .eq('id', (aptForLink as any).doctor_id)
+                .single();
+              if (docRow?.user_id) {
+                const { data: docUser } = await (supabase as any)
+                  .from('users')
+                  .select('full_name')
+                  .eq('id', docRow.user_id)
+                  .single();
+                doctorName = docUser?.full_name || 'Doctor';
+              }
+            }
+            const { createVideoRoomUrls } = await import('@/lib/video-link');
+            const urls = await createVideoRoomUrls({
+              appointmentId,
+              doctorName,
+              appointmentDate: aptForLink.appointment_date || '',
+              startTime: aptForLink.start_time,
+              endTime: aptForLink.end_time,
+            });
+            linkUpdates.google_meet_link = urls.patientUrl;
+            linkUpdates.metadata = {
+              ...(linkUpdates.metadata as Record<string, unknown>),
+              doctor_video_url: urls.doctorUrl,
+              admin_video_url: urls.adminUrl,
+            };
+          } catch (err) {
+            console.error('Video room creation failed for payment link, using Jitsi fallback:', err);
+            const { generateJitsiLink } = await import('@/lib/video-link');
+            linkUpdates.google_meet_link = generateJitsiLink(appointmentId);
+          }
+        }
+
+        const { error: linkUpdateError } = await (supabase as any)
+          .from('appointments')
+          .update(linkUpdates)
+          .eq('id', appointmentId);
+
+        if (linkUpdateError) {
+          console.error('Error updating appointment after payment link paid:', linkUpdateError);
+        } else {
+          console.log('✓ Appointment confirmed via payment link:', appointmentId);
+        }
+
         break;
       }
 

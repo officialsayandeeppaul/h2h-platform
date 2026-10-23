@@ -191,6 +191,83 @@ export async function initiateRefund(
   }
 }
 
+export interface CreatePaymentLinkParams {
+  amountInr: number; // Amount in INR (converted to paise)
+  appointmentId: string;
+  description: string;
+  customer: { name?: string; email?: string; contact?: string };
+  callbackUrl?: string;
+  notes?: Record<string, string>;
+}
+
+export interface PaymentLinkResult {
+  id: string;
+  shortUrl: string;
+  amount: number; // paise
+  status: string;
+  createdAt: string;
+}
+
+/** Normalize an Indian mobile number to E.164 (+91XXXXXXXXXX) for Razorpay. */
+function toE164Indian(phone?: string): string | undefined {
+  if (!phone) return undefined;
+  const digits = phone.replace(/\D/g, '');
+  const withoutCountry = digits.replace(/^91(?=\d{10}$)/, '');
+  if (withoutCountry.length !== 10) return undefined;
+  return `+91${withoutCountry}`;
+}
+
+/**
+ * Create a hosted Razorpay Payment Link for an admin/audit-created booking.
+ * The patient can pay from the shared short_url; webhook `payment_link.paid`
+ * reconciles the appointment back to paid + confirmed.
+ */
+export async function createAppointmentPaymentLink(
+  params: CreatePaymentLinkParams
+): Promise<PaymentLinkResult> {
+  const contact = toE164Indian(params.customer.contact);
+
+  // Razorpay needs at least one of contact/email to raise a link.
+  if (!contact && !params.customer.email) {
+    throw new Error('Patient email or phone is required to generate a payment link');
+  }
+
+  const razorpay = getRazorpay();
+  const link = await razorpay.paymentLink.create({
+    amount: Math.round(params.amountInr * 100),
+    currency: 'INR',
+    accept_partial: false,
+    description: params.description,
+    customer: {
+      name: params.customer.name || 'Patient',
+      ...(params.customer.email ? { email: params.customer.email } : {}),
+      ...(contact ? { contact } : {}),
+    },
+    notify: {
+      sms: true,
+      email: Boolean(params.customer.email),
+      whatsapp: true,
+    },
+    reminder_enable: true,
+    notes: {
+      appointmentId: params.appointmentId,
+      type: 'audit_booking',
+      ...params.notes,
+    },
+    ...(params.callbackUrl
+      ? { callback_url: params.callbackUrl, callback_method: 'get' as const }
+      : {}),
+  });
+
+  return {
+    id: link.id,
+    shortUrl: link.short_url,
+    amount: Number(link.amount),
+    status: link.status,
+    createdAt: typeof link.created_at === 'string' ? link.created_at : new Date().toISOString(),
+  };
+}
+
 /**
  * Get Razorpay public key for frontend
  */
