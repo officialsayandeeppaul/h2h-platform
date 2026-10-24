@@ -11,6 +11,7 @@
  */
 
 import { findSlotConflict } from '@/lib/appointment-slot';
+import { findAuthUserByEmail, generateTemporaryPassword } from '@/lib/doctor-credentials';
 import { createAppointmentPaymentLink } from '@/lib/razorpay';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -74,27 +75,28 @@ async function requireSuperAdmin(supabase: any) {
  * from the phone digits so re-booking the same patient stays deterministic.
  */
 function placeholderEmailForPhone(phoneDigits: string): string {
-  return `walkin+${phoneDigits}@h2h.invalid`;
+  // Canonicalize to the local 10 digits so every input format of the same
+  // mobile (0…, +91…, spaced) maps to ONE deterministic placeholder.
+  const local = phoneDigits.replace(/\D/g, '').slice(-10);
+  return `walkin+${local}@h2h.invalid`;
 }
 
-/** All plausible storage formats of an Indian phone number, for lookup. */
-function phoneVariants(phone: string): string[] {
-  const digits = phone.replace(/\D/g, '');
-  const variants = new Set<string>();
-  const add = (v?: string) => {
-    if (v) variants.add(v);
-  };
+/** Escape LIKE wildcards so ilike() matches the value exactly (still case-insensitive). */
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
 
-  add(phone.trim());
-  add(phone.replace(/[\s()-]/g, ''));
-  add(digits);
-  if (digits.length >= 10) {
-    const local = digits.slice(-10);
-    add(local);
-    add(`+91${local}`);
-    add(`91${local}`);
-  }
-  return [...variants];
+/**
+ * Canonical Indian mobile — strips formatting and the +91 / 91 / 0 prefixes so
+ * every plausible input form (spaced, dashed, prefixed) lands on the same
+ * 10-digit value for storage, lookup, and the walk-in placeholder email.
+ */
+function canonicalIndianPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+  if (digits.length === 13 && digits.startsWith('910')) return digits.slice(3);
+  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
+  return digits || phone.trim();
 }
 
 function isUniqueViolation(error: { code?: string } | null): boolean {
@@ -107,65 +109,158 @@ async function resolveOrCreatePatient(
   { name, email, phone }: { name: string; email?: string; phone?: string }
 ): Promise<{ id: string } | { error: string }> {
   const normalizedEmail = email?.trim().toLowerCase() || null;
-  const normalizedPhone = phone?.replace(/\s/g, '').replace(/^\+91/, '').replace(/^91/, '') || null;
-  const phoneDigits = (normalizedPhone || '').replace(/\D/g, '');
+  const canonicalPhone = phone ? canonicalIndianPhone(phone) : '';
+  const phoneDigits = canonicalPhone;
 
   if (!normalizedEmail && !phoneDigits) {
     return { error: 'Provide at least a phone number or an email for the patient.' };
   }
 
+  // 1. Existing patient by email — case-insensitive (auth stores the typed case).
   if (normalizedEmail) {
     const { data: byEmail } = await adminClient
       .from('users')
       .select('id')
-      .eq('email', normalizedEmail)
+      .ilike('email', escapeLike(normalizedEmail))
       .maybeSingle();
     if (byEmail) return { id: (byEmail as any).id };
   }
 
+  // 2. Existing patient by phone — canonical variants first, then a suffix scan
+  //    that catches every legacy storage format (spaced, dashed, +91-, 0…).
   if (phoneDigits) {
+    const local = phoneDigits.slice(-10);
     const { data: byPhone } = await adminClient
       .from('users')
-      .select('id')
-      .in('phone', phoneVariants(phone || normalizedPhone || phoneDigits))
+      .select('id, phone')
+      .in('phone', [local, `+91${local}`, `91${local}`, `0${local}`])
       .limit(1);
     if (byPhone && byPhone.length > 0) return { id: (byPhone as any)[0].id };
+
+    const { data: bySuffix } = await adminClient
+      .from('users')
+      .select('id, phone')
+      .not('phone', 'is', null)
+      .like('phone', `%${local}`)
+      .limit(10);
+    const suffixMatch = (bySuffix || []).find((r: any) =>
+      String((r as any).phone || '').replace(/\D/g, '').endsWith(local)
+    );
+    if (suffixMatch) return { id: (suffixMatch as any).id };
   }
 
-  // Email is NOT NULL — fall back to a deterministic placeholder built from the
-  // phone number when the admin only collected a walk-in number.
+  // 3. public.users.id references auth.users(id) and has NO default — a patient
+  //    row can only be born from a Supabase Auth account (the on_auth_user_created
+  //    trigger mirrors auth → public.users). Create the auth user first.
   const insertEmail = normalizedEmail || placeholderEmailForPhone(phoneDigits);
 
-  // Create a new patient record (no auth account yet — patient can register later).
-  const { data: created, error } = await adminClient
+  let authUserId: string | null = null;
+  const { data: createdAuth, error: authError } = await adminClient.auth.admin.createUser({
+    email: insertEmail,
+    password: generateTemporaryPassword(),
+    email_confirm: true,
+    user_metadata: {
+      full_name: name || 'Walk-in Patient',
+      ...(phoneDigits ? { phone: phoneDigits } : {}),
+      role: 'patient',
+      source: 'audit_booking',
+    },
+  });
+
+  if (!authError && createdAuth?.user?.id) {
+    authUserId = createdAuth.user.id as string;
+  } else {
+    const msg = authError?.message || '';
+    const alreadyExists = authError?.status === 422 || /already|registered|duplicate/i.test(msg);
+    if (!alreadyExists) {
+      console.error('Audit booking auth user creation failed:', authError);
+      return { error: `Failed to create patient record: ${msg || 'could not create login account'}` };
+    }
+    // Auth account exists but the public row is missing — link to that account.
+    const orphan = await findAuthUserByEmail(adminClient, insertEmail);
+    if (!orphan) {
+      console.error('Audit booking: could not resolve existing auth user:', msg);
+      return { error: `Failed to create patient record: ${msg}` };
+    }
+    authUserId = orphan.id;
+  }
+
+  // 4. Ensure the public profile row exists (the trigger usually created it).
+  const ensured = await ensurePublicPatientRow(adminClient, authUserId, {
+    email: insertEmail,
+    fullName: name || 'Walk-in Patient',
+    phone: phoneDigits || null,
+  });
+  if (!ensured) {
+    return { error: 'Failed to create patient record: profile row could not be created' };
+  }
+  return { id: ensured };
+}
+
+/**
+ * public.users row for an auth user — created by the on_auth_user_created
+ * trigger in normal operation; inserted explicitly here as a fallback (passing
+ * the auth id so the auth.users FK is satisfied). Also backfills the phone,
+ * which the trigger does not copy.
+ */
+async function ensurePublicPatientRow(
+  adminClient: any,
+  authUserId: string,
+  { email, fullName, phone }: { email: string; fullName: string; phone: string | null }
+): Promise<string | null> {
+  const { data: existing } = await adminClient
+    .from('users')
+    .select('id, phone')
+    .eq('id', authUserId)
+    .maybeSingle();
+
+  if (existing) {
+    if (!(existing as any).phone && phone) {
+      await adminClient.from('users').update({ phone }).eq('id', authUserId);
+    }
+    return (existing as any).id as string;
+  }
+
+  const { data: inserted, error: insertError } = await adminClient
     .from('users')
     .insert({
-      email: insertEmail,
-      full_name: name || 'Walk-in Patient',
-      phone: normalizedPhone,
+      id: authUserId,
+      email,
+      full_name: fullName,
+      phone,
       role: 'patient',
       is_active: true,
     } as any)
     .select('id')
     .maybeSingle();
 
-  if (error && !isUniqueViolation(error)) {
-    console.error('Error creating audit-booking patient:', error);
-    return { error: 'Failed to create patient record' };
+  if (!insertError && inserted) return (inserted as any).id as string;
+
+  if (insertError && !isUniqueViolation(insertError)) {
+    console.error('Error creating audit-booking patient profile:', insertError);
+    return null;
   }
 
-  if (created) return { id: (created as any).id };
+  // Unique violation → the row appeared concurrently (or the email is owned by
+  // another id). Resolve to the winning row instead of failing the booking.
+  const { data: again } = await adminClient
+    .from('users')
+    .select('id, phone')
+    .eq('id', authUserId)
+    .maybeSingle();
+  if (again) {
+    if (!(again as any).phone && phone) {
+      await adminClient.from('users').update({ phone }).eq('id', authUserId);
+    }
+    return (again as any).id as string;
+  }
 
-  // Unique violation: the same email (or a phone stored under another format)
-  // already exists — re-resolve instead of failing the booking.
-  const { data: existing } = await adminClient
+  const { data: emailOwner } = await adminClient
     .from('users')
     .select('id')
-    .eq('email', insertEmail)
+    .ilike('email', escapeLike(email))
     .maybeSingle();
-  if (existing) return { id: (existing as any).id };
-
-  return { error: 'Failed to create patient record' };
+  return emailOwner ? ((emailOwner as any).id as string) : null;
 }
 
 /**

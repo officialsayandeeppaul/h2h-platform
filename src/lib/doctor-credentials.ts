@@ -37,7 +37,7 @@ function getTransporter() {
   });
 }
 
-async function findAuthUserByEmail(
+export async function findAuthUserByEmail(
   adminClient: SupabaseClient,
   email: string
 ): Promise<{ id: string; email?: string } | null> {
