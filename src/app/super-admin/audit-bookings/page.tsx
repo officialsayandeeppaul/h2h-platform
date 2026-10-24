@@ -186,6 +186,23 @@ function isValidIndianMobile(phone?: string): boolean {
   return /^\d{10}$/.test(normalized);
 }
 
+/**
+ * Hard input mask for the phone field, applied on every keystroke:
+ * - letters and symbols never survive (digits only)
+ * - a pasted "+91 98765 43210" / "0…" number is normalized to its 10 digits
+ * - the field is capped at 10 digits, so an 11th digit cannot be entered
+ *   (the first 10 stay put while typing; long junk pastes keep the first 10)
+ */
+function sanitizePhoneInput(raw: string): string {
+  let digits = raw.replace(/\D/g, '');
+  if (digits.length >= 12 && digits.startsWith('91')) digits = digits.slice(2);
+  if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return digits.slice(0, 10);
+}
+
+/** Loose, practical email check — the field is optional but must be real if used. */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 /** Human labels for the lifecycle status actions. */
 const STATUS_ACTION_LABELS: Record<string, string> = {
   confirm: 'Booking confirmed',
@@ -954,6 +971,7 @@ function SearchableSelect({
         aria-autocomplete="list"
         value={open ? query : displayText}
         placeholder={placeholder}
+        maxLength={120}
         onChange={(e) => {
           setQuery(e.target.value);
           if (!open) setOpen(true);
@@ -1231,40 +1249,57 @@ function NewAuditBookingDialog({
   const hasDoctor = !!doctorId || !!customDoctorName?.trim();
   const hasService = !!serviceId || !!customServiceName?.trim();
   const phoneValid = !patientPhone.trim() || isValidIndianMobile(patientPhone);
+  const emailValid = !patientEmail.trim() || EMAIL_REGEX.test(patientEmail.trim());
+  const nameValid = patientName.trim().length >= 2;
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const dateValid = !date || date >= todayStr;
+  const amountValid = Number(amount) >= 0; // NaN (junk input) fails this too
   const durationMinutes = services.find((s) => s.id === serviceId)?.duration_minutes || 30;
   const canSubmit =
-    patientName.trim().length > 0 &&
+    nameValid &&
     phoneValid &&
+    emailValid &&
     hasContact &&
     hasDoctor &&
     hasService &&
     !!date &&
+    dateValid &&
     !!startTime &&
     !!endTime &&
     endTime > startTime &&
-    Number(amount) >= 0 &&
+    amountValid &&
     (paymentMode !== 'link' || Number(amount) > 0);
 
   const submit = async () => {
     if (!canSubmit) {
       setFormError(
-        !patientName.trim() || !date
-          ? 'Fill in patient name and date.'
-          : !hasDoctor
-            ? 'Choose a doctor, or type a custom doctor name.'
-            : !hasService
-              ? 'Choose a service, or type a custom service name.'
-              : !startTime || !endTime
-                ? 'Pick a time slot (or enter the time manually).'
-                : endTime <= startTime
-                  ? 'The end time must be after the start time.'
-                  : !phoneValid
-                    ? 'Enter a valid 10-digit mobile number.'
-                    : !hasContact
-                      ? 'Enter the patient phone number or email — at least one is required.'
-                      : paymentMode === 'link' && !(Number(amount) > 0)
-                        ? 'Enter an amount greater than 0 to generate a payment link.'
-                        : 'Fill in all required fields.'
+        !patientName.trim()
+          ? 'Fill in the patient name.'
+          : !nameValid
+            ? 'Patient name must be at least 2 characters.'
+            : !date
+              ? 'Choose the appointment date.'
+              : !dateValid
+                ? 'The booking date cannot be in the past.'
+                : !hasDoctor
+                  ? 'Choose a doctor, or type a custom doctor name.'
+                  : !hasService
+                    ? 'Choose a service, or type a custom service name.'
+                    : !startTime || !endTime
+                      ? 'Pick a time slot (or enter the time manually).'
+                      : endTime <= startTime
+                        ? 'The end time must be after the start time.'
+                        : !phoneValid
+                          ? 'Enter a valid 10-digit mobile number.'
+                          : !emailValid
+                            ? 'Enter a valid email address, or leave the email field empty.'
+                            : !hasContact
+                              ? 'Enter the patient phone number or email — at least one is required.'
+                              : paymentMode === 'link' && !(Number(amount) > 0)
+                                ? 'Enter an amount greater than 0 to generate a payment link.'
+                                : !amountValid
+                                  ? 'Enter a valid amount (0 or more).'
+                                  : 'Fill in all required fields.'
       );
       return;
     }
@@ -1345,21 +1380,50 @@ function NewAuditBookingDialog({
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Patient name <span className="text-red-500">*</span>
               </label>
-              <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
+              <Input
+                value={patientName}
+                onChange={(e) => setPatientName(e.target.value)}
+                placeholder="Full name"
+                maxLength={100}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
-              <Input value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)} placeholder="Mobile number" />
+              <Input
+                value={patientPhone}
+                onChange={(e) => setPatientPhone(sanitizePhoneInput(e.target.value))}
+                inputMode="numeric"
+                autoComplete="tel-national"
+                placeholder="10-digit mobile number"
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
-              <Input type="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="you@email.com" />
+              <Input
+                type="email"
+                value={patientEmail}
+                onChange={(e) => setPatientEmail(e.target.value)}
+                placeholder="you@email.com"
+                maxLength={254}
+              />
             </div>
           </div>
+          {patientName.trim() && !nameValid && (
+            <p className="text-xs text-red-600 flex items-center gap-1 -mt-1">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              Patient name must be at least 2 characters.
+            </p>
+          )}
           {patientPhone.trim() && !phoneValid && (
             <p className="text-xs text-red-600 flex items-center gap-1 -mt-1">
               <AlertCircle className="h-3 w-3 shrink-0" />
-              Enter a valid 10-digit mobile number (e.g. 98765 43210 — +91/0 prefix optional).
+              Enter the full 10-digit mobile number (e.g. 98765 43210).
+            </p>
+          )}
+          {patientEmail.trim() && !emailValid && (
+            <p className="text-xs text-red-600 flex items-center gap-1 -mt-1">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              Enter a valid email address (e.g. name@clinic.com), or leave email empty.
             </p>
           )}
           {patientName.trim() && !hasContact && (
@@ -1454,7 +1518,7 @@ function NewAuditBookingDialog({
               <input
                 type="date"
                 value={date}
-                min={format(new Date(), 'yyyy-MM-dd')}
+                min={todayStr}
                 onChange={(e) => {
                   setDate(e.target.value);
                   setStartTime('');
@@ -1462,6 +1526,12 @@ function NewAuditBookingDialog({
                 }}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
               />
+              {date && !dateValid && (
+                <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Choose today or a future date.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -1470,10 +1540,17 @@ function NewAuditBookingDialog({
               <Input
                 type="number"
                 min={0}
+                step="any"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
               />
+              {amount !== '' && !amountValid && (
+                <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Enter a number of 0 or more.
+                </p>
+              )}
             </div>
           </div>
 

@@ -86,6 +86,9 @@ function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 
+/** Practical email check — the field is optional but must be real when given. */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 /**
  * Canonical Indian mobile — strips formatting and the +91 / 91 / 0 prefixes so
  * every plausible input form (spaced, dashed, prefixed) lands on the same
@@ -354,6 +357,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Patient name needs at least 2 non-whitespace characters.
+    if (patientName.trim().length < 2) {
+      return NextResponse.json(
+        { success: false, error: 'Patient name must be at least 2 characters.' },
+        { status: 400 }
+      );
+    }
+
+    // Date must be a real calendar day (YYYY-MM-DD) and not in the past.
+    // "Today" is computed at the clinic's timezone (IST, UTC+5:30) so a
+    // booking for the current Indian day is never wrongly rejected.
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid appointment date — expected YYYY-MM-DD.' },
+        { status: 400 }
+      );
+    }
+    const istToday = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    if (date < istToday) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'The booking date cannot be in the past. Choose today or a future date.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Doctor: pick from the catalog OR type a free-text name (walk-ins with a
     // doctor who isn't configured in the system).
     if (!doctorIdTrimmed && !doctorNameTrimmed) {
@@ -375,6 +406,15 @@ export async function POST(request: NextRequest) {
     if (patientPhone?.trim() && !isValidIndianMobile(patientPhone)) {
       return NextResponse.json(
         { success: false, error: 'Enter a valid 10-digit mobile number.' },
+        { status: 400 }
+      );
+    }
+
+    // Email is optional, but when provided it must be a valid address —
+    // a malformed one would silently break Razorpay payment-link delivery.
+    if (patientEmail?.trim() && !EMAIL_REGEX.test(patientEmail.trim())) {
+      return NextResponse.json(
+        { success: false, error: 'Enter a valid email address, or leave the email field empty.' },
         { status: 400 }
       );
     }
@@ -402,6 +442,19 @@ export async function POST(request: NextRequest) {
     if (paymentMode === 'link' && !(Number(amount) > 0)) {
       return NextResponse.json(
         { success: false, error: 'Enter an amount greater than 0 to generate a payment link.' },
+        { status: 400 }
+      );
+    }
+
+    // Amount, when provided, must be a finite non-negative number — a direct
+    // API call could otherwise store a negative or NaN charge.
+    if (
+      amount !== undefined &&
+      amount !== null &&
+      (!Number.isFinite(Number(amount)) || Number(amount) < 0)
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Amount must be a number of 0 or more.' },
         { status: 400 }
       );
     }
