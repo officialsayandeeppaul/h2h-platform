@@ -119,7 +119,11 @@ async function proxy(
       return NextResponse.redirect(res.headers.get('location')!, res.status);
     }
 
-    const responseBody = await res.arrayBuffer();
+    // 204/205/304 are null-body statuses — forwarding an empty ArrayBuffer for
+    // them makes NextResponse throw (and turns a successful PATCH/DELETE into a
+    // fake 502). Send an explicit null body instead.
+    const isNullBodyStatus = [204, 205, 304].includes(res.status);
+    const responseBody = isNullBodyStatus ? null : await res.arrayBuffer();
     return new NextResponse(responseBody, {
       status: res.status,
       statusText: res.statusText,

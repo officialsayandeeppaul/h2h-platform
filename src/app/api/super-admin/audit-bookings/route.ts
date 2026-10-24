@@ -137,15 +137,18 @@ async function resolveOrCreatePatient(
       .limit(1);
     if (byPhone && byPhone.length > 0) return { id: (byPhone as any)[0].id };
 
-    const { data: bySuffix } = await adminClient
+    // Suffix scan for every other storage format (internally spaced, dashed,
+    // +91-…): compare digit-normalized values so formatting never hides a match.
+    const { data: phoneRows } = await adminClient
       .from('users')
       .select('id, phone')
       .not('phone', 'is', null)
-      .like('phone', `%${local}`)
-      .limit(10);
-    const suffixMatch = (bySuffix || []).find((r: any) =>
-      String((r as any).phone || '').replace(/\D/g, '').endsWith(local)
-    );
+      .limit(5000);
+    const digitsOf = (v: unknown) => String(v || '').replace(/\D/g, '');
+    const suffixMatch = (phoneRows || []).find((r: any) => {
+      const digits = digitsOf((r as any).phone);
+      return digits.length >= 10 && digits.endsWith(local);
+    });
     if (suffixMatch) return { id: (suffixMatch as any).id };
   }
 
