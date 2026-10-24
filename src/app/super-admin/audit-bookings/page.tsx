@@ -471,10 +471,11 @@ function AuditBookingsContent() {
             className="pl-10"
           />
         </div>
-        <select
+        <SelectField
+          ariaLabel="Filter by status"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-          className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm min-w-[140px]"
+          onChange={(v) => setStatusFilter(v as typeof statusFilter)}
+          className="min-w-[150px]"
         >
           <option value="all">All status</option>
           <option value="pending">Pending</option>
@@ -482,18 +483,19 @@ function AuditBookingsContent() {
           <option value="completed">Completed</option>
           <option value="cancelled">Cancelled</option>
           <option value="no_show">No show</option>
-        </select>
-        <select
+        </SelectField>
+        <SelectField
+          ariaLabel="Filter by payment"
           value={paymentFilter}
-          onChange={(e) => setPaymentFilter(e.target.value as typeof paymentFilter)}
-          className="px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm min-w-[140px]"
+          onChange={(v) => setPaymentFilter(v as typeof paymentFilter)}
+          className="min-w-[150px]"
         >
           <option value="all">All payments</option>
           <option value="pending">Awaiting payment</option>
           <option value="paid">Paid</option>
           <option value="refunded">Refunded</option>
           <option value="failed">Failed</option>
-        </select>
+        </SelectField>
       </div>
 
       {error && (
@@ -976,6 +978,38 @@ function SearchableSelect({
 }
 
 // ---------------------------------------------------------------------------
+// Styled select — native select for accessibility with a tight, custom chevron
+// ---------------------------------------------------------------------------
+
+function SelectField({
+  value,
+  onChange,
+  ariaLabel,
+  className,
+  children,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`relative ${className || ''}`}>
+      <select
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+      >
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // New booking dialog
 // ---------------------------------------------------------------------------
 
@@ -1187,8 +1221,9 @@ function NewAuditBookingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] gap-0 overflow-hidden p-0">
+        {/* Fixed header — stays put while the form scrolls */}
+        <DialogHeader className="shrink-0 border-b border-gray-100 px-6 pb-4 pr-10 pt-6">
           <DialogTitle className="flex items-center gap-2">
             <CalendarPlus className="h-5 w-5 text-cyan-600" /> New audit booking
           </DialogTitle>
@@ -1197,7 +1232,8 @@ function NewAuditBookingDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        {/* Scrolling body — the only part that scrolls */}
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
           {/* Patient */}
           <div className="grid sm:grid-cols-3 gap-3">
             <div className="sm:col-span-1">
@@ -1208,11 +1244,11 @@ function NewAuditBookingDialog({
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
-              <Input value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)} placeholder="10-digit mobile" />
+              <Input value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)} placeholder="Mobile number" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
-              <Input type="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
+              <Input type="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="you@email.com" />
             </div>
           </div>
           {patientName.trim() && !hasContact && (
@@ -1254,19 +1290,19 @@ function NewAuditBookingDialog({
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Mode</label>
-              <select
+              <SelectField
+                ariaLabel="Consultation mode"
                 value={mode}
-                onChange={(e) => {
-                  setMode(e.target.value as typeof mode);
+                onChange={(v) => {
+                  setMode(v as typeof mode);
                   setStartTime('');
                   setEndTime('');
                 }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
               >
                 <option value="offline">In-clinic</option>
                 <option value="online">Online</option>
                 <option value="home_visit">Home visit</option>
-              </select>
+              </SelectField>
             </div>
           </div>
 
@@ -1285,7 +1321,7 @@ function NewAuditBookingDialog({
                   setStartTime('');
                   setEndTime('');
                 }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
               />
             </div>
             <div>
@@ -1379,7 +1415,7 @@ function NewAuditBookingDialog({
                       setStartTime(e.target.value);
                       setEndTime(addMinutesToTime(e.target.value, durationMinutes));
                     }}
-                    className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white text-sm"
+                    className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400"
                   />
                 </div>
                 <div>
@@ -1390,7 +1426,7 @@ function NewAuditBookingDialog({
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white text-sm"
+                    className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400"
                   />
                 </div>
                 <p className="col-span-2 text-xs text-amber-700 flex items-center gap-1">
@@ -1460,7 +1496,7 @@ function NewAuditBookingDialog({
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
                 placeholder="Clinical / booking notes"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm resize-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
               />
             </div>
             <div>
@@ -1470,7 +1506,7 @@ function NewAuditBookingDialog({
                 onChange={(e) => setAuditNote(e.target.value)}
                 rows={2}
                 placeholder="Why this booking is being raised (audit purpose)"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm resize-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
               />
             </div>
           </div>
@@ -1483,7 +1519,8 @@ function NewAuditBookingDialog({
           )}
         </div>
 
-        <DialogFooter>
+        {/* Fixed footer — action buttons always reachable */}
+        <DialogFooter className="shrink-0 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             Cancel
           </Button>
