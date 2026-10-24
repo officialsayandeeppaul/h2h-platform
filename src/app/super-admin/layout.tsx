@@ -27,7 +27,8 @@ import {
   Bell,
   Camera,
   Zap,
-  ClipboardList
+  ClipboardList,
+  Receipt
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -187,6 +188,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/super-admin/quick-bookings', icon: Zap, label: 'Quick Bookings', superAdminOnly: true },
     { href: '/super-admin/schedule-requests', icon: CalendarClock, label: 'Schedule requests', superAdminOnly: true },
     { href: '/super-admin/payments', icon: CreditCard, label: 'Payments' },
+    { href: '/super-admin/expenses', icon: Receipt, label: 'Expenses', superAdminOnly: true },
     { href: '/super-admin/users', icon: Users, label: 'Users', superAdminOnly: true },
     { href: '/super-admin/settings', icon: Settings, label: 'Settings' },
   ];
