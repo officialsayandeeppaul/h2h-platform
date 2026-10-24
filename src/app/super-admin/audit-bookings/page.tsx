@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   ClipboardList,
+  Clock,
   Copy,
   CreditCard,
   IndianRupee,
@@ -21,6 +22,7 @@ import {
   RefreshCw,
   Search,
   User,
+  X,
   XCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -142,11 +144,45 @@ function toE164(phone?: string): string {
   return phone || '';
 }
 
+/** Render an Indian mobile consistently as "+91 98300 12345" regardless of how it was stored. */
+function formatPhoneDisplay(phone?: string | null): string {
+  const raw = (phone || '').trim();
+  if (!raw) return '';
+  const digits = raw.replace(/\D/g, '');
+  let local = digits;
+  if (digits.length === 12 && digits.startsWith('91')) local = digits.slice(2);
+  else if (digits.length === 11 && digits.startsWith('0')) local = digits.slice(1);
+  if (local.length === 10) return `+91 ${local.slice(0, 5)} ${local.slice(5)}`;
+  return raw;
+}
+
 function buildWaLink(phone?: string | null, text?: string): string | null {
   const e164 = toE164(phone || undefined);
   if (!e164) return null;
   return `https://wa.me/${e164.replace(/^\+/, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 }
+
+/** Add minutes to an "HH:MM" time, clamped to the end of the day. */
+function addMinutesToTime(time: string, minutes: number): string {
+  const [hRaw, mRaw] = time.split(':');
+  const h = Number(hRaw);
+  const m = Number(mRaw);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return '';
+  const total = h * 60 + m + (Number.isFinite(minutes) ? minutes : 0);
+  if (total <= 0) return '00:00';
+  if (total >= 24 * 60) return '23:59';
+  const hh = Math.floor(total / 60);
+  const mm = total % 60;
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+/** Human labels for the lifecycle status actions. */
+const STATUS_ACTION_LABELS: Record<string, string> = {
+  confirm: 'Booking confirmed',
+  complete: 'Booking marked complete',
+  cancel: 'Booking cancelled',
+  no_show: 'Marked as no-show',
+};
 
 // ---------------------------------------------------------------------------
 // Page (wrapped in Suspense for useSearchParams inside the booking dialog)
@@ -248,6 +284,7 @@ function AuditBookingsContent() {
         !q ||
         name.toLowerCase().includes(q) ||
         (phone || '').includes(q) ||
+        formatPhoneDisplay(phone).toLowerCase().includes(q) ||
         doctor.toLowerCase().includes(q) ||
         service.toLowerCase().includes(q);
       const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
@@ -288,7 +325,13 @@ function AuditBookingsContent() {
     runAction(id, `/api/super-admin/audit-bookings/${id}`, 'PATCH', { action: 'markCashPaid' }, 'Marked as paid (cash)');
 
   const changeStatus = (id: string, action: 'confirm' | 'complete' | 'cancel' | 'no_show') =>
-    runAction(id, `/api/super-admin/audit-bookings/${id}`, 'PATCH', { action }, `Booking ${action}d`);
+    runAction(
+      id,
+      `/api/super-admin/audit-bookings/${id}`,
+      'PATCH',
+      { action },
+      STATUS_ACTION_LABELS[action] || 'Booking updated'
+    );
 
   const generatePaymentLink = async (id: string) => {
     const data = await runAction(
@@ -486,6 +529,11 @@ function AuditBookingsContent() {
             const serviceName = b.service?.name || 'Unknown service';
             const linkUrl: string | null = b.metadata?.payment_link_url || null;
             const isPaid = b.payment_status === 'paid';
+            const waText = isPaid
+              ? `Hi ${patientName}, your H2H Healthcare booking for ${serviceName} with Dr. ${doctorName} on ${format(parseISO(b.appointment_date), 'dd MMM yyyy')} at ${b.start_time?.substring(0, 5)} is confirmed. Payment of ₹${Number(b.amount) || 0} received. See you soon!`
+              : linkUrl
+                ? `Hi ${patientName}, here is the payment link for your H2H Healthcare booking (${serviceName} with Dr. ${doctorName}, ${format(parseISO(b.appointment_date), 'dd MMM yyyy')} at ${b.start_time?.substring(0, 5)}): ${linkUrl}`
+                : `Hi ${patientName}, your H2H Healthcare booking for ${serviceName} with Dr. ${doctorName} on ${format(parseISO(b.appointment_date), 'dd MMM yyyy')} at ${b.start_time?.substring(0, 5)} is confirmed.`;
 
             return (
               <div key={b.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -511,8 +559,12 @@ function AuditBookingsContent() {
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
                       <Phone className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{patientPhone || 'N/A'}</span>
+                      <span className="truncate">{formatPhoneDisplay(patientPhone) || 'N/A'}</span>
                     </div>
+                    {/* Doctor + service stay visible on small screens */}
+                    <p className="md:hidden mt-1 text-xs text-gray-500 truncate">
+                      {serviceName} · Dr. {doctorName}
+                    </p>
                   </div>
 
                   <div className="hidden md:block flex-1 min-w-0">
@@ -552,7 +604,7 @@ function AuditBookingsContent() {
                           </p>
                           <p>
                             <span className="text-gray-500">Phone:</span>{' '}
-                            <span className="font-medium">{patientPhone || 'N/A'}</span>
+                            <span className="font-medium">{formatPhoneDisplay(patientPhone) || 'N/A'}</span>
                           </p>
                           <p>
                             <span className="text-gray-500">Email:</span>{' '}
@@ -564,6 +616,14 @@ function AuditBookingsContent() {
                       <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">Appointment</h4>
                         <div className="space-y-1 text-sm">
+                          <p>
+                            <span className="text-gray-500">Service:</span>{' '}
+                            <span className="font-medium">{serviceName}</span>
+                          </p>
+                          <p>
+                            <span className="text-gray-500">Doctor:</span>{' '}
+                            <span className="font-medium">Dr. {doctorName}</span>
+                          </p>
                           <p>
                             <span className="text-gray-500">Date:</span>{' '}
                             <span className="font-medium">
@@ -688,18 +748,12 @@ function AuditBookingsContent() {
                         </Button>
                       )}
 
-                      {/* Share over WhatsApp / SMS */}
-                      {patientPhone && !isPaid && (
+                      {/* Share over WhatsApp / call the patient */}
+                      {patientPhone && (
                         <>
-                          {buildWaLink(
-                            patientPhone,
-                            `Hi ${patientName}, here is your H2H Healthcare payment link: ${linkUrl || ''}`
-                          ) && (
+                          {buildWaLink(patientPhone, waText) && (
                             <a
-                              href={buildWaLink(
-                                patientPhone,
-                                `Hi ${patientName}, here is your H2H Healthcare payment link: ${linkUrl || ''}`
-                              ) as string}
+                              href={buildWaLink(patientPhone, waText) as string}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -755,8 +809,10 @@ function AuditBookingsContent() {
       <NewAuditBookingDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onCreated={() => {
+        onCreated={(createdId) => {
           setDialogOpen(false);
+          // Bring the new booking to the top and expand it for review.
+          if (createdId) setExpandedId(createdId);
           fetchBookings();
         }}
       />
@@ -793,6 +849,133 @@ function StatCard({
 }
 
 // ---------------------------------------------------------------------------
+// Searchable select — type a doctor/service name to filter, then pick
+// ---------------------------------------------------------------------------
+
+interface SearchableSelectOption {
+  id: string;
+  name: string;
+}
+
+function SearchableSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  emptyLabel,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: SearchableSelectOption[];
+  placeholder: string;
+  emptyLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listId = `audit-combobox-${useId()}`;
+
+  const selected = options.find((o) => o.id === value) || null;
+
+  // Close the list when clicking outside the field.
+  useEffect(() => {
+    if (!open) return;
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [open]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = q ? options.filter((o) => o.name.toLowerCase().includes(q)) : options;
+
+  const pick = (id: string) => {
+    onChange(id);
+    setOpen(false);
+    setQuery('');
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <input
+        type="text"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={listId}
+        aria-autocomplete="list"
+        value={open ? query : selected?.name || ''}
+        placeholder={placeholder}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          if (!open) setOpen(true);
+        }}
+        onFocus={() => {
+          setQuery('');
+          setOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && open && filtered.length > 0) {
+            e.preventDefault();
+            pick(filtered[0].id);
+          } else if (e.key === 'Escape' && open) {
+            e.stopPropagation();
+            setOpen(false);
+            setQuery('');
+          }
+        }}
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
+      />
+      {selected && !open && (
+        <button
+          type="button"
+          aria-label="Clear selection"
+          onClick={() => {
+            onChange('');
+            setQuery('');
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+
+      {open && (
+        <ul
+          id={listId}
+          role="listbox"
+          className="absolute z-20 mt-1 w-full max-h-44 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg py-1"
+        >
+          {filtered.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-gray-400">{emptyLabel}</li>
+          ) : (
+            filtered.map((o) => (
+              <li
+                key={o.id}
+                role="option"
+                aria-selected={o.id === value}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pick(o.id)}
+                className={`px-3 py-2 text-sm cursor-pointer ${
+                  o.id === value
+                    ? 'bg-cyan-50 text-cyan-700 font-medium'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {o.name}
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // New booking dialog
 // ---------------------------------------------------------------------------
 
@@ -803,12 +986,13 @@ function NewAuditBookingDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated: (createdId?: string) => void;
 }) {
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [services, setServices] = useState<ServiceOption[]>([]);
   const [slots, setSlots] = useState<SlotOption[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const catalogLoadedRef = useRef(false);
 
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
@@ -823,20 +1007,29 @@ function NewAuditBookingDialog({
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('later');
   const [notes, setNotes] = useState('');
   const [auditNote, setAuditNote] = useState('');
+  const [manualTime, setManualTime] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Load catalog data when the dialog opens.
+  // Load the catalog once per mount (the dialog component stays mounted, so
+  // reopening it must not re-download doctors/services every time).
   useEffect(() => {
-    if (!open) return;
+    if (!open || catalogLoadedRef.current) return;
+    catalogLoadedRef.current = true;
     (async () => {
       try {
         const [docRes, svcRes] = await Promise.all([fetch('/api/doctors'), fetch('/api/services')]);
         const docJson = await docRes.json().catch(() => ({}));
         const svcJson = await svcRes.json().catch(() => ({}));
-        setDoctors(Array.isArray(docJson.data) ? docJson.data : []);
-        setServices(Array.isArray(svcJson.data) ? svcJson.data : []);
+        const docList = Array.isArray(docJson.data) ? docJson.data : [];
+        const svcList = Array.isArray(svcJson.data) ? svcJson.data : [];
+        setDoctors(docList);
+        setServices(svcList);
+        // An empty catalog usually means a failed load — retry on next open.
+        if (docList.length === 0 || svcList.length === 0) catalogLoadedRef.current = false;
+        if (!docRes.ok || !svcRes.ok) throw new Error('catalog load failed');
       } catch {
+        catalogLoadedRef.current = false;
         toast.error('Could not load doctors/services');
       }
     })();
@@ -858,6 +1051,7 @@ function NewAuditBookingDialog({
       setPaymentMode('later');
       setNotes('');
       setAuditNote('');
+      setManualTime(false);
       setFormError(null);
       setSlots([]);
     }
@@ -906,18 +1100,35 @@ function NewAuditBookingDialog({
   }, [serviceId, services]);
 
   const selectedSlot = slots.find((s) => s.time === startTime);
+  const hasContact = !!(patientPhone.trim() || patientEmail.trim());
+  const durationMinutes = services.find((s) => s.id === serviceId)?.duration_minutes || 30;
   const canSubmit =
     patientName.trim().length > 0 &&
+    hasContact &&
     !!doctorId &&
     !!serviceId &&
     !!date &&
     !!startTime &&
     !!endTime &&
-    Number(amount) >= 0;
+    endTime > startTime &&
+    Number(amount) >= 0 &&
+    (paymentMode !== 'link' || Number(amount) > 0);
 
   const submit = async () => {
     if (!canSubmit) {
-      setFormError('Fill in patient, doctor, service, date, a time slot and amount.');
+      setFormError(
+        !patientName.trim() || !doctorId || !serviceId || !date
+          ? 'Fill in patient, doctor, service and date.'
+          : !startTime || !endTime
+            ? 'Pick a time slot (or enter the time manually).'
+            : endTime <= startTime
+              ? 'The end time must be after the start time.'
+              : !hasContact
+                ? 'Enter the patient phone number or email — at least one is required.'
+                : paymentMode === 'link' && !(Number(amount) > 0)
+                  ? 'Enter an amount greater than 0 to generate a payment link.'
+                  : 'Fill in all required fields.'
+      );
       return;
     }
     setSubmitting(true);
@@ -946,8 +1157,27 @@ function NewAuditBookingDialog({
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to create booking');
       }
-      toast.success(data.message || 'Audit booking created');
-      onCreated();
+
+      // Payment-link mode: put the link in the admin's clipboard right away.
+      const createdLink = data?.data?.payment_link?.shortUrl as string | undefined;
+      if (createdLink && navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(createdLink);
+          toast.success(data.message || 'Audit booking created', {
+            description: 'Payment link copied to clipboard.',
+          });
+        } catch {
+          toast.success(data.message || 'Audit booking created');
+        }
+      } else {
+        toast.success(data.message || 'Audit booking created');
+      }
+      if (data.paymentLinkError) {
+        toast.warning('Payment link could not be generated', {
+          description: `${data.paymentLinkError} — you can retry from the booking card.`,
+        });
+      }
+      onCreated(typeof data?.data?.id === 'string' ? (data.data.id as string) : undefined);
     } catch (e) {
       setFormError(e instanceof Error ? e.message : 'Failed to create booking');
     } finally {
@@ -985,6 +1215,12 @@ function NewAuditBookingDialog({
               <Input type="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
             </div>
           </div>
+          {patientName.trim() && !hasContact && (
+            <p className="text-xs text-amber-600 flex items-center gap-1 -mt-1">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              Enter a phone number or email — at least one is required to create the booking.
+            </p>
+          )}
 
           {/* Doctor / service / mode */}
           <div className="grid sm:grid-cols-3 gap-3">
@@ -992,39 +1228,29 @@ function NewAuditBookingDialog({
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Doctor <span className="text-red-500">*</span>
               </label>
-              <select
+              <SearchableSelect
                 value={doctorId}
-                onChange={(e) => {
-                  setDoctorId(e.target.value);
+                onChange={(v) => {
+                  setDoctorId(v);
                   setStartTime('');
                   setEndTime('');
                 }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
-              >
-                <option value="">Select doctor</option>
-                {doctors.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
+                options={doctors}
+                placeholder="Type doctor name"
+                emptyLabel="No doctors found"
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Service <span className="text-red-500">*</span>
               </label>
-              <select
+              <SearchableSelect
                 value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm"
-              >
-                <option value="">Select service</option>
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setServiceId}
+                options={services}
+                placeholder="Type service name"
+                emptyLabel="No services found"
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Mode</label>
@@ -1077,9 +1303,26 @@ function NewAuditBookingDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Available slots {doctorId && date ? '' : '(pick a doctor and date first)'}
-            </label>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <label className="block text-xs font-medium text-gray-600">
+                Available slots {doctorId && date ? '' : '(pick a doctor and date first)'}
+              </label>
+              {doctorId && date && !slotsLoading && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !manualTime;
+                    setManualTime(next);
+                    setStartTime('');
+                    setEndTime('');
+                  }}
+                  className="text-xs text-cyan-700 hover:text-cyan-800 hover:underline flex items-center gap-1"
+                >
+                  <Clock className="h-3 w-3" />
+                  {manualTime ? 'Hide manual entry' : 'Enter time manually'}
+                </button>
+              )}
+            </div>
             {slotsLoading ? (
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -1092,7 +1335,8 @@ function NewAuditBookingDialog({
               </div>
             ) : slots.length === 0 ? (
               <div className="p-4 border border-dashed border-gray-200 rounded-lg text-sm text-gray-500 text-center">
-                No slots available on this date. Try another date or doctor.
+                No slots available on this date.
+                {!manualTime && ' Try another date or doctor, or enter the time manually.'}
               </div>
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 max-h-44 overflow-y-auto p-1">
@@ -1102,6 +1346,7 @@ function NewAuditBookingDialog({
                     type="button"
                     disabled={!s.available}
                     onClick={() => {
+                      setManualTime(false);
                       setStartTime(s.time);
                       setEndTime(s.endTime);
                     }}
@@ -1118,10 +1363,52 @@ function NewAuditBookingDialog({
                 ))}
               </div>
             )}
+
+            {/* Manual entry — for doctors without configured availability or
+                walk-in times that don't line up with the slot grid. */}
+            {manualTime && doctorId && date && (
+              <div className="grid grid-cols-2 gap-3 mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div>
+                  <label className="block text-xs font-medium text-amber-800 mb-1">
+                    Start time <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => {
+                      setStartTime(e.target.value);
+                      setEndTime(addMinutesToTime(e.target.value, durationMinutes));
+                    }}
+                    className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-amber-800 mb-1">
+                    End time <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="w-full px-3 py-2 border border-amber-200 rounded-lg bg-white text-sm"
+                  />
+                </div>
+                <p className="col-span-2 text-xs text-amber-700 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Manual entry overrides availability — the slot conflict check still applies.
+                </p>
+              </div>
+            )}
+
             {selectedSlot && (
               <p className="text-xs text-cyan-700 mt-2 flex items-center gap-1">
                 <ArrowRight className="h-3 w-3" /> {selectedSlot.time} – {selectedSlot.endTime}
                 {selectedSlot.duration ? ` · ${selectedSlot.duration} min` : ''}
+              </p>
+            )}
+            {manualTime && startTime && endTime && (
+              <p className="text-xs text-amber-700 mt-2 flex items-center gap-1">
+                <ArrowRight className="h-3 w-3" /> {startTime} – {endTime} (manual)
               </p>
             )}
           </div>
@@ -1148,13 +1435,18 @@ function NewAuditBookingDialog({
                 active={paymentMode === 'later'}
                 onClick={() => setPaymentMode('later')}
                 icon={CreditCard}
-                title="Later"
-                desc="Leave pending"
+                title="Pay later"
+                desc="Settle later"
               />
             </div>
-            {paymentMode === 'link' && (!patientPhone.trim() && !patientEmail.trim()) && (
+            {paymentMode === 'link' && !hasContact && (
               <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> Add a phone or email so the payment link can be raised.
+                <AlertCircle className="h-3 w-3 shrink-0" /> Add a phone or email so the payment link can be raised.
+              </p>
+            )}
+            {paymentMode === 'link' && !(Number(amount) > 0) && (
+              <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3 shrink-0" /> Enter an amount greater than 0 to generate a payment link.
               </p>
             )}
           </div>

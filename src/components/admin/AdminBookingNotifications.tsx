@@ -18,8 +18,16 @@ export function AdminBookingNotifications() {
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data.success || !Array.isArray(data.data)) return;
 
-        const appointments = data.data as { id: string; patient?: { full_name?: string }; payment_status?: string }[];
+        const appointments = data.data as {
+          id: string;
+          patient?: { full_name?: string };
+          payment_status?: string;
+          metadata?: Record<string, unknown> | null;
+        }[];
         for (const apt of appointments) {
+          // Skip audit bookings — the super admin created them, so a toast
+          // ("new booking from patient") would be misleading.
+          if (apt.metadata?.is_audit_booking === true) continue;
           if (apt.id && !seenIds.current.has(apt.id) && apt.payment_status === 'paid') {
             seenIds.current.add(apt.id);
             if (!baselineSet.current) continue;

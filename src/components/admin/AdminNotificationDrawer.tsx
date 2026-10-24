@@ -73,8 +73,10 @@ export function AdminNotificationDrawer({ open, onOpenChange, seenBookingIds = n
           })
         );
 
-        const bookings: NotificationItem[] = (aptData.success && aptData.data ? aptData.data : []).map(
-          (a: any) => ({
+        const bookings: NotificationItem[] = (aptData.success && aptData.data ? aptData.data : [])
+          // Audit bookings are created by the super admin themselves — skip them.
+          .filter((a: any) => a.metadata?.is_audit_booking !== true)
+          .map((a: any) => ({
             type: 'booking' as const,
             data: {
               id: a.id,
@@ -93,7 +95,11 @@ export function AdminNotificationDrawer({ open, onOpenChange, seenBookingIds = n
           ...messages.map((x) => ({ ...x, _t: new Date(x.data.created_at || 0).getTime() })),
           ...bookings.map((x) => ({
             ...x,
-            _t: new Date(x.data.created_at || x.data.appointment_date + 'T' + x.data.start_time).getTime(),
+            _t: new Date(
+              x.type === 'booking'
+                ? x.data.created_at || `${x.data.appointment_date}T${x.data.start_time}`
+                : x.data.created_at || 0
+            ).getTime(),
           })),
         ]
           .sort((a, b) => (b as any)._t - (a as any)._t)

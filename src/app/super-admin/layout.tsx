@@ -72,12 +72,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         const res = await fetch('/api/admin/appointments?limit=50');
         const data = await res.json().catch(() => ({}));
         if (!data.success || !Array.isArray(data.data)) return;
-        const list = data.data as { id?: string; payment_status?: string; created_at?: string }[];
+        const list = data.data as {
+          id?: string;
+          payment_status?: string;
+          created_at?: string;
+          metadata?: Record<string, unknown> | null;
+        }[];
         const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
         const unseen = list.filter(
           (a) =>
             a.id &&
             a.payment_status === 'paid' &&
+            // Audit bookings are the super admin's own creations — not patient activity.
+            a.metadata?.is_audit_booking !== true &&
             !seenBookingIds.has(a.id) &&
             new Date(a.created_at || 0).getTime() >= cutoff
         );

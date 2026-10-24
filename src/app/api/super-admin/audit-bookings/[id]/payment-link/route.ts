@@ -125,6 +125,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     console.error('Error generating payment link:', error);
     const message =
       error instanceof Error ? error.message : 'Could not generate payment link';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    // Validation problems (missing contact, zero amount) are client errors.
+    const isValidation = /required|greater than 0/i.test(message);
+    return NextResponse.json(
+      { success: false, error: message },
+      { status: isValidation ? 400 : 500 }
+    );
   }
 }

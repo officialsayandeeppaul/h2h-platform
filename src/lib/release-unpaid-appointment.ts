@@ -42,6 +42,12 @@ export async function releaseUnpaidAppointment(
     metadata?: Record<string, unknown> | null;
   };
 
+  // Super-admin audit bookings are deliberate reservations — never auto-release
+  // them from payment-hold/abandonment paths (the admin cancels explicitly).
+  if (row.metadata?.is_audit_booking === true) {
+    return { released: false, appointmentId, message: 'Audit booking — never auto-released' };
+  }
+
   if (row.payment_status === 'paid' || row.razorpay_payment_id) {
     return { released: false, appointmentId, message: 'Payment already completed' };
   }
@@ -59,8 +65,7 @@ export async function releaseUnpaidAppointment(
       ? { ...row.metadata }
       : {};
 
-  const { error: updateErr } = await adminClient
-    .from('appointments')
+  const { error: updateErr } = await (adminClient.from('appointments') as any)
     .update({
       status: 'cancelled',
       payment_status: 'failed',
@@ -80,8 +85,7 @@ export async function releaseUnpaidAppointment(
     return { released: false, appointmentId, message: 'Failed to release slot' };
   }
 
-  await adminClient
-    .from('payments')
+  await (adminClient.from('payments') as any)
     .update({ status: 'failed' })
     .eq('appointment_id', appointmentId)
     .eq('status', 'pending');

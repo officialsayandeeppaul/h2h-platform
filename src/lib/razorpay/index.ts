@@ -212,9 +212,19 @@ export interface PaymentLinkResult {
 function toE164Indian(phone?: string): string | undefined {
   if (!phone) return undefined;
   const digits = phone.replace(/\D/g, '');
-  const withoutCountry = digits.replace(/^91(?=\d{10}$)/, '');
+  // Accept 91-prefixed and 0-prefixed local forms as well as bare 10-digit numbers.
+  const withoutCountry = digits.replace(/^(?:91|0)(?=\d{10}$)/, '');
   if (withoutCountry.length !== 10) return undefined;
   return `+91${withoutCountry}`;
+}
+
+/**
+ * Walk-in placeholder emails (built from a phone number) use the reserved
+ * `.invalid` TLD — they must never be passed to Razorpay as a delivery route.
+ */
+function isDeliverableEmail(email?: string): boolean {
+  if (!email) return false;
+  return !email.trim().toLowerCase().endsWith('.invalid');
 }
 
 /**
@@ -226,10 +236,15 @@ export async function createAppointmentPaymentLink(
   params: CreatePaymentLinkParams
 ): Promise<PaymentLinkResult> {
   const contact = toE164Indian(params.customer.contact);
+  const email = isDeliverableEmail(params.customer.email) ? params.customer.email : undefined;
 
-  // Razorpay needs at least one of contact/email to raise a link.
-  if (!contact && !params.customer.email) {
+  // Razorpay needs at least one real contact route (a placeholder email is not one).
+  if (!contact && !email) {
     throw new Error('Patient email or phone is required to generate a payment link');
+  }
+
+  if (!(Number(params.amountInr) > 0)) {
+    throw new Error('Payment link amount must be greater than 0');
   }
 
   const razorpay = getRazorpay();
@@ -240,13 +255,15 @@ export async function createAppointmentPaymentLink(
     description: params.description,
     customer: {
       name: params.customer.name || 'Patient',
-      ...(params.customer.email ? { email: params.customer.email } : {}),
+      ...(email ? { email } : {}),
       ...(contact ? { contact } : {}),
     },
     notify: {
-      sms: true,
-      email: Boolean(params.customer.email),
-      whatsapp: true,
+      // Only notify channels that actually exist — Razorpay rejects SMS
+      // notifications when no contact is attached to the link.
+      sms: Boolean(contact),
+      email: Boolean(email),
+      whatsapp: Boolean(contact),
     },
     reminder_enable: true,
     notes: {

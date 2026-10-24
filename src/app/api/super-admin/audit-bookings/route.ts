@@ -10,7 +10,7 @@
  * POST /api/super-admin/audit-bookings        - create a booking on behalf of a patient
  */
 
-import { findSlotConflict, paymentHoldExpiresAt } from '@/lib/appointment-slot';
+import { findSlotConflict } from '@/lib/appointment-slot';
 import { createAppointmentPaymentLink } from '@/lib/razorpay';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -56,6 +56,40 @@ async function requireSuperAdmin(supabase: any) {
   return { ok: true as const, adminClient, profile: userData as any };
 }
 
+/**
+ * Placeholder email for walk-in patients who only gave a phone number.
+ * `users.email` is NOT NULL + UNIQUE, so a row always needs one. The `.invalid`
+ * TLD is reserved (RFC 2606) so it can never receive mail, and it is derived
+ * from the phone digits so re-booking the same patient stays deterministic.
+ */
+function placeholderEmailForPhone(phoneDigits: string): string {
+  return `walkin+${phoneDigits}@h2h.invalid`;
+}
+
+/** All plausible storage formats of an Indian phone number, for lookup. */
+function phoneVariants(phone: string): string[] {
+  const digits = phone.replace(/\D/g, '');
+  const variants = new Set<string>();
+  const add = (v?: string) => {
+    if (v) variants.add(v);
+  };
+
+  add(phone.trim());
+  add(phone.replace(/[\s()-]/g, ''));
+  add(digits);
+  if (digits.length >= 10) {
+    const local = digits.slice(-10);
+    add(local);
+    add(`+91${local}`);
+    add(`91${local}`);
+  }
+  return [...variants];
+}
+
+function isUniqueViolation(error: { code?: string } | null): boolean {
+  return error?.code === '23505';
+}
+
 /** Find an existing patient row by email or phone, or create one on the fly. */
 async function resolveOrCreatePatient(
   adminClient: any,
@@ -63,43 +97,64 @@ async function resolveOrCreatePatient(
 ): Promise<{ id: string } | { error: string }> {
   const normalizedEmail = email?.trim().toLowerCase() || null;
   const normalizedPhone = phone?.replace(/\s/g, '').replace(/^\+91/, '').replace(/^91/, '') || null;
+  const phoneDigits = (normalizedPhone || '').replace(/\D/g, '');
+
+  if (!normalizedEmail && !phoneDigits) {
+    return { error: 'Provide at least a phone number or an email for the patient.' };
+  }
 
   if (normalizedEmail) {
     const { data: byEmail } = await adminClient
       .from('users')
       .select('id')
       .eq('email', normalizedEmail)
-      .single();
+      .maybeSingle();
     if (byEmail) return { id: (byEmail as any).id };
   }
 
-  if (normalizedPhone) {
+  if (phoneDigits) {
     const { data: byPhone } = await adminClient
       .from('users')
       .select('id')
-      .eq('phone', normalizedPhone)
-      .single();
-    if (byPhone) return { id: (byPhone as any).id };
+      .in('phone', phoneVariants(phone || normalizedPhone || phoneDigits))
+      .limit(1);
+    if (byPhone && byPhone.length > 0) return { id: (byPhone as any)[0].id };
   }
+
+  // Email is NOT NULL — fall back to a deterministic placeholder built from the
+  // phone number when the admin only collected a walk-in number.
+  const insertEmail = normalizedEmail || placeholderEmailForPhone(phoneDigits);
 
   // Create a new patient record (no auth account yet — patient can register later).
   const { data: created, error } = await adminClient
     .from('users')
     .insert({
-      email: normalizedEmail,
+      email: insertEmail,
       full_name: name || 'Walk-in Patient',
       phone: normalizedPhone,
       role: 'patient',
       is_active: true,
     } as any)
     .select('id')
-    .single();
+    .maybeSingle();
 
-  if (error || !created) {
+  if (error && !isUniqueViolation(error)) {
     console.error('Error creating audit-booking patient:', error);
     return { error: 'Failed to create patient record' };
   }
-  return { id: (created as any).id };
+
+  if (created) return { id: (created as any).id };
+
+  // Unique violation: the same email (or a phone stored under another format)
+  // already exists — re-resolve instead of failing the booking.
+  const { data: existing } = await adminClient
+    .from('users')
+    .select('id')
+    .eq('email', insertEmail)
+    .maybeSingle();
+  if (existing) return { id: (existing as any).id };
+
+  return { error: 'Failed to create patient record' };
 }
 
 /**
@@ -195,6 +250,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid consultation mode' }, { status: 400 });
     }
 
+    // users.email is NOT NULL and payment links need a contact route, so the
+    // patient must always be reachable by at least phone or email.
+    if (!patientPhone?.trim() && !patientEmail?.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Enter the patient phone number or email (at least one is required).' },
+        { status: 400 }
+      );
+    }
+
+    if (paymentMode === 'link' && !(Number(amount) > 0)) {
+      return NextResponse.json(
+        { success: false, error: 'Enter an amount greater than 0 to generate a payment link.' },
+        { status: 400 }
+      );
+    }
+
+    if (endTime <= startTime) {
+      return NextResponse.json(
+        { success: false, error: 'The end time must be after the start time.' },
+        { status: 400 }
+      );
+    }
+
     const adminClient = auth.adminClient as any;
 
     // Resolve or create the patient on whose behalf we are booking.
@@ -229,14 +307,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine the initial payment state from the chosen payment mode.
+    //
+    // Audit bookings are always `confirmed`: the super admin deliberately
+    // reserved the slot, so the 15-minute payment-hold cron must never treat
+    // them as abandoned checkouts and auto-cancel them. Money state is carried
+    // purely by payment_status (paid for cash, pending for link/later).
     const isPaidNow = paymentMode === 'cash';
     const paymentStatus = isPaidNow ? 'paid' : 'pending';
-    const status = paymentMode === 'later' ? 'pending' : 'confirmed';
+    const status = 'confirmed';
 
     const metadata: Record<string, unknown> = {
       [AUDIT_METADATA_KEY]: true,
       booked_at: new Date().toISOString(),
-      payment_hold_expires_at: paymentHoldExpiresAt(new Date().toISOString()).toISOString(),
       created_by: 'super_admin',
       created_by_email: auth.profile?.email || null,
       payment_mode: paymentMode,
@@ -280,8 +362,9 @@ export async function POST(request: NextRequest) {
     const appointmentId = (appointment as any).id as string;
 
     // Cash: record a manual payment row so the ledger shows how it was settled.
+    // Non-fatal — the booking itself must never fail because of the ledger row.
     if (isPaidNow) {
-      await (adminClient as any)
+      const { error: ledgerError } = await (adminClient as any)
         .from('payments')
         .insert({
           appointment_id: appointmentId,
@@ -293,7 +376,8 @@ export async function POST(request: NextRequest) {
           receipt_url: null,
         })
         .select('id')
-        .single();
+        .maybeSingle();
+      if (ledgerError) console.error('Audit booking cash ledger insert failed:', ledgerError);
     }
 
     // Link: generate a hosted Razorpay payment link to share with the patient.

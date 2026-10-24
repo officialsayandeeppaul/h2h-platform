@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const cutoff = new Date(Date.now() - PAYMENT_HOLD_MINUTES * 60 * 1000).toISOString();
 
     const { data: stale, error } = await (adminClient.from('appointments') as any)
-      .select('id')
+      .select('id, metadata')
       .eq('status', 'pending')
       .eq('payment_status', 'pending')
       .is('razorpay_payment_id', null)
@@ -32,8 +32,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Query failed' }, { status: 500 });
     }
 
+    // Super-admin audit bookings are deliberately reserved slots — never
+    // auto-cancel them, even if they were created with a pending payment.
+    const isAuditBooking = (row: { metadata?: Record<string, unknown> | null }) =>
+      row?.metadata?.is_audit_booking === true;
+
     let released = 0;
+    let skippedAudit = 0;
     for (const row of stale || []) {
+      if (isAuditBooking(row)) {
+        skippedAudit++;
+        continue;
+      }
       const result = await releaseUnpaidAppointment(
         adminClient,
         row.id as string,
@@ -46,6 +56,7 @@ export async function GET(request: NextRequest) {
       ok: true,
       scanned: stale?.length ?? 0,
       released,
+      skippedAudit,
       holdMinutes: PAYMENT_HOLD_MINUTES,
     });
   } catch (e) {
