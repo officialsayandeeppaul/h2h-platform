@@ -40,11 +40,20 @@ CREATE INDEX IF NOT EXISTS idx_expenses_created_at
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 `;
 
-/** PostgREST reports a missing table as SQLSTATE 42P01 (undefined_table). */
+/**
+ * PostgREST reports a missing table two different ways depending on the
+ * verb/path shape: SQLSTATE 42P01 from Postgres itself, or a schema-cache
+ * miss (PGRST205: "Could not find the table 'public.expenses' in the schema
+ * cache"). Both mean the same thing to the admin: run the setup SQL.
+ */
 export function isMissingExpensesTable(
   error: { code?: string | null; message?: string | null } | null | undefined
 ): boolean {
   if (!error) return false;
   if (error.code === '42P01') return true;
-  return /relation .* does not exist/i.test(error.message || '');
+  const message = error.message || '';
+  return (
+    /could not find the table .* in the schema cache/i.test(message) ||
+    /relation .* does not exist/i.test(message)
+  );
 }
