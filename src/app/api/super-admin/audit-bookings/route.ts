@@ -24,8 +24,12 @@ interface CreateAuditBookingBody {
   patientName: string;
   patientPhone?: string;
   patientEmail?: string;
-  doctorId: string;
-  serviceId: string;
+  doctorId?: string;
+  /** Free-text doctor name for doctors not configured in the system. */
+  customDoctorName?: string;
+  serviceId?: string;
+  /** Free-text service name for services not configured in the system. */
+  customServiceName?: string;
   date: string; // YYYY-MM-DD
   startTime: string; // HH:MM
   endTime: string; // HH:MM
@@ -34,6 +38,13 @@ interface CreateAuditBookingBody {
   paymentMode: PaymentMode;
   notes?: string;
   auditNote?: string;
+}
+
+/** Indian mobile number: 10 digits after stripping +91 / 91 / 0 prefixes. */
+function isValidIndianMobile(phone?: string): boolean {
+  if (!phone?.trim()) return false;
+  const normalized = phone.replace(/[\s\-()]/g, '').replace(/^(\+91|91|0)/, '');
+  return /^\d{10}$/.test(normalized);
 }
 
 async function requireSuperAdmin(supabase: any) {
@@ -217,7 +228,9 @@ export async function POST(request: NextRequest) {
       patientPhone,
       patientEmail,
       doctorId,
+      customDoctorName,
       serviceId,
+      customServiceName,
       date,
       startTime,
       endTime,
@@ -228,13 +241,42 @@ export async function POST(request: NextRequest) {
       auditNote,
     } = body;
 
-    if (!patientName || !doctorId || !serviceId || !date || !startTime || !endTime || !mode) {
+    const doctorIdTrimmed = doctorId?.trim() || null;
+    const serviceIdTrimmed = serviceId?.trim() || null;
+    const doctorNameTrimmed = customDoctorName?.trim() || null;
+    const serviceNameTrimmed = customServiceName?.trim() || null;
+
+    if (!patientName || !date || !startTime || !endTime || !mode) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'Missing required fields: patientName, doctorId, serviceId, date, startTime, endTime, mode',
+          error: 'Missing required fields: patientName, date, startTime, endTime, mode',
         },
+        { status: 400 }
+      );
+    }
+
+    // Doctor: pick from the catalog OR type a free-text name (walk-ins with a
+    // doctor who isn't configured in the system).
+    if (!doctorIdTrimmed && !doctorNameTrimmed) {
+      return NextResponse.json(
+        { success: false, error: 'Choose a doctor or type a custom doctor name.' },
+        { status: 400 }
+      );
+    }
+
+    if (!serviceIdTrimmed && !serviceNameTrimmed) {
+      return NextResponse.json(
+        { success: false, error: 'Choose a service or type a custom service name.' },
+        { status: 400 }
+      );
+    }
+
+    // Phone numbers must be valid 10-digit Indian mobiles (Razorpay + WhatsApp
+    // both need a correctly formatted contact).
+    if (patientPhone?.trim() && !isValidIndianMobile(patientPhone)) {
+      return NextResponse.json(
+        { success: false, error: 'Enter a valid 10-digit mobile number.' },
         { status: 400 }
       );
     }
@@ -286,13 +328,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Slot conflict check (mirrors the public booking flow so audit bookings
-    // can never double-book a real doctor slot).
-    const { data: overlapping } = await adminClient
+    // can never double-book a real doctor slot). Custom doctors have no
+    // availability schedule — we still guard against overlapping bookings for
+    // the same custom doctor name on the same date.
+    let overlappingQuery = adminClient
       .from('appointments')
       .select('id, status, payment_status, created_at, start_time, end_time')
-      .eq('doctor_id', doctorId)
       .eq('appointment_date', date)
       .not('status', 'eq', 'cancelled');
+
+    if (doctorIdTrimmed) {
+      overlappingQuery = overlappingQuery.eq('doctor_id', doctorIdTrimmed);
+    } else {
+      overlappingQuery = overlappingQuery
+        .is('doctor_id', null)
+        .eq('metadata->>custom_doctor_name', doctorNameTrimmed);
+    }
+
+    const { data: overlapping } = await overlappingQuery;
 
     const conflict = findSlotConflict(overlapping || [], startTime, endTime);
     if (conflict) {
@@ -325,14 +378,17 @@ export async function POST(request: NextRequest) {
       audit_note: auditNote || null,
       patient_name: patientName,
       patient_phone: patientPhone || null,
+      // Free-text fallbacks used when doctor_id / service_id are null.
+      ...(doctorIdTrimmed ? {} : { custom_doctor_name: doctorNameTrimmed }),
+      ...(serviceIdTrimmed ? {} : { custom_service_name: serviceNameTrimmed }),
     };
 
     const { data: appointment, error: insertError } = await adminClient
       .from('appointments')
       .insert({
         patient_id: patient.id,
-        doctor_id: doctorId,
-        service_id: serviceId,
+        doctor_id: doctorIdTrimmed,
+        service_id: serviceIdTrimmed,
         appointment_date: date,
         start_time: startTime,
         end_time: endTime,
@@ -388,8 +444,14 @@ export async function POST(request: NextRequest) {
         const link = await createAppointmentPaymentLink({
           amountInr: Number(amount) || 0,
           appointmentId,
-          description: `H2H Healthcare consultation — ${(appointment as any)?.service?.name || 'Appointment'}`,
-          customer: { name: patientName, email: patientEmail, contact: patientPhone },
+          description: `H2H Healthcare consultation — ${(appointment as any)?.service?.name || serviceNameTrimmed || 'Appointment'}`,
+          customer: {
+            name: (appointment as any).patient?.full_name || patientName,
+            // Prefer what the admin typed; fall back to the stored patient
+            // record (a real email gets the link delivered automatically).
+            email: patientEmail || (appointment as any).patient?.email || undefined,
+            contact: patientPhone || (appointment as any).patient?.phone || undefined,
+          },
           callbackUrl: `${origin}/booking/confirmation?appointmentId=${appointmentId}`,
           notes: { source: 'super_admin_audit' },
         });

@@ -71,6 +71,9 @@ interface AuditMetadata {
   payment_link_url?: string;
   payment_link_status?: string;
   created_by_email?: string;
+  /** Free-text doctor/service used when the FK is null (manual entry). */
+  custom_doctor_name?: string;
+  custom_service_name?: string;
   [key: string]: unknown;
 }
 
@@ -176,6 +179,13 @@ function addMinutesToTime(time: string, minutes: number): string {
   return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
+/** Indian mobile number: 10 digits after stripping +91 / 91 / 0 prefixes. */
+function isValidIndianMobile(phone?: string): boolean {
+  if (!phone?.trim()) return false;
+  const normalized = phone.replace(/[\s\-()]/g, '').replace(/^(\+91|91|0)/, '');
+  return /^\d{10}$/.test(normalized);
+}
+
 /** Human labels for the lifecycle status actions. */
 const STATUS_ACTION_LABELS: Record<string, string> = {
   confirm: 'Booking confirmed',
@@ -278,8 +288,9 @@ function AuditBookingsContent() {
     return bookings.filter((b) => {
       const name = b.metadata?.patient_name || b.patient?.full_name || '';
       const phone = b.metadata?.patient_phone || b.patient?.phone || '';
-      const doctor = b.doctor?.users?.full_name || '';
-      const service = b.service?.name || '';
+      const doctor =
+        b.doctor?.users?.full_name || b.metadata?.custom_doctor_name || '';
+      const service = b.service?.name || b.metadata?.custom_service_name || '';
       const matchesSearch =
         !q ||
         name.toLowerCase().includes(q) ||
@@ -527,8 +538,13 @@ function AuditBookingsContent() {
             const isExpanded = expandedId === b.id;
             const patientName = b.metadata?.patient_name || b.patient?.full_name || 'Unknown patient';
             const patientPhone = b.metadata?.patient_phone || b.patient?.phone || '';
-            const doctorName = (b.doctor?.users?.full_name || 'Unknown doctor').replace(/^Dr\.?\s*/i, '');
-            const serviceName = b.service?.name || 'Unknown service';
+            const doctorName = (
+              b.doctor?.users?.full_name ||
+              b.metadata?.custom_doctor_name ||
+              'Unknown doctor'
+            ).replace(/^Dr\.?\s*/i, '');
+            const serviceName =
+              b.service?.name || b.metadata?.custom_service_name || 'Unknown service';
             const linkUrl: string | null = b.metadata?.payment_link_url || null;
             const isPaid = b.payment_status === 'paid';
             const waText = isPaid
@@ -861,23 +877,34 @@ interface SearchableSelectOption {
 
 function SearchableSelect({
   value,
+  customValue,
   onChange,
+  onCustom,
   options,
   placeholder,
   emptyLabel,
+  customNoun,
 }: {
   value: string;
+  /** Free-text entry used when the typed name isn't in the catalog. */
+  customValue?: string | null;
   onChange: (value: string) => void;
+  /** Fired with the typed text when a custom entry is picked, or null on clear. */
+  onCustom?: (text: string | null) => void;
   options: SearchableSelectOption[];
   placeholder: string;
-  emptyLabel: string;
+  emptyLabel?: string;
+  /** Enables the "use as custom {noun}" row (e.g. "doctor", "service"). */
+  customNoun?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const listId = `audit-combobox-${useId()}`;
 
+  const allowCustom = Boolean(onCustom && customNoun);
   const selected = options.find((o) => o.id === value) || null;
+  const displayText = selected?.name || customValue || '';
 
   // Close the list when clicking outside the field.
   useEffect(() => {
@@ -897,6 +924,16 @@ function SearchableSelect({
 
   const pick = (id: string) => {
     onChange(id);
+    onCustom?.(null);
+    setOpen(false);
+    setQuery('');
+  };
+
+  const pickCustom = () => {
+    const text = query.trim();
+    if (!text || !onCustom) return;
+    onChange('');
+    onCustom(text);
     setOpen(false);
     setQuery('');
   };
@@ -909,7 +946,7 @@ function SearchableSelect({
         aria-expanded={open}
         aria-controls={listId}
         aria-autocomplete="list"
-        value={open ? query : selected?.name || ''}
+        value={open ? query : displayText}
         placeholder={placeholder}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -920,9 +957,10 @@ function SearchableSelect({
           setOpen(true);
         }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && open && filtered.length > 0) {
+          if (e.key === 'Enter' && open) {
             e.preventDefault();
-            pick(filtered[0].id);
+            if (filtered.length > 0) pick(filtered[0].id);
+            else if (allowCustom && query.trim()) pickCustom();
           } else if (e.key === 'Escape' && open) {
             e.stopPropagation();
             setOpen(false);
@@ -931,12 +969,13 @@ function SearchableSelect({
         }}
         className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
       />
-      {selected && !open && (
+      {displayText && !open && (
         <button
           type="button"
           aria-label="Clear selection"
           onClick={() => {
             onChange('');
+            onCustom?.(null);
             setQuery('');
           }}
           className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -951,25 +990,35 @@ function SearchableSelect({
           role="listbox"
           className="absolute z-20 mt-1 w-full max-h-44 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg py-1"
         >
-          {filtered.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-400">{emptyLabel}</li>
-          ) : (
-            filtered.map((o) => (
-              <li
-                key={o.id}
-                role="option"
-                aria-selected={o.id === value}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => pick(o.id)}
-                className={`px-3 py-2 text-sm cursor-pointer ${
-                  o.id === value
-                    ? 'bg-cyan-50 text-cyan-700 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {o.name}
-              </li>
-            ))
+          {filtered.length === 0 && !allowCustom && (
+            <li className="px-3 py-2 text-sm text-gray-400">{emptyLabel || 'No matches'}</li>
+          )}
+          {filtered.map((o) => (
+            <li
+              key={o.id}
+              role="option"
+              aria-selected={o.id === value}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => pick(o.id)}
+              className={`px-3 py-2 text-sm cursor-pointer ${
+                o.id === value
+                  ? 'bg-cyan-50 text-cyan-700 font-medium'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {o.name}
+            </li>
+          ))}
+          {allowCustom && q && (
+            <li
+              role="option"
+              aria-selected={false}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={pickCustom}
+              className="mt-1 border-t border-gray-100 px-3 py-2 text-sm cursor-pointer text-cyan-700 hover:bg-cyan-50"
+            >
+              + Use “{query.trim()}” as custom {customNoun}
+            </li>
           )}
         </ul>
       )}
@@ -1033,6 +1082,10 @@ function NewAuditBookingDialog({
   const [patientEmail, setPatientEmail] = useState('');
   const [doctorId, setDoctorId] = useState('');
   const [serviceId, setServiceId] = useState('');
+  // Free-text fallback when the doctor/service isn't configured in the system
+  // (stored on the appointment as metadata; the foreign key stays null).
+  const [customDoctorName, setCustomDoctorName] = useState<string | null>(null);
+  const [customServiceName, setCustomServiceName] = useState<string | null>(null);
   const [mode, setMode] = useState<'online' | 'offline' | 'home_visit'>('offline');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -1077,6 +1130,8 @@ function NewAuditBookingDialog({
       setPatientEmail('');
       setDoctorId('');
       setServiceId('');
+      setCustomDoctorName(null);
+      setCustomServiceName(null);
       setMode('offline');
       setDate('');
       setStartTime('');
@@ -1091,10 +1146,21 @@ function NewAuditBookingDialog({
     }
   }, [open]);
 
-  // Fetch slots when doctor/date/mode change.
+  // Fetch slots when doctor/date/mode change. A custom (free-text) doctor has
+  // no availability configured, so those bookings use manual time entry only.
   useEffect(() => {
-    if (!open || !doctorId || !date) {
+    if (!open) return;
+    if (!date || (!doctorId && !customDoctorName)) {
       setSlots([]);
+      setStartTime('');
+      setEndTime('');
+      return;
+    }
+    if (!doctorId && customDoctorName) {
+      // Custom doctor → no availability grid; ask for the time manually.
+      setSlots([]);
+      setSlotsLoading(false);
+      setManualTime(true);
       setStartTime('');
       setEndTime('');
       return;
@@ -1121,7 +1187,7 @@ function NewAuditBookingDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, doctorId, date, mode, serviceId, services]);
+  }, [open, doctorId, date, mode, serviceId, services, customDoctorName]);
 
   // Default amount to the service price when a service is chosen.
   useEffect(() => {
@@ -1135,12 +1201,16 @@ function NewAuditBookingDialog({
 
   const selectedSlot = slots.find((s) => s.time === startTime);
   const hasContact = !!(patientPhone.trim() || patientEmail.trim());
+  const hasDoctor = !!doctorId || !!customDoctorName?.trim();
+  const hasService = !!serviceId || !!customServiceName?.trim();
+  const phoneValid = !patientPhone.trim() || isValidIndianMobile(patientPhone);
   const durationMinutes = services.find((s) => s.id === serviceId)?.duration_minutes || 30;
   const canSubmit =
     patientName.trim().length > 0 &&
+    phoneValid &&
     hasContact &&
-    !!doctorId &&
-    !!serviceId &&
+    hasDoctor &&
+    hasService &&
     !!date &&
     !!startTime &&
     !!endTime &&
@@ -1151,17 +1221,23 @@ function NewAuditBookingDialog({
   const submit = async () => {
     if (!canSubmit) {
       setFormError(
-        !patientName.trim() || !doctorId || !serviceId || !date
-          ? 'Fill in patient, doctor, service and date.'
-          : !startTime || !endTime
-            ? 'Pick a time slot (or enter the time manually).'
-            : endTime <= startTime
-              ? 'The end time must be after the start time.'
-              : !hasContact
-                ? 'Enter the patient phone number or email — at least one is required.'
-                : paymentMode === 'link' && !(Number(amount) > 0)
-                  ? 'Enter an amount greater than 0 to generate a payment link.'
-                  : 'Fill in all required fields.'
+        !patientName.trim() || !date
+          ? 'Fill in patient name and date.'
+          : !hasDoctor
+            ? 'Choose a doctor, or type a custom doctor name.'
+            : !hasService
+              ? 'Choose a service, or type a custom service name.'
+              : !startTime || !endTime
+                ? 'Pick a time slot (or enter the time manually).'
+                : endTime <= startTime
+                  ? 'The end time must be after the start time.'
+                  : !phoneValid
+                    ? 'Enter a valid 10-digit mobile number.'
+                    : !hasContact
+                      ? 'Enter the patient phone number or email — at least one is required.'
+                      : paymentMode === 'link' && !(Number(amount) > 0)
+                        ? 'Enter an amount greater than 0 to generate a payment link.'
+                        : 'Fill in all required fields.'
       );
       return;
     }
@@ -1175,8 +1251,10 @@ function NewAuditBookingDialog({
           patientName: patientName.trim(),
           patientPhone: patientPhone.trim() || undefined,
           patientEmail: patientEmail.trim() || undefined,
-          doctorId,
-          serviceId,
+          doctorId: doctorId || undefined,
+          customDoctorName: !doctorId ? customDoctorName?.trim() || undefined : undefined,
+          serviceId: serviceId || undefined,
+          customServiceName: !serviceId ? customServiceName?.trim() || undefined : undefined,
           date,
           startTime,
           endTime,
@@ -1251,6 +1329,12 @@ function NewAuditBookingDialog({
               <Input type="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="you@email.com" />
             </div>
           </div>
+          {patientPhone.trim() && !phoneValid && (
+            <p className="text-xs text-red-600 flex items-center gap-1 -mt-1">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              Enter a valid 10-digit mobile number (e.g. 98765 43210 — +91/0 prefix optional).
+            </p>
+          )}
           {patientName.trim() && !hasContact && (
             <p className="text-xs text-amber-600 flex items-center gap-1 -mt-1">
               <AlertCircle className="h-3 w-3 shrink-0" />
@@ -1266,14 +1350,24 @@ function NewAuditBookingDialog({
               </label>
               <SearchableSelect
                 value={doctorId}
+                customValue={customDoctorName}
                 onChange={(v) => {
                   setDoctorId(v);
                   setStartTime('');
                   setEndTime('');
                 }}
+                onCustom={(text) => {
+                  setCustomDoctorName(text);
+                  setDoctorId('');
+                  setStartTime('');
+                  setEndTime('');
+                  // Custom doctors have no availability grid — manual entry only.
+                  if (text) setManualTime(true);
+                }}
                 options={doctors}
                 placeholder="Type doctor name"
                 emptyLabel="No doctors found"
+                customNoun="doctor"
               />
             </div>
             <div>
@@ -1282,10 +1376,16 @@ function NewAuditBookingDialog({
               </label>
               <SearchableSelect
                 value={serviceId}
+                customValue={customServiceName}
                 onChange={setServiceId}
+                onCustom={(text) => {
+                  setCustomServiceName(text);
+                  setServiceId('');
+                }}
                 options={services}
                 placeholder="Type service name"
                 emptyLabel="No services found"
+                customNoun="service"
               />
             </div>
             <div>
@@ -1341,7 +1441,7 @@ function NewAuditBookingDialog({
           <div>
             <div className="flex items-center justify-between gap-2 mb-1">
               <label className="block text-xs font-medium text-gray-600">
-                Available slots {doctorId && date ? '' : '(pick a doctor and date first)'}
+                Available slots {hasDoctor && date ? '' : '(pick a doctor and date first)'}
               </label>
               {doctorId && date && !slotsLoading && (
                 <button
@@ -1365,9 +1465,13 @@ function NewAuditBookingDialog({
                   <Skeleton key={i} className="h-9 rounded-lg" />
                 ))}
               </div>
-            ) : !doctorId || !date ? (
+            ) : !date || (!doctorId && !customDoctorName) ? (
               <div className="p-4 border border-dashed border-gray-200 rounded-lg text-sm text-gray-400 text-center">
                 Select a doctor and date to load slots.
+              </div>
+            ) : !doctorId && customDoctorName ? (
+              <div className="p-4 border border-dashed border-amber-300 bg-amber-50/60 rounded-lg text-sm text-amber-700 text-center">
+                Custom doctor “{customDoctorName}” — enter the appointment time manually below.
               </div>
             ) : slots.length === 0 ? (
               <div className="p-4 border border-dashed border-gray-200 rounded-lg text-sm text-gray-500 text-center">
@@ -1402,7 +1506,7 @@ function NewAuditBookingDialog({
 
             {/* Manual entry — for doctors without configured availability or
                 walk-in times that don't line up with the slot grid. */}
-            {manualTime && doctorId && date && (
+            {manualTime && hasDoctor && date && (
               <div className="grid grid-cols-2 gap-3 mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <div>
                   <label className="block text-xs font-medium text-amber-800 mb-1">

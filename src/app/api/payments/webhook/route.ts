@@ -436,7 +436,9 @@ export async function POST(request: NextRequest) {
         // Create a video room for online bookings if one isn't already set.
         if (aptForLink.mode === 'online' && !aptForLink.google_meet_link) {
           try {
-            let doctorName = 'Doctor';
+            let doctorName =
+              (typeof linkMeta.custom_doctor_name === 'string' && linkMeta.custom_doctor_name) ||
+              'Doctor';
             if ((aptForLink as any).doctor_id) {
               const { data: docRow } = await (supabase as any)
                 .from('doctors')

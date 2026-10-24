@@ -84,10 +84,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const patient = (appointment as any).patient || {};
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
 
+    // Metadata is needed for the description too (custom service names).
+    const existingMeta =
+      (appointment as any).metadata && typeof (appointment as any).metadata === 'object'
+        ? { ...((appointment as any).metadata as Record<string, unknown>) }
+        : {};
+
+    const serviceLabel =
+      (appointment as any)?.service?.name ||
+      (typeof existingMeta.custom_service_name === 'string'
+        ? existingMeta.custom_service_name
+        : null) ||
+      'Appointment';
+
     const link = await createAppointmentPaymentLink({
       amountInr: amount,
       appointmentId: id,
-      description: `H2H Healthcare consultation — ${(appointment as any)?.service?.name || 'Appointment'}`,
+      description: `H2H Healthcare consultation — ${serviceLabel}`,
       customer: {
         name: patient.full_name,
         email: patient.email,
@@ -98,10 +111,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     // Persist the link on the appointment so it's visible in the list + reused.
-    const existingMeta =
-      (appointment as any).metadata && typeof (appointment as any).metadata === 'object'
-        ? { ...((appointment as any).metadata as Record<string, unknown>) }
-        : {};
 
     await adminClient
       .from('appointments')
