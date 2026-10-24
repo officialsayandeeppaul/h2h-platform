@@ -980,9 +980,11 @@ function SearchableSelect({
             setQuery('');
           }
         }}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400"
+        className={`w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-400 ${
+          displayText ? 'pr-8' : ''
+        }`}
       />
-      {displayText && !open && (
+      {displayText && (
         <button
           type="button"
           aria-label="Clear selection"
@@ -991,7 +993,7 @@ function SearchableSelect({
             onCustom?.(null);
             setQuery('');
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -1013,7 +1015,7 @@ function SearchableSelect({
               aria-selected={o.id === value}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => pick(o.id)}
-              className={`px-3 py-2 text-sm cursor-pointer ${
+              className={`px-3 py-2 text-sm cursor-pointer break-words ${
                 o.id === value
                   ? 'bg-cyan-50 text-cyan-700 font-medium'
                   : 'text-gray-700 hover:bg-gray-50'
@@ -1038,7 +1040,7 @@ function SearchableSelect({
                   setQuery('');
                 }
               }}
-              className="mt-1 border-t border-gray-100 px-3 py-2 text-sm cursor-pointer text-cyan-700 hover:bg-cyan-50"
+              className="mt-1 border-t border-gray-100 px-3 py-2 text-sm cursor-pointer break-words text-cyan-700 hover:bg-cyan-50"
             >
               {q
                 ? `+ Use “${query.trim()}” as custom ${customNoun}`
