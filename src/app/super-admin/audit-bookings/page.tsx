@@ -922,6 +922,12 @@ function SearchableSelect({
   const q = query.trim().toLowerCase();
   const filtered = q ? options.filter((o) => o.name.toLowerCase().includes(q)) : options;
 
+  // Custom entry is offered when there's typed text that isn't already the
+  // committed value; with an empty query we always show the "Other — enter
+  // manually" row so the option is discoverable before typing anything.
+  const committedText = (selected?.name || customValue || '').toLowerCase();
+  const showCustomRow = allowCustom && (!q || q !== committedText);
+
   const pick = (id: string) => {
     onChange(id);
     onCustom?.(null);
@@ -952,15 +958,22 @@ function SearchableSelect({
           setQuery(e.target.value);
           if (!open) setOpen(true);
         }}
-        onFocus={() => {
-          setQuery('');
+        onFocus={(e) => {
+          // Prefill with the current value and select it, so the next keystroke
+          // either filters the catalog or edits the custom name directly.
+          setQuery(displayText);
           setOpen(true);
+          e.currentTarget.select();
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && open) {
             e.preventDefault();
             if (filtered.length > 0) pick(filtered[0].id);
-            else if (allowCustom && query.trim()) pickCustom();
+            else if (showCustomRow && query.trim()) pickCustom();
+            else {
+              setOpen(false);
+              setQuery('');
+            }
           } else if (e.key === 'Escape' && open) {
             e.stopPropagation();
             setOpen(false);
@@ -1009,15 +1022,27 @@ function SearchableSelect({
               {o.name}
             </li>
           ))}
-          {allowCustom && q && (
+          {showCustomRow && (
             <li
               role="option"
               aria-selected={false}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={pickCustom}
+              onClick={() => {
+                if (query.trim()) {
+                  pickCustom();
+                } else {
+                  // "Other" row with no text yet — close the catalog list and
+                  // let the admin type the name (the commit row reappears as
+                  // they type, or they can press Enter on a non-matching name).
+                  setOpen(false);
+                  setQuery('');
+                }
+              }}
               className="mt-1 border-t border-gray-100 px-3 py-2 text-sm cursor-pointer text-cyan-700 hover:bg-cyan-50"
             >
-              + Use “{query.trim()}” as custom {customNoun}
+              {q
+                ? `+ Use “${query.trim()}” as custom ${customNoun}`
+                : `+ Other — enter ${customNoun} name manually`}
             </li>
           )}
         </ul>
@@ -1353,16 +1378,23 @@ function NewAuditBookingDialog({
                 customValue={customDoctorName}
                 onChange={(v) => {
                   setDoctorId(v);
+                  // Choosing a (different) real doctor goes back to the slot grid.
+                  setManualTime(false);
                   setStartTime('');
                   setEndTime('');
                 }}
                 onCustom={(text) => {
+                  if (text === null) {
+                    // Clearing the custom text only — the id is owned by onChange.
+                    setCustomDoctorName(null);
+                    return;
+                  }
                   setCustomDoctorName(text);
                   setDoctorId('');
                   setStartTime('');
                   setEndTime('');
                   // Custom doctors have no availability grid — manual entry only.
-                  if (text) setManualTime(true);
+                  setManualTime(true);
                 }}
                 options={doctors}
                 placeholder="Type doctor name"
@@ -1379,6 +1411,11 @@ function NewAuditBookingDialog({
                 customValue={customServiceName}
                 onChange={setServiceId}
                 onCustom={(text) => {
+                  if (text === null) {
+                    // Clearing the custom text only — the id is owned by onChange.
+                    setCustomServiceName(null);
+                    return;
+                  }
                   setCustomServiceName(text);
                   setServiceId('');
                 }}
