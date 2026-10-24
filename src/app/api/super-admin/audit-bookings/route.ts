@@ -305,7 +305,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data: data || [], count: data?.length || 0 });
+    // Light projection of EVERY audit booking (no joins) so the dashboard's
+    // stats and charts stay accurate even though the detailed card list above
+    // is capped — a page-limited array would silently skew Today/Collected
+    // once bookings outgrow the cap.
+    const { data: allRows, error: allError } = await adminClient
+      .from('appointments')
+      .select('appointment_date, payment_status, status, amount')
+      .eq(`metadata->>${AUDIT_METADATA_KEY}`, 'true')
+      .order('appointment_date', { ascending: false })
+      .limit(50000);
+
+    return NextResponse.json({
+      success: true,
+      data: data || [],
+      count: data?.length || 0,
+      // On a light-query failure fall back to the (heavier) main rows — they
+      // carry the same four fields, so the client always receives an array.
+      all: allError ? data || [] : allRows || [],
+    });
   } catch (error) {
     console.error('Error in audit-bookings GET:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

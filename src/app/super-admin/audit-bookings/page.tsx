@@ -22,6 +22,7 @@ import {
   RefreshCw,
   Search,
   User,
+  UserX,
   X,
   XCircle,
 } from 'lucide-react';
@@ -165,6 +166,14 @@ function buildWaLink(phone?: string | null, text?: string): string | null {
   return `https://wa.me/${e164.replace(/^\+/, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 }
 
+/** "06 Sep" for the current year, "06 Sep 2010" otherwise — an old booking
+ * must never masquerade as an upcoming date. */
+function formatBookingDate(isoDate: string): string {
+  const d = parseISO(isoDate);
+  const pattern = d.getFullYear() === new Date().getFullYear() ? 'dd MMM' : 'dd MMM yyyy';
+  return format(d, pattern);
+}
+
 /** Add minutes to an "HH:MM" time, clamped to the end of the day. */
 function addMinutesToTime(time: string, minutes: number): string {
   const [hRaw, mRaw] = time.split(':');
@@ -223,9 +232,15 @@ export default function AuditBookingsPage() {
   );
 }
 
+/** Light projection of every audit booking (no joins) — stats and charts read
+ * from this so they stay correct even though the detailed card list is capped. */
+type AuditLightRow = Pick<AuditBooking, 'appointment_date' | 'payment_status' | 'status' | 'amount'>;
+
 function AuditBookingsContent() {
   const [bookings, setBookings] = useState<AuditBooking[]>([]);
+  const [allRows, setAllRows] = useState<AuditLightRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | AuditBooking['status']>('all');
@@ -234,23 +249,39 @@ function AuditBookingsContent() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const fetchBookings = useCallback(async () => {
-    setLoading(true);
+  const fetchBookings = useCallback(async (silent = false) => {
+    // Silent refreshes (after an action, Refresh button, new booking) keep the
+    // current view on screen — the full skeleton only appears on first load.
+    if (!silent) setLoading(true);
+    setRefreshing(true);
     setError(null);
     try {
       const res = await fetch('/api/super-admin/audit-bookings');
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
         setError(data.error || 'Failed to load audit bookings');
-        setBookings([]);
+        // A failed background refresh keeps the current view; only a fresh
+        // load clears the list (nothing useful to show alongside the banner).
+        if (!silent) {
+          setBookings([]);
+          setAllRows([]);
+        }
       } else {
         setBookings(Array.isArray(data.data) ? data.data : []);
+        // `all` is the uncapped light set; older responses only had `data`.
+        setAllRows(
+          Array.isArray(data.all) ? data.all : Array.isArray(data.data) ? data.data : []
+        );
       }
     } catch {
       setError('Failed to load audit bookings');
-      setBookings([]);
+      if (!silent) {
+        setBookings([]);
+        setAllRows([]);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -260,27 +291,27 @@ function AuditBookingsContent() {
 
   // --- Derived: stats, charts, filters ---
   const stats = useMemo(() => {
-    const today = bookings.filter((b) => isToday(parseISO(b.appointment_date)));
+    const today = allRows.filter((b) => isToday(parseISO(b.appointment_date)));
     return {
-      total: bookings.length,
+      total: allRows.length,
       today: today.length,
-      pendingPayment: bookings.filter((b) => b.payment_status === 'pending').length,
-      paid: bookings.filter((b) => b.payment_status === 'paid').length,
-      completed: bookings.filter((b) => b.status === 'completed').length,
-      revenue: bookings
+      pendingPayment: allRows.filter((b) => b.payment_status === 'pending').length,
+      paid: allRows.filter((b) => b.payment_status === 'paid').length,
+      completed: allRows.filter((b) => b.status === 'completed').length,
+      revenue: allRows
         .filter((b) => b.payment_status === 'paid')
         .reduce((sum, b) => sum + (Number(b.amount) || 0), 0),
     };
-  }, [bookings]);
+  }, [allRows]);
 
   const paymentBreakdown = useMemo(() => {
     const groups: Record<string, number> = {};
-    for (const b of bookings) {
+    for (const b of allRows) {
       const key = b.payment_status || 'pending';
       groups[key] = (groups[key] || 0) + 1;
     }
     return Object.entries(groups).map(([name, value]) => ({ name, value }));
-  }, [bookings]);
+  }, [allRows]);
 
   const last7Days = useMemo(() => {
     const days: { label: string; bookings: number; revenue: number }[] = [];
@@ -288,7 +319,7 @@ function AuditBookingsContent() {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const iso = format(d, 'yyyy-MM-dd');
-      const dayRows = bookings.filter((b) => b.appointment_date === iso);
+      const dayRows = allRows.filter((b) => b.appointment_date === iso);
       days.push({
         label: format(d, 'EEE'),
         bookings: dayRows.length,
@@ -298,7 +329,7 @@ function AuditBookingsContent() {
       });
     }
     return days;
-  }, [bookings]);
+  }, [allRows]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -339,7 +370,7 @@ function AuditBookingsContent() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || 'Action failed');
       toast.success(successMsg || data.message || 'Updated');
-      await fetchBookings();
+      await fetchBookings(true); // silent — no skeleton flash after an action
       return data;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Action failed');
@@ -405,8 +436,14 @@ function AuditBookingsContent() {
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={fetchBookings} className="w-full sm:w-auto">
-            <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchBookings()}
+            disabled={refreshing}
+            className="w-full sm:w-auto"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
           </Button>
           <Button size="sm" onClick={() => setDialogOpen(true)} className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700">
             <CalendarPlus className="h-4 w-4 mr-2" /> New booking
@@ -431,20 +468,26 @@ function AuditBookingsContent() {
             <h2 className="text-sm font-semibold text-gray-900">Bookings — last 7 days</h2>
             <span className="text-xs text-gray-400">by appointment date</span>
           </div>
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={last7Days} margin={{ top: 5, right: 8, left: -18, bottom: 0 }}>
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(6,182,212,0.06)' }}
-                  contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
-                  formatter={(value) => [value, 'Bookings']}
-                />
-                <Bar dataKey="bookings" fill="#06b6d4" radius={[4, 4, 0, 0]} maxBarSize={38} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {allRows.length === 0 || last7Days.every((d) => d.bookings === 0) ? (
+            <div className="h-52 flex items-center justify-center text-sm text-gray-400">
+              {allRows.length === 0 ? 'No data yet' : 'No bookings in the last 7 days'}
+            </div>
+          ) : (
+            <div className="h-52">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={last7Days} margin={{ top: 5, right: 8, left: -18, bottom: 0 }}>
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(6,182,212,0.06)' }}
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                    formatter={(value) => [value, 'Bookings']}
+                  />
+                  <Bar dataKey="bookings" fill="#06b6d4" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -530,21 +573,27 @@ function AuditBookingsContent() {
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center gap-2">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span className="flex-1">{error}</span>
-          <Button variant="outline" size="sm" onClick={fetchBookings}>
+          <Button variant="outline" size="sm" onClick={() => fetchBookings()}>
             Retry
           </Button>
         </div>
       )}
 
       {/* List */}
+      {allRows.length > bookings.length && filtered.length > 0 && (
+        <p className="text-xs text-gray-400 text-right -mt-2">
+          Showing the latest {bookings.length} of {allRows.length} bookings — stats and charts
+          above cover all of them.
+        </p>
+      )}
       {filtered.length === 0 ? (
         <div className="text-center py-14 bg-white rounded-xl border border-gray-200">
           <ClipboardList className="h-12 w-12 mx-auto mb-3 text-gray-300" />
           <p className="text-gray-600 font-medium">
-            {bookings.length === 0 ? 'No audit bookings yet' : 'No bookings match your filters'}
+            {allRows.length === 0 ? 'No audit bookings yet' : 'No bookings match your filters'}
           </p>
           <p className="text-sm text-gray-400 mt-1">
-            {bookings.length === 0
+            {allRows.length === 0
               ? 'Use “New booking” to reserve a slot on a patient’s behalf.'
               : 'Try adjusting the search or filters.'}
           </p>
@@ -579,7 +628,7 @@ function AuditBookingsContent() {
                 >
                   <div className="w-20 text-center shrink-0">
                     <p className="text-sm font-semibold text-gray-900">
-                      {format(parseISO(b.appointment_date), 'dd MMM')}
+                      {formatBookingDate(b.appointment_date)}
                     </p>
                     <p className="text-xs text-gray-500">{b.start_time?.substring(0, 5)}</p>
                     {isToday(parseISO(b.appointment_date)) && (
@@ -745,7 +794,7 @@ function AuditBookingsContent() {
 
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2">
-                      {!isPaid && (
+                      {!isPaid && b.status !== 'cancelled' && (
                         <Button
                           size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -761,7 +810,7 @@ function AuditBookingsContent() {
                         </Button>
                       )}
 
-                      {!isPaid && (
+                      {!isPaid && b.status !== 'cancelled' && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -825,6 +874,17 @@ function AuditBookingsContent() {
                         <Button
                           size="sm"
                           variant="outline"
+                          className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                          disabled={actionId === b.id}
+                          onClick={() => changeStatus(b.id, 'no_show')}
+                        >
+                          <UserX className="h-3 w-3 mr-1" /> No show
+                        </Button>
+                      )}
+                      {(b.status === 'pending' || b.status === 'confirmed') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="text-red-600 border-red-200 hover:bg-red-50"
                           disabled={actionId === b.id}
                           onClick={() => changeStatus(b.id, 'cancel')}
@@ -848,7 +908,7 @@ function AuditBookingsContent() {
           setDialogOpen(false);
           // Bring the new booking to the top and expand it for review.
           if (createdId) setExpandedId(createdId);
-          fetchBookings();
+          fetchBookings(true);
         }}
       />
     </div>
@@ -1672,7 +1732,7 @@ function NewAuditBookingDialog({
           {/* Payment mode */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Payment</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <PaymentModeCard
                 active={paymentMode === 'cash'}
                 onClick={() => setPaymentMode('cash')}

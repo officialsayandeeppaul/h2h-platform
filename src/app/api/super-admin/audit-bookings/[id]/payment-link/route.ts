@@ -51,7 +51,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { data: appointment, error } = await adminClient
       .from('appointments')
-      .select('id, amount, payment_status, metadata, patient:patient_id(full_name, email, phone), service:service_id(name)')
+      .select('id, amount, status, payment_status, metadata, patient:patient_id(full_name, email, phone), service:service_id(name)')
       .eq('id', id)
       .single();
 
@@ -69,6 +69,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if ((appointment as any).payment_status === 'paid') {
       return NextResponse.json(
         { success: false, error: 'This booking is already paid' },
+        { status: 400 }
+      );
+    }
+
+    // Requesting money for a dead appointment is never a real state.
+    if ((appointment as any).status === 'cancelled') {
+      return NextResponse.json(
+        { success: false, error: 'This booking is cancelled — no payment link can be raised.' },
         { status: 400 }
       );
     }

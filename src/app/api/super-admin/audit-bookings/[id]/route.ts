@@ -22,6 +22,24 @@ const STATUS_MAP: Record<string, string> = {
   no_show: 'no_show',
 };
 
+/**
+ * Real lifecycle transitions for an audit booking. Everything else is an
+ * impossible state (re-confirming a completed visit, completing a cancelled
+ * booking, …) and is rejected with a 400 instead of silently rewriting rows.
+ *
+ *   pending    → confirmed (confirm), completed via confirm first, cancelled, no_show
+ *   confirmed  → completed, cancelled, no_show
+ *   completed / cancelled / no_show → terminal for status
+ *   markCashPaid is separate (see below): allowed unless cancelled or paid.
+ */
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  pending: ['confirm', 'cancel', 'no_show'],
+  confirmed: ['complete', 'cancel', 'no_show'],
+  completed: [],
+  cancelled: [],
+  no_show: [],
+};
+
 async function requireSuperAdmin(supabase: any) {
   const {
     data: { user },
@@ -95,10 +113,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
 
+      // No collecting money for a cancelled visit (a no-show may still carry
+      // a fee, so that stays payable).
+      if ((appointment as any).status === 'cancelled') {
+        return NextResponse.json(
+          { success: false, error: 'This booking is cancelled — payment cannot be collected.' },
+          { status: 400 }
+        );
+      }
+
       const amount = Number((appointment as any).amount) || 0;
 
-      // Record the manual cash payment in the ledger.
-      await adminClient.from('payments').insert({
+      // Record the manual cash payment in the ledger — a failed ledger write
+      // must fail the whole action so the appointment never shows "paid"
+      // without a payment row behind it.
+      const { error: ledgerError } = await adminClient.from('payments').insert({
         appointment_id: id,
         user_id: (appointment as any).patient_id,
         amount,
@@ -107,6 +136,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         payment_method: 'cash',
         receipt_url: null,
       });
+      if (ledgerError) {
+        console.error('Cash payment ledger insert failed:', ledgerError);
+        return NextResponse.json(
+          { success: false, error: `Could not record the cash payment: ${ledgerError.message}` },
+          { status: 500 }
+        );
+      }
 
       const { data: updated, error: updateError } = await adminClient
         .from('appointments')
@@ -138,9 +174,30 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // --- Lifecycle status changes ---
     if (STATUS_ACTIONS.has(action)) {
       const newStatus = STATUS_MAP[action];
+      const currentStatus = (appointment as any).status as string;
+
+      // Idempotent no-op vs. genuinely impossible moves — either way, 400.
+      if (currentStatus === newStatus) {
+        return NextResponse.json(
+          { success: false, error: `This booking is already ${newStatus}.` },
+          { status: 400 }
+        );
+      }
+      const allowed = ALLOWED_TRANSITIONS[currentStatus];
+      if (!allowed || !allowed.includes(action)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `A booking that is "${currentStatus}" cannot become "${newStatus}".`,
+          },
+          { status: 400 }
+        );
+      }
+
       const updates: Record<string, unknown> = { status: newStatus };
 
-      // Confirming a booking that was created as "later" keeps payment pending.
+      // Cancelling a booking that was already paid settles it as refunded so
+      // money never sits against a dead appointment.
       if (action === 'cancel') {
         updates.payment_status =
           (appointment as any).payment_status === 'paid' ? 'refunded' : (appointment as any).payment_status;
