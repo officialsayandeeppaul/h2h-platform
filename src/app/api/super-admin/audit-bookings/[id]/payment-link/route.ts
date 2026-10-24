@@ -119,7 +119,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     // Persist the link on the appointment so it's visible in the list + reused.
-
+    // The expiry is recorded so the dashboard can show the exact deadline and
+    // grey out a dead link; re-creating also resets a stale "expired" status.
     await adminClient
       .from('appointments')
       .update({
@@ -129,13 +130,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           payment_link_id: link.id,
           payment_link_url: link.shortUrl,
           payment_link_created_at: new Date().toISOString(),
+          payment_link_expires_at: link.expiresAt,
+          payment_link_status: link.status,
         },
       })
       .eq('id', id);
 
     return NextResponse.json({
       success: true,
-      data: { paymentLinkId: link.id, shortUrl: link.shortUrl, amount: link.amount },
+      data: {
+        paymentLinkId: link.id,
+        shortUrl: link.shortUrl,
+        amount: link.amount,
+        expiresAt: link.expiresAt,
+      },
       message: 'Payment link generated. Share it with the patient.',
     });
   } catch (error) {

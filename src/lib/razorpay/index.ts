@@ -200,12 +200,23 @@ export interface CreatePaymentLinkParams {
   notes?: Record<string, string>;
 }
 
+/**
+ * Hosted payment links stay collectable for 30 days. Razorpay's own default is
+ * six months — far too long for a clinic appointment — and an explicit value
+ * (Unix seconds, ≥15 min out per Razorpay's rules) lets the dashboard show the
+ * exact deadline instead of guessing.
+ */
+export const PAYMENT_LINK_VALIDITY_DAYS = 30;
+const PAYMENT_LINK_VALIDITY_SECONDS = PAYMENT_LINK_VALIDITY_DAYS * 24 * 60 * 60;
+
 export interface PaymentLinkResult {
   id: string;
   shortUrl: string;
   amount: number; // paise
   status: string;
   createdAt: string;
+  /** When the hosted link stops accepting payments (ISO-8601). */
+  expiresAt: string;
 }
 
 /** Normalize an Indian mobile number to E.164 (+91XXXXXXXXXX) for Razorpay. */
@@ -248,10 +259,13 @@ export async function createAppointmentPaymentLink(
   }
 
   const razorpay = getRazorpay();
+  // Bound the link's lifetime explicitly (see PAYMENT_LINK_VALIDITY_DAYS).
+  const expireByEpoch = Math.floor(Date.now() / 1000) + PAYMENT_LINK_VALIDITY_SECONDS;
   const link = await razorpay.paymentLink.create({
     amount: Math.round(params.amountInr * 100),
     currency: 'INR',
     accept_partial: false,
+    expire_by: expireByEpoch,
     description: params.description,
     customer: {
       name: params.customer.name || 'Patient',
@@ -276,12 +290,17 @@ export async function createAppointmentPaymentLink(
       : {}),
   });
 
+  // Prefer the echo from Razorpay; fall back to what we asked for.
+  const expiresAtEpoch =
+    typeof link.expire_by === 'number' && link.expire_by > 0 ? link.expire_by : expireByEpoch;
+
   return {
     id: link.id,
     shortUrl: link.short_url,
     amount: Number(link.amount),
     status: link.status,
     createdAt: typeof link.created_at === 'string' ? link.created_at : new Date().toISOString(),
+    expiresAt: new Date(expiresAtEpoch * 1000).toISOString(),
   };
 }
 

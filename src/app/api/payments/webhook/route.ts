@@ -489,6 +489,57 @@ export async function POST(request: NextRequest) {
         break;
       }
 
+      case 'payment_link.expired': {
+        const link = payload.payload.payment_link?.entity;
+        if (!link) break;
+
+        const appointmentId = link.notes?.appointmentId;
+        if (!appointmentId) {
+          console.log('payment_link.expired without appointmentId note — skipping');
+          break;
+        }
+
+        // Only the link's own status changes: the booking is still awaiting
+        // payment (cash / a regenerated link can still settle it). The UI also
+        // cross-checks the stored expiry client-side, so this keeps metadata
+        // truthful even if nobody has the page open when the link dies.
+        const { data: aptRow } = await supabase
+          .from('appointments')
+          .select('id, metadata')
+          .eq('id', appointmentId)
+          .single();
+        // Row types resolve to `never` without generated DB types — narrow this
+        // read; the update below is cast like the paid case above.
+        const aptExpired = aptRow as { id: string; metadata: unknown } | null;
+
+        if (!aptExpired) break;
+
+        const expiredMeta =
+          aptExpired.metadata && typeof aptExpired.metadata === 'object' && !Array.isArray(aptExpired.metadata)
+            ? { ...(aptExpired.metadata as Record<string, unknown>) }
+            : {};
+
+        const { error: expiredUpdateError } = await (supabase as any)
+          .from('appointments')
+          .update({
+            metadata: {
+              ...expiredMeta,
+              payment_link_id: link.id,
+              payment_link_status: 'expired',
+              payment_link_expired_at: new Date().toISOString(),
+            },
+          })
+          .eq('id', appointmentId);
+
+        if (expiredUpdateError) {
+          console.error('Error flagging expired payment link:', expiredUpdateError);
+        } else {
+          console.log('Payment link marked expired:', link.id, '→ appointment', appointmentId);
+        }
+
+        break;
+      }
+
       default:
         console.log('Unhandled webhook event:', payload.event);
     }

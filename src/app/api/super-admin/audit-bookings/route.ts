@@ -537,16 +537,20 @@ export async function POST(request: NextRequest) {
     const isPaidNow = paymentMode === 'cash';
     const paymentStatus = isPaidNow ? 'paid' : 'pending';
     const status = 'confirmed';
+    const bookedAtIso = new Date().toISOString();
 
     const metadata: Record<string, unknown> = {
       [AUDIT_METADATA_KEY]: true,
-      booked_at: new Date().toISOString(),
+      booked_at: bookedAtIso,
       created_by: 'super_admin',
       created_by_email: auth.profile?.email || null,
       payment_mode: paymentMode,
       audit_note: auditNote || null,
       patient_name: patientName,
       patient_phone: patientPhone || null,
+      // Cash bookings are settled at creation — record when/by whom exactly
+      // like the markCashPaid action does so the card shows the whole trail.
+      ...(isPaidNow ? { paid_at: bookedAtIso, paid_by: auth.profile?.email || null } : {}),
       // Free-text fallbacks used when doctor_id / service_id are null.
       ...(doctorIdTrimmed ? {} : { custom_doctor_name: doctorNameTrimmed }),
       ...(serviceIdTrimmed ? {} : { custom_service_name: serviceNameTrimmed }),
@@ -587,9 +591,12 @@ export async function POST(request: NextRequest) {
     const appointmentId = (appointment as any).id as string;
 
     // Cash: record a manual payment row so the ledger shows how it was settled.
-    // Non-fatal — the booking itself must never fail because of the ledger row.
+    // If that write fails, "paid" must not stand on its own — the appointment
+    // reverts to pending and the admin is warned with a retry path (the card's
+    // "Mark paid (cash)" action fails hard until the ledger row lands).
+    let ledgerError: string | null = null;
     if (isPaidNow) {
-      const { error: ledgerError } = await (adminClient as any)
+      const { error } = await (adminClient as any)
         .from('payments')
         .insert({
           appointment_id: appointmentId,
@@ -602,7 +609,19 @@ export async function POST(request: NextRequest) {
         })
         .select('id')
         .maybeSingle();
-      if (ledgerError) console.error('Audit booking cash ledger insert failed:', ledgerError);
+      if (error) {
+        console.error('Audit booking cash ledger insert failed:', error);
+        ledgerError = error.message || 'Unknown database error';
+        const { error: revertError } = await adminClient
+          .from('appointments')
+          .update({ payment_status: 'pending' })
+          .eq('id', appointmentId);
+        if (revertError) {
+          // Extremely unlikely, but the two records must never silently disagree.
+          console.error('Failed to revert payment status after ledger failure:', revertError);
+          ledgerError = `${ledgerError} (and reverting the payment status also failed: ${revertError.message})`;
+        }
+      }
     }
 
     // Link: generate a hosted Razorpay payment link to share with the patient.
@@ -634,6 +653,8 @@ export async function POST(request: NextRequest) {
               payment_link_id: link.id,
               payment_link_url: link.shortUrl,
               payment_link_created_at: new Date().toISOString(),
+              payment_link_expires_at: link.expiresAt,
+              payment_link_status: link.status,
             },
           })
           .eq('id', appointmentId);
@@ -653,8 +674,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: { ...appointment, payment_link: paymentLink },
-      message:
-        paymentMode === 'cash'
+      // Surfaced in the UI as a warning: the booking exists but the cash
+      // ledger row could not be written (payment reverted to pending).
+      ...(ledgerError ? { ledgerError } : {}),
+      message: ledgerError
+        ? 'Booking created, but the cash payment could not be recorded — payment is still pending.'
+        : paymentMode === 'cash'
           ? 'Booking created and marked paid (cash).'
           : paymentMode === 'link'
             ? 'Booking created. Share the payment link with the patient.'

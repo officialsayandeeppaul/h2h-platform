@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { format, parseISO, isToday } from 'date-fns';
+import { format, parseISO, isToday, addMonths } from 'date-fns';
 import {
   Bar,
   BarChart,
@@ -71,6 +71,13 @@ interface AuditMetadata {
   payment_link_id?: string;
   payment_link_url?: string;
   payment_link_status?: string;
+  /** Creation time of the hosted link (legacy fallback for the deadline). */
+  payment_link_created_at?: string;
+  /** Exact moment the hosted link stops accepting payments (new links). */
+  payment_link_expires_at?: string;
+  /** Set by the `payment_link.paid` webhook. */
+  payment_link_paid_at?: string;
+  booked_at?: string;
   created_by_email?: string;
   /** Free-text doctor/service used when the FK is null (manual entry). */
   custom_doctor_name?: string;
@@ -135,6 +142,26 @@ const PAYMENT_COLORS: Record<string, string> = {
   failed: 'bg-red-50 text-red-600 border-red-200',
 };
 
+/** Plain-language payment words — a bare "pending" next to a status badge was
+ *  impossible to read at a glance. */
+const PAYMENT_LABELS: Record<string, string> = {
+  pending: 'Awaiting payment',
+  paid: 'Paid',
+  refunded: 'Refunded',
+  failed: 'Payment failed',
+};
+
+const PAYMENT_HEX: Record<string, string> = {
+  pending: '#f59e0b',
+  paid: '#10b981',
+  refunded: '#8b5cf6',
+  failed: '#ef4444',
+};
+
+function paymentLabel(status: string): string {
+  return PAYMENT_LABELS[status] || status;
+}
+
 const CHART_PALETTE = ['#06b6d4', '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 // ---------------------------------------------------------------------------
@@ -158,6 +185,25 @@ function formatPhoneDisplay(phone?: string | null): string {
   else if (digits.length === 11 && digits.startsWith('0')) local = digits.slice(1);
   if (local.length === 10) return `+91 ${local.slice(0, 5)} ${local.slice(5)}`;
   return raw;
+}
+
+/**
+ * When a stored payment link stops accepting payments: the exact deadline for
+ * links created since expiry tracking shipped, or Razorpay's documented
+ * six-month default measured from creation for older links.
+ */
+function paymentLinkExpiry(metadata?: AuditMetadata | null): Date | null {
+  const stored = metadata?.payment_link_expires_at;
+  if (stored) {
+    const d = parseISO(stored);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  const created = metadata?.payment_link_created_at;
+  if (created) {
+    const c = parseISO(created);
+    if (!Number.isNaN(c.getTime())) return addMonths(c, 6);
+  }
+  return null;
 }
 
 function buildWaLink(phone?: string | null, text?: string): string | null {
@@ -310,7 +356,12 @@ function AuditBookingsContent() {
       const key = b.payment_status || 'pending';
       groups[key] = (groups[key] || 0) + 1;
     }
-    return Object.entries(groups).map(([name, value]) => ({ name, value }));
+    // `key` drives the color, `name` is what humans read in the donut/legend.
+    return Object.entries(groups).map(([key, value]) => ({
+      key,
+      name: paymentLabel(key),
+      value,
+    }));
   }, [allRows]);
 
   const last7Days = useMemo(() => {
@@ -506,8 +557,11 @@ function AuditBookingsContent() {
                     outerRadius={70}
                     paddingAngle={3}
                   >
-                    {paymentBreakdown.map((entry, idx) => (
-                      <Cell key={entry.name} fill={CHART_PALETTE[idx % CHART_PALETTE.length]} />
+                    {paymentBreakdown.map((entry) => (
+                      <Cell
+                        key={entry.key}
+                        fill={PAYMENT_HEX[entry.key] || CHART_PALETTE[0]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
@@ -518,11 +572,11 @@ function AuditBookingsContent() {
             </div>
           )}
           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-            {paymentBreakdown.map((entry, idx) => (
-              <span key={entry.name} className="flex items-center gap-1.5 text-xs text-gray-600">
+            {paymentBreakdown.map((entry) => (
+              <span key={entry.key} className="flex items-center gap-1.5 text-xs text-gray-600">
                 <span
                   className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: CHART_PALETTE[idx % CHART_PALETTE.length] }}
+                  style={{ background: PAYMENT_HEX[entry.key] || CHART_PALETTE[0] }}
                 />
                 {entry.name} ({entry.value})
               </span>
@@ -613,9 +667,35 @@ function AuditBookingsContent() {
               b.service?.name || b.metadata?.custom_service_name || 'Unknown service';
             const linkUrl: string | null = b.metadata?.payment_link_url || null;
             const isPaid = b.payment_status === 'paid';
+            const linkExpiry = paymentLinkExpiry(b.metadata);
+            const linkExpired =
+              Boolean(linkUrl) && !isPaid && Boolean(linkExpiry) && (linkExpiry as Date).getTime() <= Date.now();
+            // Cash-created rows predate paid_at tracking — creation time IS the
+            // settlement time, so the money trail still renders for old bookings.
+            const paidAtIso =
+              b.metadata?.paid_at ||
+              (b.metadata?.payment_mode === 'cash'
+                ? b.metadata?.booked_at || b.created_at
+                : null);
+            // Parsed once, guarded: format() throws on Invalid Date, which would
+            // take the whole page down over one malformed metadata timestamp.
+            const paidAtDate = paidAtIso ? parseISO(paidAtIso) : null;
+            const paidAtValid = Boolean(paidAtDate) && !Number.isNaN((paidAtDate as Date).getTime());
+            const methodLabel =
+              b.metadata?.payment_mode === 'cash'
+                ? 'Cash'
+                : b.metadata?.payment_link_paid_at ||
+                    b.metadata?.payment_mode === 'link' ||
+                    (linkUrl && !isPaid)
+                  ? 'Payment link (Razorpay)'
+                  : b.metadata?.payment_mode === 'later'
+                    ? 'Pay later — not settled yet'
+                    : isPaid
+                      ? 'Recorded manually'
+                      : '—';
             const waText = isPaid
               ? `Hi ${patientName}, your H2H Healthcare booking for ${serviceName} with Dr. ${doctorName} on ${format(parseISO(b.appointment_date), 'dd MMM yyyy')} at ${b.start_time?.substring(0, 5)} is confirmed. Payment of ₹${Number(b.amount) || 0} received. See you soon!`
-              : linkUrl
+              : linkUrl && !linkExpired
                 ? `Hi ${patientName}, here is the payment link for your H2H Healthcare booking (${serviceName} with Dr. ${doctorName}, ${format(parseISO(b.appointment_date), 'dd MMM yyyy')} at ${b.start_time?.substring(0, 5)}): ${linkUrl}`
                 : `Hi ${patientName}, your H2H Healthcare booking for ${serviceName} with Dr. ${doctorName} on ${format(parseISO(b.appointment_date), 'dd MMM yyyy')} at ${b.start_time?.substring(0, 5)} is confirmed.`;
 
@@ -661,12 +741,28 @@ function AuditBookingsContent() {
                       <IndianRupee className="h-3 w-3" />
                       {Number(b.amount) || 0}
                     </p>
-                    <Badge className={`text-[10px] border ${PAYMENT_COLORS[b.payment_status] || ''}`}>
-                      {b.payment_status}
+                    <Badge
+                      className={`text-[10px] border ${PAYMENT_COLORS[b.payment_status] || ''}`}
+                      title={`Payment status: ${b.payment_status}`}
+                    >
+                      {paymentLabel(b.payment_status)}
                     </Badge>
+                    {isPaid && paidAtValid && (
+                      <p className="text-[10px] text-emerald-600 mt-1">
+                        Paid {format(paidAtDate as Date, 'dd MMM')}
+                      </p>
+                    )}
+                    {linkExpired && (
+                      <p className="text-[10px] font-medium text-red-500 mt-1">Link expired</p>
+                    )}
                   </div>
 
-                  <Badge className={`${STATUS_COLORS[b.status]} capitalize shrink-0`}>{b.status}</Badge>
+                  <Badge
+                    className={`${STATUS_COLORS[b.status]} capitalize shrink-0`}
+                    title={`Booking status: ${b.status}`}
+                  >
+                    {b.status === 'no_show' ? 'No show' : b.status}
+                  </Badge>
 
                   {isExpanded ? (
                     <ChevronUp className="h-5 w-5 text-gray-400 shrink-0" />
@@ -739,20 +835,36 @@ function AuditBookingsContent() {
                             <span className="font-medium">₹{Number(b.amount) || 0}</span>
                           </p>
                           <p>
-                            <span className="text-gray-500">Status:</span>{' '}
+                            <span className="text-gray-500">Payment status:</span>{' '}
                             <Badge className={`ml-1 text-[10px] border ${PAYMENT_COLORS[b.payment_status] || ''}`}>
-                              {b.payment_status}
+                              {paymentLabel(b.payment_status)}
                             </Badge>
                           </p>
                           <p>
                             <span className="text-gray-500">Method:</span>{' '}
-                            <span className="font-medium capitalize">{b.metadata?.payment_mode || 'link'}</span>
+                            <span className="font-medium">{methodLabel}</span>
                           </p>
-                          {b.metadata?.paid_at && (
+                          {paidAtValid && (
                             <p>
                               <span className="text-gray-500">Paid:</span>{' '}
                               <span className="font-medium">
-                                {format(parseISO(b.metadata.paid_at), 'dd MMM yyyy, HH:mm')}
+                                {format(paidAtDate as Date, 'dd MMM yyyy, HH:mm')}
+                              </span>
+                            </p>
+                          )}
+                          {isPaid && b.metadata?.paid_by && (
+                            <p>
+                              <span className="text-gray-500">Recorded by:</span>{' '}
+                              <span className="font-medium break-all">{b.metadata.paid_by}</span>
+                            </p>
+                          )}
+                          {linkUrl && !isPaid && linkExpiry && (
+                            <p>
+                              <span className="text-gray-500">Link expires:</span>{' '}
+                              <span
+                                className={`font-medium ${linkExpired ? 'text-red-600' : ''}`}
+                              >
+                                {linkExpired ? 'Expired — regenerate' : format(linkExpiry, 'dd MMM yyyy, HH:mm')}
                               </span>
                             </p>
                           )}
@@ -775,7 +887,7 @@ function AuditBookingsContent() {
                     )}
 
                     {/* Payment link display */}
-                    {linkUrl && !isPaid && (
+                    {linkUrl && !isPaid && !linkExpired && (
                       <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex flex-wrap items-center gap-2">
                         <Link2 className="h-4 w-4 text-emerald-600 shrink-0" />
                         <a
@@ -786,9 +898,25 @@ function AuditBookingsContent() {
                         >
                           {linkUrl}
                         </a>
+                        {linkExpiry && (
+                          <span className="text-xs text-emerald-700/80">
+                            Expires {format(linkExpiry as Date, 'dd MMM yyyy, HH:mm')}
+                          </span>
+                        )}
                         <Button variant="outline" size="sm" onClick={() => copy(linkUrl, 'Payment link')}>
                           <Copy className="h-3 w-3 mr-1" /> Copy
                         </Button>
+                      </div>
+                    )}
+
+                    {linkUrl && !isPaid && linkExpired && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex flex-wrap items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+                        <p className="text-sm text-red-700 flex-1 min-w-[200px]">
+                          This payment link expired on{' '}
+                          {linkExpiry ? format(linkExpiry as Date, 'dd MMM yyyy') : 'an unknown date'}{' '}
+                          and can no longer be paid. Generate a fresh link below.
+                        </p>
                       </div>
                     )}
 
@@ -797,7 +925,12 @@ function AuditBookingsContent() {
                       {!isPaid && b.status !== 'cancelled' && (
                         <Button
                           size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          // A dead link shifts the spotlight: regenerating it is
+                          // now the primary path, cash settlement steps aside.
+                          variant={linkExpired ? 'outline' : 'default'}
+                          className={
+                            linkExpired ? '' : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          }
                           disabled={actionId === b.id}
                           onClick={() => markCashPaid(b.id)}
                         >
@@ -813,7 +946,10 @@ function AuditBookingsContent() {
                       {!isPaid && b.status !== 'cancelled' && (
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant={linkExpired ? 'default' : 'outline'}
+                          className={
+                            linkExpired ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''
+                          }
                           disabled={actionId === b.id}
                           onClick={() => generatePaymentLink(b.id)}
                         >
@@ -822,7 +958,11 @@ function AuditBookingsContent() {
                           ) : (
                             <Link2 className="h-3 w-3 mr-1" />
                           )}
-                          {linkUrl ? 'Regenerate payment link' : 'Generate payment link'}
+                          {linkExpired
+                            ? 'Link expired — generate a new one'
+                            : linkUrl
+                              ? 'Regenerate payment link'
+                              : 'Generate payment link'}
                         </Button>
                       )}
 
@@ -1403,6 +1543,12 @@ function NewAuditBookingDialog({
         } catch {
           toast.success(data.message || 'Audit booking created');
         }
+      } else if (data.ledgerError) {
+        // Cash mode + failed ledger row: booking exists but payment reverted
+        // to pending — say exactly that instead of pretending success.
+        toast.warning('Booking created, but the cash payment was not recorded', {
+          description: `${data.ledgerError} — the booking is back to “awaiting payment”; use “Mark paid (cash)” on the card to retry.`,
+        });
       } else {
         toast.success(data.message || 'Audit booking created');
       }
